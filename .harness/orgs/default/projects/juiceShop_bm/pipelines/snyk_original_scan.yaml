@@ -41,6 +41,7 @@ pipeline:
                     image: node:22
                     shell: Sh
                     command: |
+                      rm -f frontend/package-lock.json
                       npm install
                     resources:
                       limits:
