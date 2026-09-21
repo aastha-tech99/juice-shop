@@ -33,6 +33,16 @@ pipeline:
           execution:
             steps:
               - step:
+                  type: Run
+                  name: Install dependencies
+                  identifier: install_deps
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: node:20
+                    shell: Sh
+                    command: |
+                      npm install
+              - step:
                   type: Snyk
                   name: Snyk_1
                   identifier: Snyk_1
