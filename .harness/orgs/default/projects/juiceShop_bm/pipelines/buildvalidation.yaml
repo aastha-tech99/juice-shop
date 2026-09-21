@@ -104,6 +104,13 @@ pipeline:
                       echo "==> Install application"
                       npm install
 
+                      # Lint step uses --ignore-scripts and CI cache can restore
+                      # node_modules without native .node binaries; npm then reports
+                      # "up to date" and skips sqlite3's install/rebuild.
+                      echo "==> Rebuild native modules (sqlite3)"
+                      npm rebuild sqlite3 --build-from-source
+                      node -e "require('sqlite3'); console.log('sqlite3 bindings OK')"
+
                       echo "==> Verify production build artifacts"
                       test -f build/app.js || test -f build/app
                       test -d frontend/dist/frontend || test -d frontend/dist
@@ -185,6 +192,11 @@ pipeline:
 
                       echo "==> Install application"
                       npm install
+
+                      # Same cache/ignore-scripts issue as Build_and_E2E
+                      echo "==> Rebuild native modules (sqlite3)"
+                      npm rebuild sqlite3 --build-from-source
+                      node -e "require('sqlite3'); console.log('sqlite3 bindings OK')"
 
                       echo "==> Server unit tests"
                       npm run test:server
