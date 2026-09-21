@@ -42,6 +42,10 @@ pipeline:
                     shell: Sh
                     command: |
                       npm install
+                    resources:
+                      limits:
+                        memory: 4Gi
+                        cpu: "2"
               - step:
                   type: Snyk
                   name: Snyk_1
