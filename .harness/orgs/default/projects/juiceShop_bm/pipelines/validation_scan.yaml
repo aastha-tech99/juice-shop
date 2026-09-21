@@ -51,4 +51,4 @@ pipeline:
         connectorRef: benchmarking
         build: <+input>
   identifier: validation_scan
-  name: validation scan
+  name: validation scan semgrep
