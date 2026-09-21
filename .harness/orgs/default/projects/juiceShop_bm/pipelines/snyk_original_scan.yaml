@@ -38,7 +38,7 @@ pipeline:
                   identifier: install_deps
                   spec:
                     connectorRef: account.harnessImage
-                    image: node:20
+                    image: node:22
                     shell: Sh
                     command: |
                       npm install
