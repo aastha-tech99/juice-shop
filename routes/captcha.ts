@@ -5,6 +5,7 @@
 
 import { type Request, type Response, type NextFunction } from 'express'
 import { CaptchaModel } from '../models/captcha'
+import * as security from '../lib/insecurity'
 
 function applyOp (x: number, op: string, y: number): number {
   switch (op) {
@@ -56,7 +57,7 @@ export function captchas () {
 export const verifyCaptcha = () => async (req: Request, res: Response, next: NextFunction) => {
   try {
     const captcha = await CaptchaModel.findOne({ where: { captchaId: req.body.captchaId } })
-    if ((captcha != null) && req.body.captcha === captcha.answer) {
+    if ((captcha != null) && security.safeCompare(String(req.body.captcha ?? ''), String(captcha.answer))) {
       next()
     } else {
       res.status(401).send(res.__('Wrong answer to CAPTCHA. Please try again.'))

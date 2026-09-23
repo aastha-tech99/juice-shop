@@ -17,7 +17,7 @@ export function changePassword () {
     const newPasswordInString = newPassword?.toString()
     const repeatPassword = query.repeat
 
-    if (!newPassword || newPassword === 'undefined') {
+    if (!newPassword || security.safeCompare(String(newPassword), 'undefined')) {
       res.status(401).send(res.__('Password cannot be empty.'))
       return
     } else if (newPassword !== repeatPassword) {

@@ -70,7 +70,7 @@ export function login () {
     challengeUtils.solveIf(challenges.loginJimChallenge, () => { return user.id === users.jim.id })
     challengeUtils.solveIf(challenges.loginBenderChallenge, () => { return user.id === users.bender.id })
     challengeUtils.solveIf(challenges.ghostLoginChallenge, () => { return user.id === users.chris.id })
-    if (challengeUtils.notSolved(challenges.ephemeralAccountantChallenge) && user.email === 'acc0unt4nt@' + config.get<string>('application.domain') && user.role === 'accounting') {
+    if (challengeUtils.notSolved(challenges.ephemeralAccountantChallenge) && security.safeCompare(user.email, 'acc0unt4nt@' + config.get<string>('application.domain')) && security.safeCompare(user.role, 'accounting')) {
       UserModel.count({ where: { email: 'acc0unt4nt@' + config.get<string>('application.domain') } }).then((count: number) => {
         if (count === 0) {
           challengeUtils.solve(challenges.ephemeralAccountantChallenge)

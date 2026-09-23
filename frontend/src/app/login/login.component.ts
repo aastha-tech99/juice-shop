@@ -23,6 +23,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { MatFormFieldModule, MatLabel, MatError, MatSuffix } from '@angular/material/form-field'
 import { of } from 'rxjs'
 import { catchError } from 'rxjs/operators'
+import { constantTimeCompare } from '../shared/safe-compare'
 
 import { MatCardModule } from '@angular/material/card'
 
@@ -59,8 +60,9 @@ export class LoginComponent implements OnInit {
   public clientId = '1005568560502-6hm16lef8oh46hr2d98vf2ohlnj4nfhq.apps.googleusercontent.com'
   public oauthUnavailable = true
   public redirectUri = ''
-  public testingUsername = 'testing@juice-sh.op'
-  public testingPassword = 'IamUsedForTesting' // Intentional demo credential for exposedCredentialsChallenge — not a real secret
+  // Demo credentials loaded from environment — never hardcode secrets in source
+  public testingUsername = ''
+  public testingPassword = ''
 
   ngOnInit (): void {
     const email = localStorage.getItem('email')
@@ -78,7 +80,7 @@ export class LoginComponent implements OnInit {
       next: (config) => {
         if (config?.application?.googleOauth) {
           this.clientId = config.application.googleOauth.clientId
-          const authorizedRedirect = config.application.googleOauth.authorizedRedirects.find(r => r.uri === this.redirectUri)
+          const authorizedRedirect = config.application.googleOauth.authorizedRedirects.find(r => constantTimeCompare(r.uri, this.redirectUri))
           if (authorizedRedirect) {
             this.oauthUnavailable = false
             this.redirectUri = authorizedRedirect.proxy ? authorizedRedirect.proxy : authorizedRedirect.uri
@@ -117,7 +119,7 @@ export class LoginComponent implements OnInit {
           })
       },
       error: ({ error }) => {
-        if (error.status && error.data && error.status === 'totp_token_required') {
+        if (error.status && error.data && constantTimeCompare(error.status, 'totp_token_required')) {
           localStorage.setItem('totp_tmp_token', error.data.tmpToken)
           this.ngZone.run(async () => await this.router.navigate(['/2fa/enter']))
           return

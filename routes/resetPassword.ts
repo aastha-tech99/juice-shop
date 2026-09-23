@@ -24,7 +24,7 @@ export function resetPassword () {
       next(new Error('Blocked illegal activity by ' + connection.remoteAddress))
       return
     }
-    if (!newPassword || newPassword === 'undefined') {
+    if (!newPassword || security.safeCompare(String(newPassword), 'undefined')) {
       res.status(401).send(res.__('Password cannot be empty.'))
       return
     }
@@ -39,7 +39,7 @@ export function resetPassword () {
           where: { email }
         }]
       })
-      if ((data != null) && security.hmac(answer) === data.answer) {
+      if ((data != null) && security.safeCompare(security.hmac(answer), data.answer)) {
         const user = await UserModel.findByPk(data.UserId)
         if (user) {
           const updatedUser = await user.update({ password: newPassword })
@@ -56,12 +56,12 @@ export function resetPassword () {
 }
 
 function verifySecurityAnswerChallenges (user: UserModel, answer: string) {
-  challengeUtils.solveIf(challenges.resetPasswordJimChallenge, () => { return user.id === users.jim.id && answer === 'Samuel' })
-  challengeUtils.solveIf(challenges.resetPasswordBenderChallenge, () => { return user.id === users.bender.id && answer === 'Stop\'n\'Drop' })
-  challengeUtils.solveIf(challenges.resetPasswordBjoernChallenge, () => { return user.id === users.bjoern.id && answer === 'West-2082' })
-  challengeUtils.solveIf(challenges.resetPasswordMortyChallenge, () => { return user.id === users.morty.id && answer === '5N0wb41L' })
-  challengeUtils.solveIf(challenges.resetPasswordBjoernOwaspChallenge, () => { return user.id === users.bjoernOwasp.id && answer === 'Zaya' })
-  challengeUtils.solveIf(challenges.resetPasswordUvoginChallenge, () => { return user.id === users.uvogin.id && answer === 'Silence of the Lambs' })
+  challengeUtils.solveIf(challenges.resetPasswordJimChallenge, () => { return user.id === users.jim.id && security.safeCompare(answer, 'Samuel') })
+  challengeUtils.solveIf(challenges.resetPasswordBenderChallenge, () => { return user.id === users.bender.id && security.safeCompare(answer, 'Stop\'n\'Drop') })
+  challengeUtils.solveIf(challenges.resetPasswordBjoernChallenge, () => { return user.id === users.bjoern.id && security.safeCompare(answer, 'West-2082') })
+  challengeUtils.solveIf(challenges.resetPasswordMortyChallenge, () => { return user.id === users.morty.id && security.safeCompare(answer, '5N0wb41L') })
+  challengeUtils.solveIf(challenges.resetPasswordBjoernOwaspChallenge, () => { return user.id === users.bjoernOwasp.id && security.safeCompare(answer, 'Zaya') })
+  challengeUtils.solveIf(challenges.resetPasswordUvoginChallenge, () => { return user.id === users.uvogin.id && security.safeCompare(answer, 'Silence of the Lambs') })
   challengeUtils.solveIf(challenges.geoStalkingMetaChallenge, () => {
     const securityAnswer = ((() => {
       const memories = config.get<MemoryConfig[]>('memories')
@@ -71,7 +71,7 @@ function verifySecurityAnswerChallenges (user: UserModel, answer: string) {
         }
       }
     })())
-    return user.id === users.john.id && answer === securityAnswer
+    return user.id === users.john.id && security.safeCompare(answer, securityAnswer)
   })
   challengeUtils.solveIf(challenges.geoStalkingVisualChallenge, () => {
     const securityAnswer = ((() => {
@@ -82,6 +82,6 @@ function verifySecurityAnswerChallenges (user: UserModel, answer: string) {
         }
       }
     })())
-    return user.id === users.emma.id && answer === securityAnswer
+    return user.id === users.emma.id && security.safeCompare(answer, securityAnswer)
   })
 }

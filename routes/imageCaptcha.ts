@@ -49,7 +49,7 @@ export const verifyImageCaptcha = () => (req: Request, res: Response, next: Next
       },
       order: [['createdAt', 'DESC']]
     })
-    if (!captchas[0] || req.body.answer === captchas[0].answer) {
+    if (!captchas[0] || security.safeCompare(String(req.body.answer ?? ''), String(captchas[0].answer))) {
       next()
     } else {
       res.status(401).send(res.__('Wrong answer to CAPTCHA. Please try again.'))
