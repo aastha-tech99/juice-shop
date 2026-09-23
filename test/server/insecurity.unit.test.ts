@@ -197,10 +197,29 @@ void describe('insecurity', () => {
   })
 
   void describe('hmac', () => {
-    void it('returns SHA-256 HMAC with "pa4qacea4VK9t9nGv7yZtwmj" as salt any input string', () => {
-      assert.equal(security.hmac('admin123'), '6be13e2feeada221f29134db71c0ab0be0e27eccfc0fb436ba4096ba73aafb20')
-      assert.equal(security.hmac('password'), 'da28fc4354f4a458508a461fbae364720c4249c27f10fccf68317fc4bf6531ed')
-      assert.equal(security.hmac(''), 'f052179ec5894a2e79befa8060cfcb517f1e14f7f6222af854377b6481ae953e')
+    const savedHmacKey = process.env.HMAC_KEY
+
+    void it('returns SHA-256 HMAC hex string for any input', () => {
+      process.env.HMAC_KEY = 'test-hmac-key'
+      const result = security.hmac('admin123')
+      assert.equal(result.length, 64)
+      assert.match(result, /^[0-9a-f]{64}$/)
+    })
+
+    void it('is deterministic for the same input', () => {
+      process.env.HMAC_KEY = 'test-hmac-key'
+      assert.equal(security.hmac('admin123'), security.hmac('admin123'))
+    })
+
+    void it('produces different output for different inputs', () => {
+      process.env.HMAC_KEY = 'test-hmac-key'
+      assert.notEqual(security.hmac('admin123'), security.hmac('password'))
+    })
+
+    void it('throws when HMAC_KEY environment variable is not set', () => {
+      delete process.env.HMAC_KEY
+      assert.throws(() => security.hmac('test'), { message: /HMAC_KEY/ })
+      process.env.HMAC_KEY = savedHmacKey
     })
   })
 
