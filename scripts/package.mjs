@@ -16,9 +16,19 @@ import { glob } from 'glob'
 // not great, but the alternative is to include archiver as a prod dependency as all the dev dependency are cleared by npm prune before packaging
 function loadArchiver () {
   const require = createRequire(import.meta.url)
+  const globalRoot = execSync('npm root -g', { encoding: 'utf8' }).trim()
+  if (!path.isAbsolute(globalRoot)) {
+    console.error('npm global root is not an absolute path')
+    process.exit(1)
+  }
+  const resolvedRoot = path.resolve(globalRoot)
+  const archiverPath = path.resolve(resolvedRoot, 'archiver')
+  if (!archiverPath.startsWith(resolvedRoot + path.sep)) {
+    console.error('Resolved archiver path escapes npm global root')
+    process.exit(1)
+  }
   try {
-    const globalRoot = execSync('npm root -g', { encoding: 'utf8' }).trim()
-    return require(path.join(globalRoot, 'archiver'))
+    return require(archiverPath)
   } catch {
     console.error('archiver is not installed. Run: npm install -g archiver')
     process.exit(1)
