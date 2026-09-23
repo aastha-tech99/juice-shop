@@ -9,6 +9,11 @@ import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { RouterTestingModule } from '@angular/router/testing'
 import { ErrorPageComponent } from './error-page/error-page.component'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { jwtDecode } from 'jwt-decode'
+
+vi.mock('jwt-decode', () => ({
+  jwtDecode: vi.fn()
+}))
 
 describe('LoginGuard', () => {
     beforeEach(() => {
@@ -43,8 +48,12 @@ describe('LoginGuard', () => {
     it('returns payload from decoding a valid JWT', () => {
         const guard = TestBed.inject(LoginGuard)
 
-        // Test-only: canonical jwt.io example token, not a real secret
-        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
+        ;(jwtDecode as ReturnType<typeof vi.fn>).mockReturnValue({
+            sub: '1234567890',
+            name: 'John Doe',
+            iat: 1516239022
+        })
+        localStorage.setItem('token', 'test-token-value')
         expect(guard.tokenDecode()).toEqual({
             sub: '1234567890',
             name: 'John Doe',
@@ -55,7 +64,8 @@ describe('LoginGuard', () => {
     it('returns nothing when decoding an invalid JWT', () => {
         const guard = TestBed.inject(LoginGuard)
 
-        localStorage.setItem('token', '12345.abcde')
+        ;(jwtDecode as ReturnType<typeof vi.fn>).mockImplementation(() => { throw new Error('Invalid token') })
+        localStorage.setItem('token', 'invalid-token')
         expect(guard.tokenDecode()).toBeNull()
     })
 
