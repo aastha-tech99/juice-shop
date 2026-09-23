@@ -12,13 +12,13 @@ export function serveKeyFiles () {
     const baseDir = path.resolve('encryptionkeys/')
 
     if (!file.includes('/')) {
-      const filePath = path.resolve(baseDir, file)
-      if (!filePath.startsWith(baseDir + path.sep)) {
+      const safeName = path.basename(file)
+      if (!safeName || safeName === '.' || safeName === '..') {
         res.status(403)
         next(new Error('File path is not allowed!'))
         return
       }
-      res.sendFile(filePath)
+      res.sendFile(safeName, { root: baseDir })
     } else {
       res.status(403)
       next(new Error('File names cannot contain forward slashes!'))

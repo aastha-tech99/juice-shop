@@ -27,8 +27,8 @@ export function servePublicFiles () {
       file = security.cutOffPoisonNullByte(file)
 
       const baseDir = path.resolve('ftp/')
-      const filePath = path.resolve(baseDir, file)
-      if (!filePath.startsWith(baseDir + path.sep)) {
+      const safeName = path.basename(file)
+      if (!safeName || safeName === '.' || safeName === '..') {
         res.status(403)
         next(new Error('File path is not allowed!'))
         return
@@ -37,7 +37,7 @@ export function servePublicFiles () {
       challengeUtils.solveIf(challenges.directoryListingChallenge, () => { return file.toLowerCase() === 'acquisitions.md' })
       verifySuccessfulPoisonNullByteExploit(file)
 
-      res.sendFile(filePath)
+      res.sendFile(safeName, { root: baseDir })
     } else {
       res.status(403)
       next(new Error('Only .md and .pdf files are allowed!'))
