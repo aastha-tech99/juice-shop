@@ -16,6 +16,15 @@ export class SecurityQuestionService {
 
   private readonly hostServer = environment.hostServer
   private readonly host = this.hostServer + '/api/SecurityQuestions'
+  private readonly allowedOrigin = new URL(this.hostServer).origin
+
+  private safeUrl (path: string): string {
+    const url = new URL(path, this.hostServer)
+    if (url.origin !== this.allowedOrigin) {
+      throw new Error('Blocked request to untrusted origin: ' + url.origin)
+    }
+    return url.href
+  }
 
   find (params: any) {
     return this.http.get(this.host + '/', { params }).pipe(map((response: any) => response.data), catchError((err) => { throw err }))
@@ -23,7 +32,7 @@ export class SecurityQuestionService {
 
   findBy (email: string) {
     const params = new HttpParams().set('email', email)
-    return this.http.get(this.hostServer + '/rest/user/security-question', { params }).pipe(
+    return this.http.get(this.safeUrl('/rest/user/security-question'), { params }).pipe(
       map((response: any) => response.question),
       catchError((error) => { throw error })
     )

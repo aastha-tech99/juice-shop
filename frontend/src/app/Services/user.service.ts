@@ -24,10 +24,20 @@ export class UserService {
   public isLoggedIn = new Subject<any>()
   private readonly hostServer = environment.hostServer
   private readonly host = this.hostServer + '/api/Users'
+  private static readonly GOOGLE_API_ORIGIN = 'https://www.googleapis.com'
+  private readonly allowedOrigins = new Set([new URL(this.hostServer).origin, UserService.GOOGLE_API_ORIGIN])
+
+  private safeUrl (path: string, base: string = this.hostServer): string {
+    const url = new URL(path, base)
+    if (!this.allowedOrigins.has(url.origin)) {
+      throw new Error('Blocked request to untrusted origin: ' + url.origin)
+    }
+    return url.href
+  }
 
   find (params?: any) {
     const httpParams = params ? new HttpParams({ fromObject: params }) : undefined
-    return this.http.get(this.hostServer + '/rest/user/authentication-details/', { params: httpParams }).pipe(map((response: any) =>
+    return this.http.get(this.safeUrl('/rest/user/authentication-details/'), { params: httpParams }).pipe(map((response: any) =>
       response.data), catchError((err) => { throw err }))
   }
 
@@ -56,7 +66,7 @@ export class UserService {
       .set('current', passwords.current || '')
       .set('new', passwords.new || '')
       .set('repeat', passwords.repeat || '')
-    return this.http.get(this.hostServer + '/rest/user/change-password', { params }).pipe(map((response: any) => response.user), catchError((err) => { throw err.error }))
+    return this.http.get(this.safeUrl('/rest/user/change-password'), { params }).pipe(map((response: any) => response.user), catchError((err) => { throw err.error }))
   }
 
   resetPassword (params: any) {
@@ -68,16 +78,16 @@ export class UserService {
     if (fields && fields.length > 0) {
       params = params.set('fields', fields.join(','))
     }
-    return this.http.get(this.hostServer + '/rest/user/whoami', { params }).pipe(map((response: any) => response.user), catchError((err) => { throw err }))
+    return this.http.get(this.safeUrl('/rest/user/whoami'), { params }).pipe(map((response: any) => response.user), catchError((err) => { throw err }))
   }
 
-  private readonly googleUserInfoUrl = 'https://www.googleapis.com/oauth2/v1/userinfo'
+  private readonly googleUserInfoUrl = UserService.GOOGLE_API_ORIGIN + '/oauth2/v1/userinfo'
 
   oauthLogin (accessToken: string) {
     const params = new HttpParams()
       .set('alt', 'json')
       .set('access_token', accessToken)
-    return this.http.get(this.googleUserInfoUrl, { params })
+    return this.http.get(this.safeUrl('/oauth2/v1/userinfo', UserService.GOOGLE_API_ORIGIN), { params })
   }
 
   saveLastLoginIp () {

@@ -218,6 +218,12 @@ describe('UserService', () => {
         httpMock.verify()
     })
 
+    it('should block requests to untrusted origins', () => {
+        const service = TestBed.inject(UserService)
+        // safeUrl is private but accessible at runtime; verify SSRF origin validation
+        expect(() => (service as any).safeUrl('https://evil.example.com/steal')).toThrowError(/untrusted origin/)
+    })
+
     it('should handle error when fetching whoAmI', () => {
         const service = TestBed.inject(UserService)
         const httpMock = TestBed.inject(HttpTestingController)
