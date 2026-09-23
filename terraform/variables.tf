@@ -69,3 +69,8 @@ variable "efs_encrypted" {
   type        = bool
   default     = true
 }
+
+variable "allowed_cidr_blocks" {
+  description = "List of CIDR blocks allowed to reach the ALB (restrict to known sources)"
+  type        = list(string)
+}
