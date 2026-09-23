@@ -70,7 +70,10 @@ export class DataExportComponent implements OnInit {
         this.confirmation = data.confirmation
         this.userData = data.userData
         const sanitizedData = this.sanitizer.sanitize(SecurityContext.HTML, this.userData) ?? ''
-        window.open('', '_blank', 'width=500')?.document.write(sanitizedData)
+        const exportWindow = window.open('', '_blank', 'width=500')
+        if (exportWindow) {
+          exportWindow.document.body.textContent = sanitizedData
+        }
         this.lastSuccessfulTry = new Date()
         localStorage.setItem('lstdtxprt', JSON.stringify(this.lastSuccessfulTry))
         this.ngOnInit()

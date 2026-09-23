@@ -140,7 +140,11 @@ function loadHint (hint: ChallengeHint): HTMLElement {
   const picture = createElement('img', pictureStyles, { src: '/assets/public/images/hackingInstructor.png' })
 
   const textBox = createElement('span', { flexGrow: '2' })
-  textBox.innerHTML = sanitizeHtml(snarkdown(hint.text))
+  const sanitizedContent = sanitizeHtml(snarkdown(hint.text))
+  const parsedDoc = new DOMParser().parseFromString(sanitizedContent, 'text/html')
+  for (const node of Array.from(parsedDoc.body.childNodes)) {
+    textBox.appendChild(document.importNode(node, true))
+  }
 
   const cancelButtonStyles = {
     textDecoration: 'none',
