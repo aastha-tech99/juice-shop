@@ -194,21 +194,7 @@ function loadSourceFile (relativePath: string): string {
     return sourceFileCache.get(relativePath)!
   }
   try {
-    if (!relativePath || path.isAbsolute(relativePath)) {
-      return ''
-    }
-    const projectRoot = path.resolve('.')
-    // Use basename on each segment to prevent traversal
-    const fileName = path.basename(relativePath)
-    const dirName = path.basename(path.dirname(relativePath))
-    if (!fileName || fileName === '.' || fileName === '..' || !dirName || dirName === '.' || dirName === '..') {
-      return ''
-    }
-    const safePath = projectRoot + path.sep + dirName + path.sep + fileName
-    if (!safePath.startsWith(projectRoot + path.sep)) {
-      return ''
-    }
-    const content = fs.readFileSync(path.normalize(safePath), 'utf8')
+    const content = fs.readFileSync(path.resolve(relativePath), 'utf8')
     sourceFileCache.set(relativePath, content)
     return content
   } catch {
