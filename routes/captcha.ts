@@ -6,6 +6,17 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { CaptchaModel } from '../models/captcha'
 
+function safeCalculate (a: number, op1: string, b: number, op2: string, c: number): number {
+  const apply = (x: number, op: string, y: number): number => {
+    if (op === '+') return x + y
+    if (op === '-') return x - y
+    return x * y
+  }
+  if (op1 === '*') return apply(a * b, op2, c)
+  if (op2 === '*') return apply(a, op1, b * c)
+  return apply(apply(a, op1, b), op2, c)
+}
+
 export function captchas () {
   return async (req: Request, res: Response) => {
     const captchaId = req.app.locals.captchaId++
@@ -19,7 +30,7 @@ export function captchas () {
     const secondOperator = operators[Math.floor((Math.random() * 3))]
 
     const expression = firstTerm.toString() + firstOperator + secondTerm.toString() + secondOperator + thirdTerm.toString()
-    const answer = eval(expression).toString() // eslint-disable-line no-eval
+    const answer = safeCalculate(firstTerm, firstOperator, secondTerm, secondOperator, thirdTerm).toString()
 
     const captcha = {
       captchaId,
