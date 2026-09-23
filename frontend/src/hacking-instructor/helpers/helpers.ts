@@ -44,8 +44,13 @@ export function waitForInputToHaveValue (inputSelector: string, value: string, o
         config = json.config
       }
       const propertyChain = options.replacement[1].split('.')
+      const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype'])
       let replacementValue = config
       for (const property of propertyChain) {
+        if (dangerousKeys.has(property) || typeof replacementValue !== 'object' || replacementValue === null || !Object.prototype.hasOwnProperty.call(replacementValue, property)) {
+          replacementValue = undefined
+          break
+        }
         replacementValue = replacementValue[property]
       }
       value = value.replace(options.replacement[0], replacementValue)
