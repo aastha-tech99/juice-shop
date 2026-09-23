@@ -40,24 +40,26 @@ export function restoreProgress () {
 export function restoreProgressFindIt () {
   return ({ params }: Request, res: Response, next: NextFunction) => {
     (async () => {
-      const hashids = new Hashids('this is the salt for findIt challenges', 60, hashidsAlphabet)
-      const continueCodeFindIt = params.continueCode
-      if (!hashidRegexp.test(continueCodeFindIt)) {
-        return res.status(404).send(invalidContinueCode)
-      }
-      const idsFindIt = hashids.decode(continueCodeFindIt)
-      if (idsFindIt.length > 0) {
-        for (const challenge of Object.values(challenges)) {
-          if (idsFindIt.includes(challenge.id)) {
-            await challengeUtils.solveFindIt(challenge.key, true)
-          }
+      try {
+        const hashids = new Hashids('this is the salt for findIt challenges', 60, hashidsAlphabet)
+        const continueCodeFindIt = params.continueCode
+        if (!hashidRegexp.test(continueCodeFindIt)) {
+          return res.status(404).send(invalidContinueCode)
         }
-        res.json({ data: idsFindIt.length + ' solved challenges have been restored.' })
-      } else {
-        res.status(404).send(invalidContinueCode)
+        const idsFindIt = hashids.decode(continueCodeFindIt)
+        if (idsFindIt.length > 0) {
+          for (const challenge of Object.values(challenges)) {
+            if (idsFindIt.includes(challenge.id)) {
+              await challengeUtils.solveFindIt(challenge.key, true)
+            }
+          }
+          res.json({ data: idsFindIt.length + ' solved challenges have been restored.' })
+        } else {
+          res.status(404).send(invalidContinueCode)
+        }
+      } catch (error) {
+        next(error)
       }
-    } catch (error) {
-      next(error)
     })().catch(next)
   }
 }
@@ -66,23 +68,25 @@ export function restoreProgressFixIt () {
   const hashids = new Hashids('yet another salt for the fixIt challenges', 60, hashidsAlphabet)
   return ({ params }: Request, res: Response, next: NextFunction) => {
     (async () => {
-      const continueCodeFixIt = params.continueCode
-      if (!hashidRegexp.test(continueCodeFixIt)) {
-        return res.status(404).send(invalidContinueCode)
-      }
-      const idsFixIt = hashids.decode(continueCodeFixIt)
-      if (idsFixIt.length > 0) {
-        for (const challenge of Object.values(challenges)) {
-          if (idsFixIt.includes(challenge.id)) {
-            await challengeUtils.solveFixIt(challenge.key, true)
-          }
+      try {
+        const continueCodeFixIt = params.continueCode
+        if (!hashidRegexp.test(continueCodeFixIt)) {
+          return res.status(404).send(invalidContinueCode)
         }
-        res.json({ data: idsFixIt.length + ' solved challenges have been restored.' })
-      } else {
-        res.status(404).send(invalidContinueCode)
+        const idsFixIt = hashids.decode(continueCodeFixIt)
+        if (idsFixIt.length > 0) {
+          for (const challenge of Object.values(challenges)) {
+            if (idsFixIt.includes(challenge.id)) {
+              await challengeUtils.solveFixIt(challenge.key, true)
+            }
+          }
+          res.json({ data: idsFixIt.length + ' solved challenges have been restored.' })
+        } else {
+          res.status(404).send(invalidContinueCode)
+        }
+      } catch (error) {
+        next(error)
       }
-    } catch (error) {
-      next(error)
     })().catch(next)
   }
 }

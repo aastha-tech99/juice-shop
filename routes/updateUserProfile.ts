@@ -15,36 +15,37 @@ import config from 'config'
 export function updateUserProfile () {
   return (req: Request, res: Response, next: NextFunction) => {
     (async () => {
-      const loggedInUser = security.authenticatedUsers.get(req.cookies.token)
+      try {
+        const loggedInUser = security.authenticatedUsers.get(req.cookies.token)
 
-    if (!loggedInUser) {
-      next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
-      return
-    }
+        if (!loggedInUser) {
+          next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
+          return
+        }
 
-    try {
-      const user = await UserModel.findByPk(loggedInUser.data.id)
-      if (!user) {
-        next(new Error('User not found'))
-        return
+        const user = await UserModel.findByPk(loggedInUser.data.id)
+        if (!user) {
+          next(new Error('User not found'))
+          return
+        }
+
+        challengeUtils.solveIf(challenges.csrfChallenge, () => {
+          const url = config.get<string>('challenges.overwriteUrlForCsrfChallenge')
+          return ((req.headers.origin?.includes('://' + url.replace(/^https?:\/\//, ''))) ??
+            (req.headers.referer?.includes('://' + url.replace(/^https?:\/\//, '')))) &&
+            req.body.username !== user.username
+        })
+
+        const savedUser = await user.update({ username: req.body.username })
+        const userWithStatus = utils.queryResultToJson(savedUser)
+        const updatedToken = security.authorize(userWithStatus)
+        security.authenticatedUsers.put(updatedToken, userWithStatus)
+        res.cookie('token', updatedToken)
+        res.location(process.env.BASE_PATH + '/profile')
+        res.redirect(process.env.BASE_PATH + '/profile')
+      } catch (error) {
+        next(error)
       }
-
-      challengeUtils.solveIf(challenges.csrfChallenge, () => {
-        const url = config.get<string>('challenges.overwriteUrlForCsrfChallenge')
-        return ((req.headers.origin?.includes('://' + url.replace(/^https?:\/\//, ''))) ??
-          (req.headers.referer?.includes('://' + url.replace(/^https?:\/\//, '')))) &&
-          req.body.username !== user.username
-      })
-
-      const savedUser = await user.update({ username: req.body.username })
-      const userWithStatus = utils.queryResultToJson(savedUser)
-      const updatedToken = security.authorize(userWithStatus)
-      security.authenticatedUsers.put(updatedToken, userWithStatus)
-      res.cookie('token', updatedToken)
-      res.location(process.env.BASE_PATH + '/profile')
-      res.redirect(process.env.BASE_PATH + '/profile')
-    } catch (error) {
-      next(error)
     })().catch(next)
   }
 }

@@ -15,57 +15,58 @@ import * as db from '../data/mongodb'
 export function dataExport () {
   return (req: Request, res: Response, next: NextFunction) => {
     (async () => {
-      const loggedInUser = security.authenticatedUsers.get(req.headers?.authorization?.replace('Bearer ', ''))
-      if (loggedInUser?.data?.email && loggedInUser.data.id) {
-        const username = loggedInUser.data.username
-        const email = loggedInUser.data.email
-        const updatedEmail = email.replace(/[aeiou]/gi, '*')
+      try {
+        const loggedInUser = security.authenticatedUsers.get(req.headers?.authorization?.replace('Bearer ', ''))
+        if (loggedInUser?.data?.email && loggedInUser.data.id) {
+          const username = loggedInUser.data.username
+          const email = loggedInUser.data.email
+          const updatedEmail = email.replace(/[aeiou]/gi, '*')
 
-        let memories, orders, reviews
-        try {
-          memories = await MemoryModel.findAll({ where: { UserId: req.body.UserId } })
-        } catch (error) {
-          next(error)
-          return
-        }
+          let memories, orders, reviews
+          try {
+            memories = await MemoryModel.findAll({ where: { UserId: req.body.UserId } })
+          } catch (error) {
+            next(error)
+            return
+          }
 
-        try {
-          orders = await db.ordersCollection.find({ email: updatedEmail })
-        } catch (error) {
-          next(new Error(`Error retrieving orders for ${updatedEmail}`))
-          return
-        }
+          try {
+            orders = await db.ordersCollection.find({ email: updatedEmail })
+          } catch (error) {
+            next(new Error(`Error retrieving orders for ${updatedEmail}`))
+            return
+          }
 
-        try {
-          reviews = await db.reviewsCollection.find({ author: email })
-        } catch (error) {
-          next(new Error(`Error retrieving reviews for ${updatedEmail}`))
-          return
-        }
+          try {
+            reviews = await db.reviewsCollection.find({ author: email })
+          } catch (error) {
+            next(new Error(`Error retrieving reviews for ${updatedEmail}`))
+            return
+          }
 
-        const userData:
-        {
-          username?: string
-          email: string
-          orders: Array<{
-            orderId: string
-            totalPrice: number
-            products: ProductModel[]
-            bonus: number
-            eta: string
-          }>
-          reviews: Array<{
-            message: string
-            author: string
-            productId: number
-            likesCount: number
-            likedBy: string
-          }>
-          memories: Array<{
-            imageUrl: string
-            caption: string
-          }>
-        } =
+          const userData:
+          {
+            username?: string
+            email: string
+            orders: Array<{
+              orderId: string
+              totalPrice: number
+              products: ProductModel[]
+              bonus: number
+              eta: string
+            }>
+            reviews: Array<{
+              message: string
+              author: string
+              productId: number
+              likesCount: number
+              likedBy: string
+            }>
+            memories: Array<{
+              imageUrl: string
+              caption: string
+            }>
+          } =
         {
           username,
           email,
@@ -101,16 +102,17 @@ export function dataExport () {
           }))
         }
 
-        const emailHash = security.hash(email).slice(0, 4)
-        for (const order of userData.orders) {
-          challengeUtils.solveIf(challenges.dataExportChallenge, () => { return order.orderId.split('-')[0] !== emailHash })
+          const emailHash = security.hash(email).slice(0, 4)
+          for (const order of userData.orders) {
+            challengeUtils.solveIf(challenges.dataExportChallenge, () => { return order.orderId.split('-')[0] !== emailHash })
+          }
+          res.status(200).send({ userData: JSON.stringify(userData, null, 2), confirmation: 'Your data export will open in a new Browser window.' })
+        } else {
+          next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
         }
-        res.status(200).send({ userData: JSON.stringify(userData, null, 2), confirmation: 'Your data export will open in a new Browser window.' })
-      } else {
-        next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
+      } catch (error) {
+        next(error)
       }
-    } catch (error) {
-      next(error)
     })().catch(next)
   }
 }

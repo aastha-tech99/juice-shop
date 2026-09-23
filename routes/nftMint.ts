@@ -13,24 +13,26 @@ let isEventListenerCreated = false
 export function nftMintListener () {
   return (req: Request, res: Response) => {
     (async () => {
-      if (!isEventListenerCreated) {
-        const { WebSocketProvider, Contract } = await import('ethers')
-        const provider = new WebSocketProvider(`wss://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY ?? ''}`)
-        provider.websocket.onerror = (error: any) => {
-          logger.error(`WebSocket error (NFT Mint Listener): ${error.message || error}`)
-          isEventListenerCreated = false
-        }
-        const contract = new Contract(nftAddress, nftABI, provider as any)
-        void contract.on('NFTMinted', (minter: string) => {
-          if (!addressesMinted.has(minter)) {
-            addressesMinted.add(minter)
+      try {
+        if (!isEventListenerCreated) {
+          const { WebSocketProvider, Contract } = await import('ethers')
+          const provider = new WebSocketProvider(`wss://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY ?? ''}`)
+          provider.websocket.onerror = (error: any) => {
+            logger.error(`WebSocket error (NFT Mint Listener): ${error.message || error}`)
+            isEventListenerCreated = false
           }
-        })
-        isEventListenerCreated = true
+          const contract = new Contract(nftAddress, nftABI, provider as any)
+          void contract.on('NFTMinted', (minter: string) => {
+            if (!addressesMinted.has(minter)) {
+              addressesMinted.add(minter)
+            }
+          })
+          isEventListenerCreated = true
+        }
+        res.status(200).json({ success: true, message: 'Event Listener Created' })
+      } catch (error) {
+        res.status(500).json(utils.getErrorMessage(error))
       }
-      res.status(200).json({ success: true, message: 'Event Listener Created' })
-    } catch (error) {
-      res.status(500).json(utils.getErrorMessage(error))
     })().catch(() => { res.status(500).json({ error: 'Unexpected error' }) })
   }
 }

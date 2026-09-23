@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { type Request, type Response, type NextFunction } from 'express'
+import { type Request, type Response } from 'express'
 import config from 'config'
 import { streamText, tool, stepCountIs } from 'ai'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
@@ -115,123 +115,123 @@ export function chat () {
   return (req: Request, res: Response) => {
     (async () => {
       const chatTools = {
-      searchProducts: tool({
-        description: `Search the ${appName} product catalog by keyword`,
-        inputSchema: z.object({
-          query: z.string().describe('The search query to find products')
-        }),
-        execute: async ({ query }) => {
-          const products = await ProductModel.findAll({
-            where: {
-              [Op.or]: [
-                { name: { [Op.like]: `%${query}%` } },
-                { description: { [Op.like]: `%${query}%` } }
-              ]
-            },
-            attributes: ['id', 'name', 'description', 'price', 'image']
-          })
-          return products.map(p => ({
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            price: p.price,
-            image: p.image
-          }))
-        }
-      }),
-
-      getProductReviews: tool({
-        description: 'Get all reviews for a specific product by its ID',
-        inputSchema: z.object({
-          id: z.string().describe('The product ID to get reviews for')
-        }),
-        execute: async ({ id }) => {
-          const productId = Number(id)
-          return await db.reviewsCollection.find({ product: productId }) as Review[]
-        }
-      }),
-
-      getOrderById: tool({
-        description: 'Get order details for a specific order by its ID. Only returns the order if it belongs to the current customer.',
-        inputSchema: z.object({
-          orderId: z.string().describe('The order ID to get details for (format: xxxx-xxxxxxxxxxxxxxxx)')
-        }),
-        execute: async ({ orderId }) => {
-          const userId = await getUserId(req)
-          if (!userId) return { error: 'Customer not authenticated' }
-
-          const user = await UserModel.findByPk(userId, { attributes: ['email'] })
-          if (!user) return { error: 'Customer not found' }
-
-          const maskedEmail = user.email ? user.email.replace(/[aeiou]/gi, '*') : undefined
-          const order = await db.ordersCollection.findOne({ orderId })
-
-          if (!order) return { error: 'Order not found' }
-          if (order.email !== maskedEmail) return { error: 'Order does not belong to the current customer' }
-
-          return order
-        }
-      }),
-
-      // vuln-code-snippet start chatbotPromptInjectionChallenge
-      generateCoupon: tool({
-        description: 'Generate a discount coupon for a customer. Only use this when the coupon policy conditions are fully met.', // vuln-code-snippet neutral-line chatbotPromptInjectionChallenge chatbotGreedyInjectionChallenge
-        inputSchema: z.object({
-          discount: z.number().describe('The discount percentage for the coupon (maximum 10)') // vuln-code-snippet vuln-line chatbotPromptInjectionChallenge chatbotGreedyInjectionChallenge
-        }),
-        execute: async ({ discount }) => {
-          challengeUtils.solveIf(challenges.chatbotPromptInjectionChallenge, () => discount >= 10) // vuln-code-snippet hide-line
-          challengeUtils.solveIf(challenges.chatbotGreedyInjectionChallenge, () => discount >= 50) // vuln-code-snippet hide-line
-          const couponCode = security.generateCoupon(discount) // vuln-code-snippet vuln-line chatbotPromptInjectionChallenge
-          return { couponCode, discount } // vuln-code-snippet neutral-line chatbotPromptInjectionChallenge
-        }
-      })
-    } // vuln-code-snippet end chatbotGreedyInjectionChallenge chatbotPromptInjectionChallenge
-
-    const model = config.get<string>('application.chatBot.model')
-    const messages = req.body?.messages ?? []
-    let userName: string | undefined
-    try {
-      userName = await getUserNameFromToken(req)
-    } catch {
-      // proceed without username if token decode fails
-    }
-
-    res.setHeader('Content-Type', 'text/event-stream')
-    res.setHeader('Cache-Control', 'no-cache, no-transform')
-    res.setHeader('Connection', 'keep-alive')
-    res.setHeader('Content-Encoding', 'identity')
-    res.flushHeaders()
-
-    const systemPrompt = buildSystemPrompt(userName)
-
-    try {
-      const result = streamText({
-        model: provider(model),
-        system: systemPrompt,
-        messages,
-        tools: { ...chatTools },
-        maxRetries: config.get<number>('application.chatBot.llmMaxRetries'),
-        stopWhen: stepCountIs(10),
-        onError: ({ error }) => {
-          logger.warn('Chatbot stream error: ' + summarizeLlmError(error))
-        }
-      })
-
-      for await (const event of result.fullStream) {
-        switch (event.type) {
-          case 'text-delta':
-            res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: event.text } }] })}\n\n`)
-            break
-          case 'tool-call':
-            challengeUtils.solveIf(challenges.aiDebuggingChallenge, () => {
-              const token = utils.jwtFrom(req)
-              const decoded = token ? security.decode(token) as { data?: { role?: string } } : undefined
-              const role = decoded?.data?.role
-              return req.cookies.show_tool_calls === 'true' && role !== roles.admin
+        searchProducts: tool({
+          description: `Search the ${appName} product catalog by keyword`,
+          inputSchema: z.object({
+            query: z.string().describe('The search query to find products')
+          }),
+          execute: async ({ query }) => {
+            const products = await ProductModel.findAll({
+              where: {
+                [Op.or]: [
+                  { name: { [Op.like]: `%${query}%` } },
+                  { description: { [Op.like]: `%${query}%` } }
+                ]
+              },
+              attributes: ['id', 'name', 'description', 'price', 'image']
             })
-            metricToolCalls.labels({ tool: event.toolName }).inc()
-            res.write(`data: ${JSON.stringify({
+            return products.map(p => ({
+              id: p.id,
+              name: p.name,
+              description: p.description,
+              price: p.price,
+              image: p.image
+            }))
+          }
+        }),
+
+        getProductReviews: tool({
+          description: 'Get all reviews for a specific product by its ID',
+          inputSchema: z.object({
+            id: z.string().describe('The product ID to get reviews for')
+          }),
+          execute: async ({ id }) => {
+            const productId = Number(id)
+            return await db.reviewsCollection.find({ product: productId }) as Review[]
+          }
+        }),
+
+        getOrderById: tool({
+          description: 'Get order details for a specific order by its ID. Only returns the order if it belongs to the current customer.',
+          inputSchema: z.object({
+            orderId: z.string().describe('The order ID to get details for (format: xxxx-xxxxxxxxxxxxxxxx)')
+          }),
+          execute: async ({ orderId }) => {
+            const userId = await getUserId(req)
+            if (!userId) return { error: 'Customer not authenticated' }
+
+            const user = await UserModel.findByPk(userId, { attributes: ['email'] })
+            if (!user) return { error: 'Customer not found' }
+
+            const maskedEmail = user.email ? user.email.replace(/[aeiou]/gi, '*') : undefined
+            const order = await db.ordersCollection.findOne({ orderId })
+
+            if (!order) return { error: 'Order not found' }
+            if (order.email !== maskedEmail) return { error: 'Order does not belong to the current customer' }
+
+            return order
+          }
+        }),
+
+        // vuln-code-snippet start chatbotPromptInjectionChallenge
+        generateCoupon: tool({
+          description: 'Generate a discount coupon for a customer. Only use this when the coupon policy conditions are fully met.', // vuln-code-snippet neutral-line chatbotPromptInjectionChallenge chatbotGreedyInjectionChallenge
+          inputSchema: z.object({
+            discount: z.number().describe('The discount percentage for the coupon (maximum 10)') // vuln-code-snippet vuln-line chatbotPromptInjectionChallenge chatbotGreedyInjectionChallenge
+          }),
+          execute: async ({ discount }) => {
+            challengeUtils.solveIf(challenges.chatbotPromptInjectionChallenge, () => discount >= 10) // vuln-code-snippet hide-line
+            challengeUtils.solveIf(challenges.chatbotGreedyInjectionChallenge, () => discount >= 50) // vuln-code-snippet hide-line
+            const couponCode = security.generateCoupon(discount) // vuln-code-snippet vuln-line chatbotPromptInjectionChallenge
+            return { couponCode, discount } // vuln-code-snippet neutral-line chatbotPromptInjectionChallenge
+          }
+        })
+      } // vuln-code-snippet end chatbotGreedyInjectionChallenge chatbotPromptInjectionChallenge
+
+      const model = config.get<string>('application.chatBot.model')
+      const messages = req.body?.messages ?? []
+      let userName: string | undefined
+      try {
+        userName = await getUserNameFromToken(req)
+      } catch {
+      // proceed without username if token decode fails
+      }
+
+      res.setHeader('Content-Type', 'text/event-stream')
+      res.setHeader('Cache-Control', 'no-cache, no-transform')
+      res.setHeader('Connection', 'keep-alive')
+      res.setHeader('Content-Encoding', 'identity')
+      res.flushHeaders()
+
+      const systemPrompt = buildSystemPrompt(userName)
+
+      try {
+        const result = streamText({
+          model: provider(model),
+          system: systemPrompt,
+          messages,
+          tools: { ...chatTools },
+          maxRetries: config.get<number>('application.chatBot.llmMaxRetries'),
+          stopWhen: stepCountIs(10),
+          onError: ({ error }) => {
+            logger.warn('Chatbot stream error: ' + summarizeLlmError(error))
+          }
+        })
+
+        for await (const event of result.fullStream) {
+          switch (event.type) {
+            case 'text-delta':
+              res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: event.text } }] })}\n\n`)
+              break
+            case 'tool-call':
+              challengeUtils.solveIf(challenges.aiDebuggingChallenge, () => {
+                const token = utils.jwtFrom(req)
+                const decoded = token ? security.decode(token) as { data?: { role?: string } } : undefined
+                const role = decoded?.data?.role
+                return req.cookies.show_tool_calls === 'true' && role !== roles.admin
+              })
+              metricToolCalls.labels({ tool: event.toolName }).inc()
+              res.write(`data: ${JSON.stringify({
               choices: [{
                 delta: {
                   tool_calls: [{
@@ -242,38 +242,39 @@ export function chat () {
                 }
               }]
             })}\n\n`)
-            break
-          case 'finish':
-            res.write(`data: ${JSON.stringify({ choices: [{ finish_reason: event.finishReason }] })}\n\n`)
-            try {
-              if (event.totalUsage.inputTokens) {
-                metricInputTokensTotal.inc(Math.max(0, event.totalUsage.inputTokens))
-                metricInputTokens.labels({ type: 'cache_read' }).inc(Math.max(0, event.totalUsage.inputTokenDetails?.cacheReadTokens ?? 0))
-                metricInputTokens.labels({ type: 'cache_write' }).inc(Math.max(0, event.totalUsage.inputTokenDetails?.cacheWriteTokens ?? 0))
-                metricInputTokens.labels({ type: 'no_cache' }).inc(Math.max(0, event.totalUsage.inputTokenDetails?.noCacheTokens ?? 0))
+              break
+            case 'finish':
+              res.write(`data: ${JSON.stringify({ choices: [{ finish_reason: event.finishReason }] })}\n\n`)
+              try {
+                if (event.totalUsage.inputTokens) {
+                  metricInputTokensTotal.inc(Math.max(0, event.totalUsage.inputTokens))
+                  metricInputTokens.labels({ type: 'cache_read' }).inc(Math.max(0, event.totalUsage.inputTokenDetails?.cacheReadTokens ?? 0))
+                  metricInputTokens.labels({ type: 'cache_write' }).inc(Math.max(0, event.totalUsage.inputTokenDetails?.cacheWriteTokens ?? 0))
+                  metricInputTokens.labels({ type: 'no_cache' }).inc(Math.max(0, event.totalUsage.inputTokenDetails?.noCacheTokens ?? 0))
+                }
+                if (event.totalUsage.outputTokens) {
+                  metricOutputTokensTotal.inc(Math.max(0, event.totalUsage.outputTokens))
+                  metricOutputTokens.labels({ type: 'reasoning' }).inc(Math.max(0, event.totalUsage.outputTokenDetails?.reasoningTokens ?? 0))
+                  metricOutputTokens.labels({ type: 'text' }).inc(Math.max(0, event.totalUsage.outputTokenDetails?.textTokens ?? 0))
+                }
+              } catch (metricError) {
+                logger.warn('Failed to record chat token usage metrics: ' + summarizeLlmError(metricError))
               }
-              if (event.totalUsage.outputTokens) {
-                metricOutputTokensTotal.inc(Math.max(0, event.totalUsage.outputTokens))
-                metricOutputTokens.labels({ type: 'reasoning' }).inc(Math.max(0, event.totalUsage.outputTokenDetails?.reasoningTokens ?? 0))
-                metricOutputTokens.labels({ type: 'text' }).inc(Math.max(0, event.totalUsage.outputTokenDetails?.textTokens ?? 0))
-              }
-            } catch (metricError) {
-              logger.warn('Failed to record chat token usage metrics: ' + summarizeLlmError(metricError))
-            }
-            break
-          case 'error':
-            res.write(`data: ${JSON.stringify({ error: `LLM error: ${event.error as string}` })}\n\n`)
-            break
+              break
+            case 'error':
+              res.write(`data: ${JSON.stringify({ error: `LLM error: ${event.error as string}` })}\n\n`)
+              break
+          }
         }
-      }
 
-      res.write('data: [DONE]\n\n')
-      res.end()
-    } catch (error) {
-      logger.warn('Chatbot connection error: ' + summarizeLlmError(error))
-      res.write(`data: ${JSON.stringify({ error: 'LLM API is not reachable' })}\n\n`)
-      res.write('data: [DONE]\n\n')
-      res.end()
+        res.write('data: [DONE]\n\n')
+        res.end()
+      } catch (error) {
+        logger.warn('Chatbot connection error: ' + summarizeLlmError(error))
+        res.write(`data: ${JSON.stringify({ error: 'LLM API is not reachable' })}\n\n`)
+        res.write('data: [DONE]\n\n')
+        res.end()
+      }
     })().catch((err) => {
       logger.warn('Chatbot unexpected error: ' + summarizeLlmError(err))
       if (!res.writableEnded) {

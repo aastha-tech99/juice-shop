@@ -43,27 +43,27 @@ const entities = new Entities()
 export default (): Promise<void> => {
   return (async () => {
     const creators = [
-    createSecurityQuestions,
-    createUsers,
-    createChallenges,
-    createRandomFakeUsers,
-    createProducts,
-    createBaskets,
-    createBasketItems,
-    createAnonymousFeedback,
-    createComplaints,
-    createRecycleItem,
-    createOrders,
-    createQuantity,
-    createWallet,
-    createDeliveryMethods,
-    createMemories,
-    prepareFilesystem
-  ]
+      createSecurityQuestions,
+      createUsers,
+      createChallenges,
+      createRandomFakeUsers,
+      createProducts,
+      createBaskets,
+      createBasketItems,
+      createAnonymousFeedback,
+      createComplaints,
+      createRecycleItem,
+      createOrders,
+      createQuantity,
+      createWallet,
+      createDeliveryMethods,
+      createMemories,
+      prepareFilesystem
+    ]
 
-  for (const creator of creators) {
-    await creator()
-  }
+    for (const creator of creators) {
+      await creator()
+    }
   })()
 }
 
@@ -191,29 +191,29 @@ async function createUsers () {
 
     await Promise.all(
       users.map(async ({ username, email, password, customDomain, key, role, deletedFlag, profileImage, securityQuestion, feedback, address, card, totpSecret, lastLoginIp = '' }) => {
-      try {
-        const completeEmail = customDomain ? email : `${email}@${config.get<string>('application.domain')}`
-        const user = await UserModel.create({
-          username,
-          email: completeEmail,
-          password,
-          role,
-          deluxeToken: role === security.roles.deluxe ? security.deluxeToken(completeEmail) : '',
-          profileImage: `assets/public/images/uploads/${profileImage ?? (role === security.roles.admin ? 'defaultAdmin.png' : 'default.svg')}`,
-          totpSecret,
-          lastLoginIp
-        })
-        datacache.users[key] = user
-        if (securityQuestion != null) await createSecurityAnswer(user.id, securityQuestion.id, securityQuestion.answer)
-        if (feedback != null) await createFeedback(user.id, feedback.comment, feedback.rating, user.email)
-        if (deletedFlag) await deleteUser(user.id)
-        if (address != null) await createAddresses(user.id, address)
-        if (card != null) await createCards(user.id, card)
-      } catch (err) {
-        logger.error(`Could not insert User ${key}: ${utils.getErrorMessage(err)}`)
-      }
-    })
-  )
+        try {
+          const completeEmail = customDomain ? email : `${email}@${config.get<string>('application.domain')}`
+          const user = await UserModel.create({
+            username,
+            email: completeEmail,
+            password,
+            role,
+            deluxeToken: role === security.roles.deluxe ? security.deluxeToken(completeEmail) : '',
+            profileImage: `assets/public/images/uploads/${profileImage ?? (role === security.roles.admin ? 'defaultAdmin.png' : 'default.svg')}`,
+            totpSecret,
+            lastLoginIp
+          })
+          datacache.users[key] = user
+          if (securityQuestion != null) await createSecurityAnswer(user.id, securityQuestion.id, securityQuestion.answer)
+          if (feedback != null) await createFeedback(user.id, feedback.comment, feedback.rating, user.email)
+          if (deletedFlag) await deleteUser(user.id)
+          if (address != null) await createAddresses(user.id, address)
+          if (card != null) await createCards(user.id, card)
+        } catch (err) {
+          logger.error(`Could not insert User ${key}: ${utils.getErrorMessage(err)}`)
+        }
+      })
+    )
   } catch (err) {
     logger.error(`Could not create users: ${utils.getErrorMessage(err)}`)
   }

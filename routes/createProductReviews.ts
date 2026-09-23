@@ -15,22 +15,23 @@ export function createProductReviews () {
   return (req: Request, res: Response) => {
     (async () => {
       const user = security.authenticatedUsers.from(req)
-    challengeUtils.solveIf(
-      challenges.forgedReviewChallenge,
-      () => user?.data?.email !== req.body.author
-    )
+      challengeUtils.solveIf(
+        challenges.forgedReviewChallenge,
+        () => user?.data?.email !== req.body.author
+      )
 
-    try {
-      await reviewsCollection.insert({
-        product: req.params.id,
-        message: req.body.message,
-        author: req.body.author,
-        likesCount: 0,
-        likedBy: []
-      })
-      return res.status(201).json({ status: 'success' })
-    } catch (err: unknown) {
-      res.status(500).json(utils.getErrorMessage(err))
+      try {
+        await reviewsCollection.insert({
+          product: req.params.id,
+          message: req.body.message,
+          author: req.body.author,
+          likesCount: 0,
+          likedBy: []
+        })
+        return res.status(201).json({ status: 'success' })
+      } catch (err: unknown) {
+        res.status(500).json(utils.getErrorMessage(err))
+      }
     })().catch(() => { res.status(500).json({ error: 'Unexpected error' }) })
   }
 }

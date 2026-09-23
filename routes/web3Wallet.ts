@@ -13,28 +13,29 @@ let isEventListenerCreated = false
 export function contractExploitListener () {
   return (req: Request, res: Response) => {
     (async () => {
-      const metamaskAddress = req.body.walletAddress
-    walletsConnected.add(metamaskAddress)
-    try {
-      if (!isEventListenerCreated) {
-        const { WebSocketProvider, Contract } = await import('ethers')
-        const provider = new WebSocketProvider(`wss://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY ?? ''}`)
-        provider.websocket.onerror = (error: any) => {
-          logger.error(`WebSocket error (Contract Exploit Listener): ${error.message || error}`)
-          isEventListenerCreated = false
-        }
-        const contract = new Contract(web3WalletAddress, web3WalletABI, provider as any)
-        void contract.on('ContractExploited', (exploiter: string) => {
-          if (walletsConnected.has(exploiter)) {
-            walletsConnected.delete(exploiter)
-            challengeUtils.solveIf(challenges.web3WalletChallenge, () => true)
+      try {
+        const metamaskAddress = req.body.walletAddress
+        walletsConnected.add(metamaskAddress)
+        if (!isEventListenerCreated) {
+          const { WebSocketProvider, Contract } = await import('ethers')
+          const provider = new WebSocketProvider(`wss://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY ?? ''}`)
+          provider.websocket.onerror = (error: any) => {
+            logger.error(`WebSocket error (Contract Exploit Listener): ${error.message || error}`)
+            isEventListenerCreated = false
           }
-        })
-        isEventListenerCreated = true
+          const contract = new Contract(web3WalletAddress, web3WalletABI, provider as any)
+          void contract.on('ContractExploited', (exploiter: string) => {
+            if (walletsConnected.has(exploiter)) {
+              walletsConnected.delete(exploiter)
+              challengeUtils.solveIf(challenges.web3WalletChallenge, () => true)
+            }
+          })
+          isEventListenerCreated = true
+        }
+        res.status(200).json({ success: true, message: 'Event Listener Created' })
+      } catch (error) {
+        res.status(500).json(utils.getErrorMessage(error))
       }
-      res.status(200).json({ success: true, message: 'Event Listener Created' })
-    } catch (error) {
-      res.status(500).json(utils.getErrorMessage(error))
     })().catch(() => { res.status(500).json({ error: 'Unexpected error' }) })
   }
 }

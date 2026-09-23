@@ -29,27 +29,27 @@ const validateConfig = ({ products, memories, exitOnFailure = true }: { products
     memories = memories ?? config.get('memories') ?? []
 
     let success = true
-  success = checkConfigSchema() && success
-  success = checkMinimumRequiredNumberOfProducts(products) && success
-  success = checkUnambiguousMandatorySpecialProducts(products) && success
-  success = checkUniqueSpecialOnProducts(products) && success
-  success = checkNecessaryExtraKeysOnSpecialProducts(products) && success
-  success = checkMinimumRequiredNumberOfMemories(memories) && success
-  success = checkUnambiguousMandatorySpecialMemories(memories) && success
-  success = checkUniqueSpecialOnMemories(memories) && success
-  success = checkSpecialMemoriesHaveNoUserAssociated(memories) && success
-  success = checkForIllogicalCombos() && success
-  if (success) {
-    logger.info(`Configuration ${colors.bold(process.env.NODE_ENV ?? 'default')} validated (${colors.green('SUCCESS')})`)
-  } else {
-    logger.warn(`Configuration ${colors.bold(process.env.NODE_ENV ?? 'default')} validated (${colors.red('ERROR')})`)
-    logger.warn(`Visit ${colors.yellow('https://pwning.owasp-juice.shop/companion-guide/latest/part4/customization.html#_yaml_configuration_file')} for the configuration schema definition.`)
-    if (exitOnFailure) {
-      logger.error(colors.red('Exiting due to configuration errors!'))
-      process.exit(1)
+    success = checkConfigSchema() && success
+    success = checkMinimumRequiredNumberOfProducts(products) && success
+    success = checkUnambiguousMandatorySpecialProducts(products) && success
+    success = checkUniqueSpecialOnProducts(products) && success
+    success = checkNecessaryExtraKeysOnSpecialProducts(products) && success
+    success = checkMinimumRequiredNumberOfMemories(memories) && success
+    success = checkUnambiguousMandatorySpecialMemories(memories) && success
+    success = checkUniqueSpecialOnMemories(memories) && success
+    success = checkSpecialMemoriesHaveNoUserAssociated(memories) && success
+    success = checkForIllogicalCombos() && success
+    if (success) {
+      logger.info(`Configuration ${colors.bold(process.env.NODE_ENV ?? 'default')} validated (${colors.green('SUCCESS')})`)
+    } else {
+      logger.warn(`Configuration ${colors.bold(process.env.NODE_ENV ?? 'default')} validated (${colors.red('ERROR')})`)
+      logger.warn(`Visit ${colors.yellow('https://pwning.owasp-juice.shop/companion-guide/latest/part4/customization.html#_yaml_configuration_file')} for the configuration schema definition.`)
+      if (exitOnFailure) {
+        logger.error(colors.red('Exiting due to configuration errors!'))
+        process.exit(1)
+      }
     }
-  }
-  return success
+    return success
   })().catch((err) => {
     logger.warn('Configuration validation error: ' + (err instanceof Error ? err.message : String(err)))
     return false

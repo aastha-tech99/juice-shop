@@ -20,37 +20,38 @@ export function addBasketItem () {
   return (req: Request, res: Response, next: NextFunction) => {
     (async () => {
       const result = utils.parseJsonCustom((req as RequestWithRawBody).rawBody)
-    const productIds = []
-    const basketIds = []
-    const quantities = []
+      const productIds = []
+      const basketIds = []
+      const quantities = []
 
-    for (let i = 0; i < result.length; i++) {
-      if (result[i].key === 'ProductId') {
-        productIds.push(result[i].value)
-      } else if (result[i].key === 'BasketId') {
-        basketIds.push(result[i].value)
-      } else if (result[i].key === 'quantity') {
-        quantities.push(result[i].value)
+      for (let i = 0; i < result.length; i++) {
+        if (result[i].key === 'ProductId') {
+          productIds.push(result[i].value)
+        } else if (result[i].key === 'BasketId') {
+          basketIds.push(result[i].value)
+        } else if (result[i].key === 'quantity') {
+          quantities.push(result[i].value)
+        }
       }
-    }
 
-    const user = security.authenticatedUsers.from(req)
-    if (user && basketIds[0] && basketIds[0] !== 'undefined' && Number(user.bid) != Number(basketIds[0])) { // eslint-disable-line eqeqeq
-      res.status(401).send('{\'error\' : \'Invalid BasketId\'}')
-    } else {
-      const basketItem = {
-        ProductId: productIds[productIds.length - 1],
-        BasketId: basketIds[basketIds.length - 1],
-        quantity: quantities[quantities.length - 1]
-      }
-      challengeUtils.solveIf(challenges.basketManipulateChallenge, () => { return user && basketItem.BasketId && basketItem.BasketId !== 'undefined' && user.bid != basketItem.BasketId }) // eslint-disable-line eqeqeq
+      const user = security.authenticatedUsers.from(req)
+      if (user && basketIds[0] && basketIds[0] !== 'undefined' && Number(user.bid) != Number(basketIds[0])) { // eslint-disable-line eqeqeq
+        res.status(401).send('{\'error\' : \'Invalid BasketId\'}')
+      } else {
+        const basketItem = {
+          ProductId: productIds[productIds.length - 1],
+          BasketId: basketIds[basketIds.length - 1],
+          quantity: quantities[quantities.length - 1]
+        }
+        challengeUtils.solveIf(challenges.basketManipulateChallenge, () => { return user && basketItem.BasketId && basketItem.BasketId !== 'undefined' && user.bid != basketItem.BasketId }) // eslint-disable-line eqeqeq
 
-      const basketItemInstance = BasketItemModel.build(basketItem)
-      try {
-        const addedBasketItem = await basketItemInstance.save()
-        res.json({ status: 'success', data: addedBasketItem })
-      } catch (error) {
-        next(error)
+        const basketItemInstance = BasketItemModel.build(basketItem)
+        try {
+          const addedBasketItem = await basketItemInstance.save()
+          res.json({ status: 'success', data: addedBasketItem })
+        } catch (error) {
+          next(error)
+        }
       }
     })().catch(next)
   }
@@ -66,21 +67,23 @@ export function quantityCheckBeforeBasketItemAddition () {
 export function quantityCheckBeforeBasketItemUpdate () {
   return (req: Request, res: Response, next: NextFunction) => {
     (async () => {
-      const item = await BasketItemModel.findOne({ where: { id: req.params.id } })
-      const user = security.authenticatedUsers.from(req)
-      challengeUtils.solveIf(challenges.basketManipulateChallenge, () => { return user && req.body.BasketId && user.bid != req.body.BasketId }) // eslint-disable-line eqeqeq
-      if (req.body.quantity) {
-        if (item == null) {
-          throw new Error('No such item found!')
+      try {
+        const item = await BasketItemModel.findOne({ where: { id: req.params.id } })
+        const user = security.authenticatedUsers.from(req)
+        challengeUtils.solveIf(challenges.basketManipulateChallenge, () => { return user && req.body.BasketId && user.bid != req.body.BasketId }) // eslint-disable-line eqeqeq
+        if (req.body.quantity) {
+          if (item == null) {
+            throw new Error('No such item found!')
+          }
+          void quantityCheck(req, res, next, item.ProductId, req.body.quantity).catch((error: Error) => {
+            next(error)
+          })
+        } else {
+          next()
         }
-        void quantityCheck(req, res, next, item.ProductId, req.body.quantity).catch((error: Error) => {
-          next(error)
-        })
-      } else {
-        next()
+      } catch (error) {
+        next(error)
       }
-    } catch (error) {
-      next(error)
     })().catch(next)
   }
 }
