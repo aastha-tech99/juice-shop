@@ -69,3 +69,8 @@ variable "efs_encrypted" {
   type        = bool
   default     = true
 }
+
+variable "lb_access_logs_bucket" {
+  description = "S3 bucket name for ALB access logs"
+  type        = string
+}

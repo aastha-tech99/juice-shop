@@ -126,6 +126,12 @@ resource "aws_lb" "juice_shop" {
   security_groups    = [aws_security_group.alb.id]
   subnets            = aws_subnet.public[*].id
 
+  access_logs {
+    bucket  = var.lb_access_logs_bucket
+    prefix  = var.project_name
+    enabled = true
+  }
+
   tags = {
     Project     = var.project_name
     Environment = var.environment
