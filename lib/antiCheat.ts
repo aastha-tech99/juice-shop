@@ -193,8 +193,15 @@ function loadSourceFile (relativePath: string): string {
     return sourceFileCache.get(relativePath)!
   }
   try {
-    const resolvedPath = path.resolve(relativePath)
+    if (path.isAbsolute(relativePath)) {
+      return ''
+    }
+    const segments = relativePath.split(/[/\\]/)
+    if (segments.includes('..') || segments.includes('.')) {
+      return ''
+    }
     const projectRoot = path.resolve('.')
+    const resolvedPath = path.join(projectRoot, relativePath)
     if (!resolvedPath.startsWith(projectRoot + path.sep) && resolvedPath !== projectRoot) {
       return ''
     }
