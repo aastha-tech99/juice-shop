@@ -2,6 +2,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import logger from './logger'
 
+function escapeRegExp (str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export const SNIPPET_PATHS = Object.freeze(['./server.ts', './routes', './lib', './data', './data/static/web3-snippets', './frontend/src/app', './models', './infrastructure'])
 
 interface FileMatch {
@@ -73,9 +77,9 @@ export function getCodingChallengeFromFileContent (source: string, challengeKey:
   const vulnLines = []
   const neutralLines = []
   for (let i = 0; i < lines.length; i++) {
-    if (new RegExp(`vuln-code-snippet vuln-line.*${challengeKey}`).exec(lines[i]) != null) {
+    if (new RegExp(`vuln-code-snippet vuln-line.*${escapeRegExp(challengeKey)}`).exec(lines[i]) != null) {
       vulnLines.push(i + 1)
-    } else if (new RegExp(`vuln-code-snippet neutral-line.*${challengeKey}`).exec(lines[i]) != null) {
+    } else if (new RegExp(`vuln-code-snippet neutral-line.*${escapeRegExp(challengeKey)}`).exec(lines[i]) != null) {
       neutralLines.push(i + 1)
     }
   }
