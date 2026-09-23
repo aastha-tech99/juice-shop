@@ -54,7 +54,7 @@ export class AccountingComponent implements AfterViewInit, OnDestroy {
   @ViewChild('paginator', { static: true }) paginator: MatPaginator
   private productSubscription: Subscription
   private quantitySubscription: Subscription
-  public quantityMap: Map<any, any> = new Map()
+  public quantityMap = new Map<any, any>()
 
   ngAfterViewInit () {
     this.loadQuantity()

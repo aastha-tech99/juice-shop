@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* eslint-disable @typescript-eslint/prefer-for-of */
 import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core'
 import { BasketService } from '../Services/basket.service'
 import { ProductService } from '../Services/product.service'
