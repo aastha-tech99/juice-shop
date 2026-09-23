@@ -42,7 +42,8 @@ ngAfterViewInit () {
   }
 
   encodeProductDescription (tableData: any[]) {
+    const entityMap = new Map([['&', '&amp;'], ['<', '&lt;'], ['>', '&gt;'], ['"', '&quot;'], ["'", '&#39;']])
     for (const item of tableData) {
-      item.description = item.description.replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+      item.description = item.description.replace(/[&<>"']/g, (ch: string) => entityMap.get(ch) ?? ch)
     }
   }
