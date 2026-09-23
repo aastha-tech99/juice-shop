@@ -263,13 +263,22 @@ void describe('insecurity', () => {
       }
     })
 
-    void it('returns true for URLs containing allowed URLs', () => {
+    void it('returns true for sub-paths of allowed URLs', () => {
       assert.equal(security.isRedirectAllowed('https://github.com/juice-shop/juice-shop/issues'), true)
     })
 
     void it('returns false for disallowed URLs', () => {
       assert.equal(security.isRedirectAllowed('https://google.com'), false)
       assert.equal(security.isRedirectAllowed('https://owasp.org'), false)
+    })
+
+    void it('returns false for URLs that embed allowed URLs in query params', () => {
+      assert.equal(security.isRedirectAllowed('http://evil.com?https://github.com/juice-shop/juice-shop'), false)
+    })
+
+    void it('returns false for invalid URL formats', () => {
+      assert.equal(security.isRedirectAllowed('not-a-url'), false)
+      assert.equal(security.isRedirectAllowed(''), false)
     })
   })
 
