@@ -61,6 +61,16 @@ void describe('fileServer', () => {
     assert.ok(next.mock.calls[0].arguments[0] instanceof Error)
   })
 
+  void it('should raise error for path traversal without slashes', () => {
+    req.params.file = '..%00.md'
+
+    servePublicFiles()(req, res, next)
+
+    assert.equal(res.sendFile.mock.calls.length, 0)
+    assert.equal(next.mock.calls.length, 1)
+    assert.ok(next.mock.calls[0].arguments[0] instanceof Error)
+  })
+
   void it('should raise error for disallowed file type', () => {
     req.params.file = 'nice.try'
 
