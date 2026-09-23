@@ -60,7 +60,7 @@ export class LoginComponent implements OnInit {
   public oauthUnavailable = true
   public redirectUri = ''
   public testingUsername = 'testing@juice-sh.op'
-  public testingPassword = 'IamUsedForTesting'
+  public testingPassword = 'IamUsedForTesting' // Intentional demo credential for exposedCredentialsChallenge — not a real secret
 
   ngOnInit (): void {
     const email = localStorage.getItem('email')
