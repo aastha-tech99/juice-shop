@@ -8,8 +8,10 @@ import assert from 'node:assert/strict'
 import request from 'supertest'
 import type { Express } from 'express'
 import { createTestApp } from './helpers/setup'
+import * as security from '../../lib/insecurity'
 
 let app: Express
+const authHeader = { Authorization: 'Bearer ' + security.authorize() }
 
 before(async () => {
   const result = await createTestApp()
@@ -21,12 +23,19 @@ function responseText (res: request.Response): string {
 }
 
 void describe('/ftp', () => {
-  void it('GET serves a directory listing', async () => {
+  void it('GET serves a directory listing for authenticated users', async () => {
     const res = await request(app)
       .get('/ftp')
+      .set(authHeader)
     assert.equal(res.status, 200)
     assert.ok(res.headers['content-type']?.includes('text/html'))
     assert.ok(res.text.includes('<title>listing directory /ftp</title>'))
+  })
+
+  void it('GET does not serve a directory listing for unauthenticated users', async () => {
+    const res = await request(app)
+      .get('/ftp')
+    assert.notEqual(res.status, 200)
   })
 
   void it('GET a non-existing Markdown file in /ftp will return a 404 error', async () => {

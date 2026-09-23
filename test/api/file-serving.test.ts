@@ -11,8 +11,10 @@ import config from 'config'
 import { createTestApp } from './helpers/setup'
 import type { Product as ProductConfig } from '../../lib/config.schema'
 import * as utils from '../../lib/utils'
+import * as security from '../../lib/insecurity'
 
 let app: Express
+const authHeader = { Authorization: 'Bearer ' + security.authorize() }
 
 let blueprint: string
 
@@ -132,12 +134,19 @@ void describe('/public/images/padding', () => {
 })
 
 void describe('/encryptionkeys', () => {
-  void it('GET serves a directory listing', async () => {
+  void it('GET serves a directory listing for authenticated users', async () => {
     const res = await request(app)
       .get('/encryptionkeys')
+      .set(authHeader)
     assert.equal(res.status, 200)
     assert.ok(res.headers['content-type']?.includes('text/html'))
     assert.ok(res.text.includes('<title>listing directory /encryptionkeys</title>'))
+  })
+
+  void it('GET does not serve a directory listing for unauthenticated users', async () => {
+    const res = await request(app)
+      .get('/encryptionkeys')
+    assert.notEqual(res.status, 200)
   })
 
   void it('GET a non-existing file in will return a 404 error', async () => {
