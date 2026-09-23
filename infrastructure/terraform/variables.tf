@@ -69,6 +69,11 @@ variable "elb_access_logs_bucket" {
   type        = string
 }
 
+variable "cloudwatch_kms_key_arn" {
+  description = "ARN of the KMS key for encrypting CloudWatch Log Group data"
+  type        = string
+}
+
 variable "efs_encrypted" {
   description = "Enable encryption at rest for EFS"
   type        = bool
