@@ -27,7 +27,13 @@ function loadArchiver () {
       throw new Error('npm root -g returned an unexpected non-absolute path')
     }
     const resolvedRoot = path.resolve(globalRoot)
-    return require(path.join(resolvedRoot, 'archiver'))
+    const archiverDir = path.join(resolvedRoot, 'archiver')
+    if (!archiverDir.startsWith(resolvedRoot + path.sep)) {
+      throw new Error('Invalid module path')
+    }
+    // Use createRequire from the archiver directory with a static string to avoid eval injection
+    const archiverRequire = createRequire(path.join(archiverDir, 'package.json'))
+    return archiverRequire('.')
   } catch {
     console.error('archiver is not installed. Run: npm install -g archiver')
     process.exit(1)
