@@ -64,6 +64,11 @@ variable "container_tag" {
   default     = "latest"
 }
 
+variable "elb_access_logs_bucket" {
+  description = "S3 bucket name for ELB access logs"
+  type        = string
+}
+
 variable "efs_encrypted" {
   description = "Enable encryption at rest for EFS"
   type        = bool
