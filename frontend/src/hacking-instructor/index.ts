@@ -82,6 +82,23 @@ function createElement (tag: string, styles: Record<string, string>, attributes:
   return element
 }
 
+function sanitizeHtml (html: string): string {
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  doc.querySelectorAll('script, iframe, object, embed, form, base').forEach(el => el.remove())
+  doc.querySelectorAll('*').forEach(el => {
+    for (const attr of Array.from(el.attributes)) {
+      if (
+        attr.name.startsWith('on') ||
+        (attr.name === 'href' && attr.value.trimStart().startsWith('javascript:')) ||
+        (attr.name === 'src' && attr.value.trimStart().startsWith('javascript:'))
+      ) {
+        el.removeAttribute(attr.name)
+      }
+    }
+  })
+  return doc.body.innerHTML
+}
+
 function loadHint (hint: ChallengeHint): HTMLElement {
   const target = document.querySelector(hint.fixture)
 
@@ -123,7 +140,7 @@ function loadHint (hint: ChallengeHint): HTMLElement {
   const picture = createElement('img', pictureStyles, { src: '/assets/public/images/hackingInstructor.png' })
 
   const textBox = createElement('span', { flexGrow: '2' })
-  textBox.innerHTML = snarkdown(hint.text)
+  textBox.innerHTML = sanitizeHtml(snarkdown(hint.text))
 
   const cancelButtonStyles = {
     textDecoration: 'none',
@@ -139,7 +156,7 @@ function loadHint (hint: ChallengeHint): HTMLElement {
   }
 
   const cancelButton = createElement('button', cancelButtonStyles, { id: 'cancelButton', title: 'Cancel the tutorial' })
-  cancelButton.innerHTML = '<div>&times;</div>'
+  cancelButton.textContent = '×'
 
   elem.appendChild(picture)
   elem.appendChild(textBox)

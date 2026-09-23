@@ -128,6 +128,15 @@ export function waitForElementToGetClicked (elementSelector: string) {
   }
 }
 
+function getElementContent (el: Element): string {
+  const range = document.createRange()
+  range.selectNodeContents(el)
+  const fragment = range.cloneContents()
+  const container = document.createElement('div')
+  container.appendChild(fragment)
+  return container.innerHTML
+}
+
 export function waitForElementsInnerHtmlToBe (elementSelector: string, value: string) {
   return async () => {
     while (true) {
@@ -135,7 +144,7 @@ export function waitForElementsInnerHtmlToBe (elementSelector: string, value: st
         elementSelector
       )
 
-      if (element && element.innerHTML === value) {
+      if (element && getElementContent(element) === value) {
         break
       }
       await sleep(100)
