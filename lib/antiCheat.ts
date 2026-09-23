@@ -62,11 +62,11 @@ const challengeSourceFiles: Record<string, string[]> = {
 
 export const checkForPreSolveInteractions = () => ({ url }: Request, res: Response, next: NextFunction) => {
   preSolveInteractions.forEach((preSolveInteraction) => {
-    for (let i = 0; i < preSolveInteraction.urlFragments.length; i++) {
-      if (url.endsWith(preSolveInteraction.urlFragments[i])) {
+    preSolveInteraction.urlFragments.forEach((fragment, i) => {
+      if (url.endsWith(fragment)) {
         preSolveInteraction.interactions[i] = true
       }
-    }
+    })
   })
   next()
 }
@@ -153,8 +153,9 @@ export const totalCheatScore = () => {
 }
 
 function areTightlyCoupled (challenge: Challenge, previousChallenge: Challenge) {
-  // @ts-expect-error FIXME any type issues
-  return tightlyCoupledChallenges[challenge.key]?.indexOf(previousChallenge.key) > -1 || tightlyCoupledChallenges[previousChallenge.key]?.indexOf(challenge.key) > -1
+  const coupledToCurrent = Object.prototype.hasOwnProperty.call(tightlyCoupledChallenges, challenge.key) ? (tightlyCoupledChallenges as Record<string, string[]>)[challenge.key] : undefined
+  const coupledToPrevious = Object.prototype.hasOwnProperty.call(tightlyCoupledChallenges, previousChallenge.key) ? (tightlyCoupledChallenges as Record<string, string[]>)[previousChallenge.key] : undefined
+  return (coupledToCurrent?.indexOf(previousChallenge.key) ?? -1) > -1 || (coupledToPrevious?.indexOf(challenge.key) ?? -1) > -1
 }
 
 function isLooselyCoupledToPreviouslySolved (challenge: Challenge) {
@@ -214,7 +215,7 @@ function loadSourceFile (relativePath: string): string {
 }
 
 export function checkForSourceFileOverlap (challengeKey: string, submission: string): boolean {
-  const sourceFiles = challengeSourceFiles[challengeKey]
+  const sourceFiles = Object.prototype.hasOwnProperty.call(challengeSourceFiles, challengeKey) ? challengeSourceFiles[challengeKey] : undefined
   if (!sourceFiles || submission.length < 100) {
     return false
   }

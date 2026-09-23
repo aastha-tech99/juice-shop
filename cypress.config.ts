@@ -38,7 +38,7 @@ export default defineConfig({
         },
         GetFromMemories (property: string) {
           for (const memory of config.get<MemoryConfig[]>('memories') as any) {
-            if (memory[property]) {
+            if (Object.prototype.hasOwnProperty.call(memory, property) && memory[property]) {
               return memory[property]
             }
           }
@@ -56,8 +56,8 @@ export default defineConfig({
         },
         GetTamperingProductId () {
           const products = config.get<ProductConfig[]>('products')
-          for (let i = 0; i < products.length; i++) {
-            if (products[i].urlForProductTamperingChallenge) {
+          for (const [i, product] of products.entries()) {
+            if (product.urlForProductTamperingChallenge) {
               return i + 1
             }
           }

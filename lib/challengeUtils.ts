@@ -52,7 +52,7 @@ export const sendNotification = function (challenge: ChallengeModel, isRestore: 
   const flag = utils.ctfFlag(challenge.name)
 
   const challengeKey = challenge.key as ChallengeKey
-  const fullChallenge = challenges[challengeKey]
+  const fullChallenge = Object.prototype.hasOwnProperty.call(challenges, challengeKey) ? challenges[challengeKey] : undefined
 
   let hasCodingChallenge = false
   if (fullChallenge) {
@@ -109,7 +109,8 @@ export const findChallengeById = (challengeId: number) => {
 }
 
 export const solveFindIt = async function (key: ChallengeKey, isRestore: boolean = false) {
-  const solvedChallenge = challenges[key]
+  const solvedChallenge = Object.prototype.hasOwnProperty.call(challenges, key) ? challenges[key] : undefined
+  if (!solvedChallenge) return
   await ChallengeModel.update({ codingChallengeStatus: 1 }, { where: { key, codingChallengeStatus: { [Op.lt]: 2 } } })
   logger.info(`${isRestore ? colors.grey('Restored') : colors.green('Solved')} 'Find It' phase of coding challenge ${colors.cyan(solvedChallenge.key)} (${solvedChallenge.name})`)
   if (!isRestore) {
@@ -121,7 +122,8 @@ export const solveFindIt = async function (key: ChallengeKey, isRestore: boolean
 }
 
 export const solveFixIt = async function (key: ChallengeKey, isRestore: boolean = false) {
-  const solvedChallenge = challenges[key]
+  const solvedChallenge = Object.prototype.hasOwnProperty.call(challenges, key) ? challenges[key] : undefined
+  if (!solvedChallenge) return
   await ChallengeModel.update({ codingChallengeStatus: 2 }, { where: { key } })
   logger.info(`${isRestore ? colors.grey('Restored') : colors.green('Solved')} 'Fix It' phase of coding challenge ${colors.cyan(solvedChallenge.key)} (${solvedChallenge.name})`)
   if (!isRestore) {

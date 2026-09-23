@@ -26,8 +26,9 @@ export function captchas () {
     const secondTerm = Math.floor((Math.random() * 10) + 1)
     const thirdTerm = Math.floor((Math.random() * 10) + 1)
 
-    const firstOperator = operators[Math.floor((Math.random() * 3))]
-    const secondOperator = operators[Math.floor((Math.random() * 3))]
+    const pickRandom = <T>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)]
+    const firstOperator = pickRandom(operators)
+    const secondOperator = pickRandom(operators)
 
     const expression = firstTerm.toString() + firstOperator + secondTerm.toString() + secondOperator + thirdTerm.toString()
     const answer = safeCalculate(firstTerm, firstOperator, secondTerm, secondOperator, thirdTerm).toString()

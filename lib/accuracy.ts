@@ -6,7 +6,8 @@
 import { type ChallengeKey } from '@juice-shop/models/challenge'
 import logger from './logger'
 import colors from 'colors/safe'
-const solves: Record<string, { 'find it': boolean, 'fix it': boolean, attempts: { 'find it': number, 'fix it': number } }> = {}
+interface SolveEntry { 'find it': boolean, 'fix it': boolean, attempts: { 'find it': number, 'fix it': number } }
+const solves = new Map<string, SolveEntry>()
 
 type Phase = 'find it' | 'fix it'
 
@@ -35,40 +36,44 @@ export const totalFixItAccuracy = () => {
 }
 
 export const getFindItAttempts = (challengeKey: ChallengeKey) => {
-  return solves[challengeKey] ? solves[challengeKey].attempts['find it'] : 0
+  const entry = solves.get(challengeKey)
+  return entry ? entry.attempts['find it'] : 0
 }
 
 export const reset = () => {
-  Object.keys(solves).forEach(key => delete solves[key])
+  solves.clear()
 }
 
 function totalAccuracy (phase: Phase) {
   let sumAccuracy = 0
   let totalSolved = 0
-  Object.entries(solves).forEach(([key, value]) => {
+  for (const value of solves.values()) {
     if (value[phase]) {
       sumAccuracy += 1 / value.attempts[phase]
       totalSolved++
     }
-  })
+  }
   return sumAccuracy / totalSolved
 }
 
 function calculateAccuracy (challengeKey: ChallengeKey, phase: Phase) {
   let accuracy = 0
-  if (solves[challengeKey][phase]) {
-    accuracy = 1 / solves[challengeKey].attempts[phase]
+  const entry = solves.get(challengeKey)
+  if (entry && entry[phase]) {
+    accuracy = 1 / entry.attempts[phase]
   }
   logger.info(`Accuracy for '${phase === 'fix it' ? 'Fix It' : 'Find It'}' phase of coding challenge ${colors.cyan(challengeKey)}: ${accuracy > 0.5 ? colors.green(accuracy.toString()) : (accuracy > 0.25 ? colors.yellow(accuracy.toString()) : colors.red(accuracy.toString()))}`)
   return accuracy
 }
 
 function storeVerdict (challengeKey: ChallengeKey, phase: Phase, verdict: boolean) {
-  if (!solves[challengeKey]) {
-    solves[challengeKey] = { 'find it': false, 'fix it': false, attempts: { 'find it': 0, 'fix it': 0 } }
+  let entry = solves.get(challengeKey)
+  if (!entry) {
+    entry = { 'find it': false, 'fix it': false, attempts: { 'find it': 0, 'fix it': 0 } }
+    solves.set(challengeKey, entry)
   }
-  if (!solves[challengeKey][phase]) {
-    solves[challengeKey][phase] = verdict
-    solves[challengeKey].attempts[phase]++
+  if (!entry[phase]) {
+    entry[phase] = verdict
+    entry.attempts[phase]++
   }
 }

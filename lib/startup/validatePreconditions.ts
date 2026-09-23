@@ -147,12 +147,12 @@ export const checkIfRunningOnSupportedCPU = (runningArch: string) => {
 }
 
 export const checkIfEnvironmentVariableExists = (varName: string) => {
-  if (process.env[varName]) {
+  if (Object.prototype.hasOwnProperty.call(process.env, varName) && process.env[varName]) {
     logger.info(`Environment variable ${colors.bold(varName)} is present (${colors.green('SUCCESS')})`)
     return true
   }
   logger.warn(`Environment variable ${colors.bold(varName)} is not present (${colors.yellow('WARNING')})`)
-  if (variableDependencies[varName]) {
+  if (Object.prototype.hasOwnProperty.call(variableDependencies, varName)) {
     variableDependencies[varName].dependentChallenges.forEach((dependency: string) => {
       logger.warn(`${colors.italic(dependency)} will not work as intended without a valid ${colors.bold(varName)}`)
     })
@@ -167,7 +167,8 @@ export const checkIfDomainReachable = async (domain: string) => {
     return true
   } catch {
     logger.warn(`Domain ${colors.bold(domain)} is not reachable (${colors.yellow('WARNING')})`)
-    domainDependencies[domain].dependentChallenges.forEach((dependency: string) => {
+    const domainDep = Object.prototype.hasOwnProperty.call(domainDependencies, domain) ? domainDependencies[domain] : undefined
+    domainDep?.dependentChallenges.forEach((dependency: string) => {
       logger.warn(`${colors.italic(dependency)} will not work as intended without access to ${colors.bold(domain)}`)
     })
     return false

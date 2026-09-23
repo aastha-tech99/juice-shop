@@ -59,7 +59,7 @@ export const trunc = function (str: string, length: number) {
 export const version = (module?: string) => {
   if (module) {
     // @ts-expect-error FIXME Ignoring any type issue on purpose
-    return packageJson.dependencies[module]
+    return Object.prototype.hasOwnProperty.call(packageJson.dependencies, module) ? packageJson.dependencies[module] : undefined
   } else {
     return packageJson.version
   }

@@ -78,10 +78,10 @@ export function getCodingChallengeFromFileContent (source: string, challengeKey:
   if (lines.length === 1) lines = snippet.split('\r')
   const vulnLines = []
   const neutralLines = []
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].includes('vuln-code-snippet vuln-line') && lines[i].includes(challengeKey)) {
+  for (const [i, line] of lines.entries()) {
+    if (line.includes('vuln-code-snippet vuln-line') && line.includes(challengeKey)) {
       vulnLines.push(i + 1)
-    } else if (lines[i].includes('vuln-code-snippet neutral-line') && lines[i].includes(challengeKey)) {
+    } else if (line.includes('vuln-code-snippet neutral-line') && line.includes(challengeKey)) {
       neutralLines.push(i + 1)
     }
   }

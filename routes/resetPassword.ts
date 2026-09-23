@@ -64,9 +64,9 @@ function verifySecurityAnswerChallenges (user: UserModel, answer: string) {
   challengeUtils.solveIf(challenges.geoStalkingMetaChallenge, () => {
     const securityAnswer = ((() => {
       const memories = config.get<MemoryConfig[]>('memories')
-      for (let i = 0; i < memories.length; i++) {
-        if (memories[i].geoStalkingMetaSecurityAnswer) {
-          return memories[i].geoStalkingMetaSecurityAnswer
+      for (const memory of memories) {
+        if (memory.geoStalkingMetaSecurityAnswer) {
+          return memory.geoStalkingMetaSecurityAnswer
         }
       }
     })())
@@ -75,9 +75,9 @@ function verifySecurityAnswerChallenges (user: UserModel, answer: string) {
   challengeUtils.solveIf(challenges.geoStalkingVisualChallenge, () => {
     const securityAnswer = ((() => {
       const memories = config.get<MemoryConfig[]>('memories')
-      for (let i = 0; i < memories.length; i++) {
-        if (memories[i].geoStalkingVisualSecurityAnswer) {
-          return memories[i].geoStalkingVisualSecurityAnswer
+      for (const memory of memories) {
+        if (memory.geoStalkingVisualSecurityAnswer) {
+          return memory.geoStalkingVisualSecurityAnswer
         }
       }
     })())

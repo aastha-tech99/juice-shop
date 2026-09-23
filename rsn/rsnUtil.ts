@@ -75,9 +75,11 @@ const computeDiffs = async (keys: string[]) => {
         const prev = line
         line += part.count
         if (!part.added) continue
+        const entry = Object.prototype.hasOwnProperty.call(data, val) ? data[val] : undefined
+        if (!entry) continue
         for (let i = 0; i < part.count; i++) {
           if (!snippet.vulnLines.includes(prev + i + 1) && !snippet.neutralLines.includes(prev + i + 1)) {
-            data[val].added.push(prev + i + 1)
+            entry.added.push(prev + i + 1)
           }
         }
       }
@@ -92,10 +94,12 @@ const computeDiffs = async (keys: string[]) => {
         const prev = line
         line += part.count
         if (!part.removed) continue
+        const entryForRemoval = Object.prototype.hasOwnProperty.call(data, val) ? data[val] : undefined
+        if (!entryForRemoval) continue
         let temp = norm
         for (let i = 0; i < part.count; i++) {
           if (!snippet.vulnLines.includes(prev + i + 1 - norm) && !snippet.neutralLines.includes(prev + i + 1 - norm)) {
-            data[val].removed.push(prev + i + 1 - norm)
+            entryForRemoval.removed.push(prev + i + 1 - norm)
           }
           temp++
         }
@@ -110,15 +114,17 @@ const computeDiffs = async (keys: string[]) => {
 
 function findChangedFiles (current: CacheData, cached: CacheData): string[] {
   const changed: string[] = []
-  for (const key in current) {
-    if (!cached[key]) {
+  for (const key of Object.keys(current)) {
+    if (!Object.prototype.hasOwnProperty.call(cached, key)) {
       changed.push(key)
       continue
     }
-    const curAdded = [...current[key].added].sort((a, b) => a - b)
-    const cacAdded = [...cached[key].added].sort((a, b) => a - b)
-    const curRemoved = [...current[key].removed].sort((a, b) => a - b)
-    const cacRemoved = [...cached[key].removed].sort((a, b) => a - b)
+    const curEntry = current[key]
+    const cacEntry = cached[key]
+    const curAdded = [...curEntry.added].sort((a, b) => a - b)
+    const cacAdded = [...cacEntry.added].sort((a, b) => a - b)
+    const curRemoved = [...curEntry.removed].sort((a, b) => a - b)
+    const cacRemoved = [...cacEntry.removed].sort((a, b) => a - b)
     if (
       curAdded.length !== cacAdded.length ||
       curRemoved.length !== cacRemoved.length ||

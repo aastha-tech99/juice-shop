@@ -535,8 +535,8 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
     // translate security questions on-the-fly
     if (name === 'SecurityQuestion') {
       resource.list.fetch.after((req: Request, res: Response, context: { instance: string | any[], continue: any }) => {
-        for (let i = 0; i < context.instance.length; i++) {
-          context.instance[i].question = req.__(context.instance[i].question)
+        for (const item of context.instance) {
+          item.question = req.__(item.question)
         }
         return context.continue
       })
@@ -549,8 +549,8 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
     // translate hints on-the-fly
     if (name === 'Hint') {
       resource.list.fetch.after((req: Request, res: Response, context: { instance: string | any[], continue: any }) => {
-        for (let i = 0; i < context.instance.length; i++) {
-          context.instance[i].text = req.__(context.instance[i].text)
+        for (const item of context.instance) {
+          item.text = req.__(item.text)
         }
         return context.continue
       })
@@ -563,9 +563,9 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
     // translate product names and descriptions on-the-fly
     if (name === 'Product') {
       resource.list.fetch.after((req: Request, res: Response, context: { instance: any[], continue: any }) => {
-        for (let i = 0; i < context.instance.length; i++) {
-          context.instance[i].name = req.__(context.instance[i].name)
-          context.instance[i].description = req.__(context.instance[i].description)
+        for (const item of context.instance) {
+          item.name = req.__(item.name)
+          item.description = req.__(item.description)
         }
         return context.continue
       })
@@ -686,15 +686,15 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 const uploadToMemory = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200000 } })
-const mimeTypeMap: any = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/jpg': 'jpg'
-}
+const mimeTypeMap = new Map<string, string>([
+  ['image/png', 'png'],
+  ['image/jpeg', 'jpg'],
+  ['image/jpg', 'jpg']
+])
 const uploadToDisk = multer({
   storage: multer.diskStorage({
     destination: (req: Request, file: any, cb: any) => {
-      const isValid = mimeTypeMap[file.mimetype]
+      const isValid = mimeTypeMap.has(file.mimetype)
       let error: Error | null = new Error('Invalid mime type')
       if (isValid) {
         error = null
@@ -706,7 +706,7 @@ const uploadToDisk = multer({
         .toLowerCase()
         .split(' ')
         .join('-')
-      const ext = mimeTypeMap[file.mimetype]
+      const ext = mimeTypeMap.get(file.mimetype)
       cb(null, name + '-' + Date.now() + '.' + ext)
     }
   })

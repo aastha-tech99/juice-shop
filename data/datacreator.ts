@@ -105,12 +105,12 @@ async function createChallenges () {
     const challengeDependencies: any[] = []
     for (const [variable, dependency] of Object.entries(variableDependencies)) {
       if (dependency.dependentChallenges.some(dep => dep.includes(challenge.name) || dep.includes(challenge.key))) {
-        challengeDependencies.push({ ...dependency, key: variable, missing: !preconditionResults[variable] })
+        challengeDependencies.push({ ...dependency, key: variable, missing: !(Object.prototype.hasOwnProperty.call(preconditionResults, variable) && preconditionResults[variable]) })
       }
     }
     for (const [domain, dependency] of Object.entries(domainDependencies)) {
       if (dependency.dependentChallenges.some(dep => dep.includes(challenge.name) || dep.includes(challenge.key))) {
-        challengeDependencies.push({ ...dependency, key: domain, missing: !preconditionResults[domain] })
+        challengeDependencies.push({ ...dependency, key: domain, missing: !(Object.prototype.hasOwnProperty.call(preconditionResults, domain) && preconditionResults[domain]) })
       }
     }
 
@@ -151,7 +151,7 @@ async function createChallenges () {
   if (pendingDependencies.length > 0) {
     const allDependencyRecords = pendingDependencies.flatMap(({ challengeKey, deps }) =>
       deps.map(dep => ({
-        ChallengeId: datacache.challenges[challengeKey].id,
+        ChallengeId: Object.prototype.hasOwnProperty.call(datacache.challenges, challengeKey) ? datacache.challenges[challengeKey].id : 0,
         name: dep.dependency,
         documentation: dep.documentation,
         key: dep.key,
@@ -168,7 +168,7 @@ async function createChallenges () {
   if (pendingHints.length > 0) {
     const allHintRecords = pendingHints.flatMap(({ challengeKey, hints }) =>
       hints.map((hint, index) => ({
-        ChallengeId: datacache.challenges[challengeKey].id,
+        ChallengeId: Object.prototype.hasOwnProperty.call(datacache.challenges, challengeKey) ? datacache.challenges[challengeKey].id : 0,
         text: hint.replace(/OWASP Juice Shop/, `${config.get<string>('application.name')}`)
           .replace('http://htmledit.squarefree.com', config.get<string>('challenges.overwriteUrlForCsrfChallenge')),
         order: index + 1,
@@ -456,7 +456,7 @@ async function createProducts () {
               reviews.map(({ text, author }) =>
                 reviewsCollection.insert({
                   message: text,
-                  author: datacache.users[author].email,
+                  author: Object.prototype.hasOwnProperty.call(datacache.users, author) ? datacache.users[author].email : '',
                   product: id,
                   likesCount: 0,
                   likedBy: []

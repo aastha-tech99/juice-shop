@@ -202,7 +202,7 @@ function calculateApplicableDiscount (basket: BasketModel, req: Request) {
     const couponData = Buffer.from(req.body.couponData, 'base64').toString().split('-')
     const couponCode = couponData[0]
     const couponDate = Number(couponData[1])
-    const campaign = campaigns[couponCode as keyof typeof campaigns]
+    const campaign = Object.prototype.hasOwnProperty.call(campaigns, couponCode) ? campaigns[couponCode as keyof typeof campaigns] : undefined
 
     if (campaign && couponDate == campaign.validOn) { // eslint-disable-line eqeqeq
       challengeUtils.solveIf(challenges.manipulateClockChallenge, () => { return campaign.validOn < new Date().getTime() })
