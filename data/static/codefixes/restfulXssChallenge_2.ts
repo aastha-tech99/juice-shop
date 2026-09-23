@@ -42,7 +42,8 @@ ngAfterViewInit () {
   }
 
   encodeProductDescription (tableData: any[]) {
+    const htmlEntities: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' }
     for (let i = 0; i < tableData.length; i++) {
-      tableData[i].description = tableData[i].description.replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+      tableData[i].description = tableData[i].description.replace(/[&<>"']/g, (c: string) => htmlEntities[c])
     }
   }
