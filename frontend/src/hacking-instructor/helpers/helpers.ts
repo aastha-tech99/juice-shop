@@ -43,23 +43,25 @@ export function waitForInputToHaveValue (inputSelector: string, value: string, o
         const json = await res.json()
         config = json.config
       }
-      const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype'])
       const [replacementPattern, replacementPath] = options.replacement
-      const propertyChain = replacementPath.split('.')
-      let replacementValue = config
-      for (const property of propertyChain) {
-        if (dangerousKeys.has(property)) {
-          replacementValue = undefined
-          break
+      // Build a flat Map from config to avoid dynamic property traversal (prototype pollution)
+      const configMap = new Map<string, unknown>()
+      const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype'])
+      const buildFlatMap = (obj: unknown, prefix: string) => {
+        if (obj != null && typeof obj === 'object' && !Array.isArray(obj)) {
+          for (const [k, v] of Object.entries(obj)) {
+            if (dangerousKeys.has(k)) continue
+            buildFlatMap(v, prefix ? `${prefix}.${k}` : k)
+          }
+        } else {
+          configMap.set(prefix, obj)
         }
-        if (replacementValue == null || typeof replacementValue !== 'object') {
-          replacementValue = undefined
-          break
-        }
-        const found = Object.entries(replacementValue).find(([k]) => k === property)
-        replacementValue = found ? found[1] : undefined
       }
-      value = value.replace(replacementPattern, replacementValue)
+      buildFlatMap(config, '')
+      const replacementValue = configMap.get(replacementPath)
+      if (replacementValue !== undefined) {
+        value = value.replace(replacementPattern, String(replacementValue))
+      }
     }
 
     while (true) {
