@@ -5,7 +5,7 @@
 
 import { environment } from '../../environments/environment'
 import { Injectable, inject } from '@angular/core'
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpParams } from '@angular/common/http'
 import { catchError, map } from 'rxjs/operators'
 import { Subject } from 'rxjs'
 
@@ -26,7 +26,8 @@ export class UserService {
   private readonly host = this.hostServer + '/api/Users'
 
   find (params?: any) {
-    return this.http.get(this.hostServer + '/rest/user/authentication-details/', { params }).pipe(map((response: any) =>
+    const httpParams = params ? new HttpParams({ fromObject: params }) : undefined
+    return this.http.get(this.hostServer + '/rest/user/authentication-details/', { params: httpParams }).pipe(map((response: any) =>
       response.data), catchError((err) => { throw err }))
   }
 
@@ -51,8 +52,11 @@ export class UserService {
   }
 
   changePassword (passwords: Passwords) {
-    return this.http.get(this.hostServer + '/rest/user/change-password?current=' + passwords.current + '&new=' +
-    passwords.new + '&repeat=' + passwords.repeat).pipe(map((response: any) => response.user), catchError((err) => { throw err.error }))
+    const params = new HttpParams()
+      .set('current', passwords.current || '')
+      .set('new', passwords.new || '')
+      .set('repeat', passwords.repeat || '')
+    return this.http.get(this.hostServer + '/rest/user/change-password', { params }).pipe(map((response: any) => response.user), catchError((err) => { throw err.error }))
   }
 
   resetPassword (params: any) {
@@ -60,12 +64,20 @@ export class UserService {
   }
 
   whoAmI (fields?: string[]) {
-    const queryParam = fields && fields.length > 0 ? `?fields=${fields.join(',')}` : ''
-    return this.http.get(this.hostServer + '/rest/user/whoami' + queryParam).pipe(map((response: any) => response.user), catchError((err) => { throw err }))
+    let params = new HttpParams()
+    if (fields && fields.length > 0) {
+      params = params.set('fields', fields.join(','))
+    }
+    return this.http.get(this.hostServer + '/rest/user/whoami', { params }).pipe(map((response: any) => response.user), catchError((err) => { throw err }))
   }
 
+  private readonly googleUserInfoUrl = 'https://www.googleapis.com/oauth2/v1/userinfo'
+
   oauthLogin (accessToken: string) {
-    return this.http.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + accessToken)
+    const params = new HttpParams()
+      .set('alt', 'json')
+      .set('access_token', accessToken)
+    return this.http.get(this.googleUserInfoUrl, { params })
   }
 
   saveLastLoginIp () {

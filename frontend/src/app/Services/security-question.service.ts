@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { HttpClient } from '@angular/common/http'
+import { HttpClient, HttpParams } from '@angular/common/http'
 import { Injectable, inject } from '@angular/core'
 import { environment } from '../../../src/environments/environment'
 import { catchError, map } from 'rxjs/operators'
@@ -22,7 +22,8 @@ export class SecurityQuestionService {
   }
 
   findBy (email: string) {
-    return this.http.get(this.hostServer + '/' + 'rest/user/security-question?email=' + email).pipe(
+    const params = new HttpParams().set('email', email)
+    return this.http.get(this.hostServer + '/rest/user/security-question', { params }).pipe(
       map((response: any) => response.question),
       catchError((error) => { throw error })
     )
