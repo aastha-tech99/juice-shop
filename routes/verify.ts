@@ -7,7 +7,6 @@ import { type NextFunction, type Request, type Response } from 'express'
 import { Op } from 'sequelize'
 import jwt from 'jsonwebtoken'
 import config from 'config'
-import jws from 'jws'
 
 import { challenges, products, retrieveBlueprintChallengeFile } from '../data/datacache'
 import type { Product as ProductConfig } from '../lib/config.schema'
@@ -22,7 +21,7 @@ import { buildSystemPrompt } from './chat'
 
 export const emptyUserRegistration = () => (req: Request, res: Response, next: NextFunction) => {
   challengeUtils.solveIf(challenges.emptyUserRegistration, () => {
-    return req.body && req.body.email === '' && req.body.password === ''
+    return req.body && security.safeCompare(req.body.email, '') && security.safeCompare(req.body.password, '')
   })
   next()
 }
@@ -51,7 +50,7 @@ export const captchaBypassChallenge = () => (req: Request, res: Response, next: 
 
 export const registerAdminChallenge = () => (req: Request, res: Response, next: NextFunction) => {
   challengeUtils.solveIf(challenges.registerAdminChallenge, () => {
-    return req.body && req.body.role === security.roles.admin
+    return req.body && security.safeCompare(req.body.role, security.roles.admin)
   })
   next()
 }
@@ -63,7 +62,7 @@ export const passwordRepeatChallenge = () => (req: Request, res: Response, next:
 
 export const accessControlChallenges = () => (req: Request, res: Response, next: NextFunction) => {
   const { url } = req
-  const uiBypassed = req.header('sec-fetch-dest') === 'document' || !req.header('referer')
+  const uiBypassed = security.safeCompare(String(req.header('sec-fetch-dest') ?? ''), 'document') || !req.header('referer')
   challengeUtils.solveIf(challenges.scoreBoardChallenge, () => { return url.endsWith('/1px.png') }, false, uiBypassed)
   challengeUtils.solveIf(challenges.web3SandboxChallenge, () => { return url.endsWith('/11px.png') }, false, uiBypassed)
   challengeUtils.solveIf(challenges.adminSectionChallenge, () => { return url.endsWith('/19px.png') }, false, uiBypassed)
@@ -116,14 +115,8 @@ export const serverSideChallenges = () => (req: Request, res: Response, next: Ne
 function jwtChallenge (challenge: Challenge, req: Request, algorithm: string, email: string | RegExp) {
   const token = utils.jwtFrom(req)
   if (token) {
-    const decoded = jws.decode(token) ? jwt.decode(token) : null
-
-    if (decoded === null || typeof decoded === 'string') {
-      return
-    }
-
-    jwt.verify(token, security.publicKey, { algorithms: ['RS256'] }, (err: jwt.VerifyErrors | null) => {
-      if (err === null) {
+    jwt.verify(token, security.publicKey, { algorithms: ['RS256'] }, (err: jwt.VerifyErrors | null, decoded: any) => {
+      if (err === null && decoded !== null && typeof decoded !== 'string') {
         challengeUtils.solveIf(challenge, () => {
           return hasAlgorithm(token, algorithm) && hasEmail(decoded as { data: { email: string } }, email)
         })
@@ -134,7 +127,7 @@ function jwtChallenge (challenge: Challenge, req: Request, algorithm: string, em
 
 function hasAlgorithm (token: string, algorithm: string) {
   const header = JSON.parse(Buffer.from(token.split('.')[0], 'base64').toString())
-  return token && header && header.alg === algorithm
+  return token && header && security.safeCompare(header.alg, algorithm)
 }
 
 function hasEmail (token: { data: { email: string } }, email: string | RegExp) {
