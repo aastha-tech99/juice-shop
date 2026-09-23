@@ -16,27 +16,33 @@ interface CachedCodeChallenge {
 }
 
 export const findFilesWithCodeChallenges = async (paths: readonly string[]): Promise<FileMatch[]> => {
+  const projectRoot = path.resolve('.')
   const matches = []
   for (const currPath of paths) {
+    const resolvedPath = path.resolve(currPath)
+    if (!resolvedPath.startsWith(projectRoot + path.sep) && resolvedPath !== projectRoot) {
+      logger.warn(`Skipping path outside project root: ${currPath}`)
+      continue
+    }
     try {
-      if ((await fs.lstat(currPath)).isDirectory()) {
-        const files = await fs.readdir(currPath)
+      if ((await fs.lstat(resolvedPath)).isDirectory()) {
+        const files = await fs.readdir(resolvedPath)
         const moreMatches = await findFilesWithCodeChallenges(
-          files.map(file => path.resolve(currPath, file))
+          files.map(file => path.resolve(resolvedPath, file))
         )
         matches.push(...moreMatches)
       } else {
-        const code = await fs.readFile(currPath, 'utf8')
+        const code = await fs.readFile(resolvedPath, 'utf8')
         if (
           // strings are split so that it doesn't find itself...
           code.includes('// vuln-code' + '-snippet start') ||
           code.includes('# vuln-code' + '-snippet start')
         ) {
-          matches.push({ path: currPath, content: code })
+          matches.push({ path: resolvedPath, content: code })
         }
       }
     } catch (e) {
-      logger.warn(`File ${currPath} could not be read. It might have been moved or deleted. If coding challenges are contained in the file, they will not be available.`)
+      logger.warn(`File ${resolvedPath} could not be read. It might have been moved or deleted. If coding challenges are contained in the file, they will not be available.`)
     }
   }
 

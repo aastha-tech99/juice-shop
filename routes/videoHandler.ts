@@ -4,6 +4,7 @@
  */
 
 import fs from 'node:fs'
+import path from 'node:path'
 import config from 'config'
 import { type Request, type Response } from 'express'
 import { AllHtmlEntities as Entities } from 'html-entities'
@@ -17,8 +18,8 @@ const entities = new Entities()
 
 export const getVideo = () => {
   return (req: Request, res: Response) => {
-    const path = videoPath()
-    const stat = fs.statSync(path)
+    const videoFile = videoPath()
+    const stat = fs.statSync(videoFile)
     const fileSize = stat.size
     const range = req.headers.range
     if (range) {
@@ -26,7 +27,7 @@ export const getVideo = () => {
       const start = parseInt(parts[0], 10)
       const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
       const chunksize = (end - start) + 1
-      const file = fs.createReadStream(path, { start, end })
+      const file = fs.createReadStream(videoFile, { start, end })
       const head = {
         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
         'Accept-Ranges': 'bytes',
@@ -42,7 +43,7 @@ export const getVideo = () => {
         'Content-Type': 'video/mp4'
       }
       res.writeHead(200, head)
-      fs.createReadStream(path).pipe(res)
+      fs.createReadStream(videoFile).pipe(res)
     }
   }
 }
@@ -78,15 +79,25 @@ export const promotionVideo = () => {
 }
 
 function getSubsFromFile () {
+  const videosDir = path.resolve('frontend/dist/frontend/assets/public/videos')
   const subtitles = config.get<string>('application.promotion.subtitles') ?? 'owasp_promo.vtt'
-  const data = fs.readFileSync('frontend/dist/frontend/assets/public/videos/' + subtitles, 'utf8')
+  const subsPath = path.resolve(videosDir, subtitles)
+  if (!subsPath.startsWith(videosDir + path.sep)) {
+    return ''
+  }
+  const data = fs.readFileSync(subsPath, 'utf8')
   return data.toString()
 }
 
 function videoPath () {
+  const videosDir = path.resolve('frontend/dist/frontend/assets/public/videos')
   if (config.get<string>('application.promotion.video') !== null) {
     const video = utils.extractFilename(config.get<string>('application.promotion.video'))
-    return 'frontend/dist/frontend/assets/public/videos/' + video
+    const resolvedVideo = path.resolve(videosDir, video)
+    if (!resolvedVideo.startsWith(videosDir + path.sep)) {
+      return path.join(videosDir, 'owasp_promo.mp4')
+    }
+    return resolvedVideo
   }
-  return 'frontend/dist/frontend/assets/public/videos/owasp_promo.mp4'
+  return path.join(videosDir, 'owasp_promo.mp4')
 }

@@ -5,6 +5,7 @@
 
 import { type NextFunction, type Request, type Response } from 'express'
 import yaml from 'js-yaml'
+import path from 'node:path'
 import fs from 'node:fs/promises'
 
 import { getCodeChallenges } from '../lib/codingChallenges'
@@ -86,8 +87,10 @@ export const checkVulnLines = () => async (req: Request<Record<string, unknown>,
   const selectedLines: number[] = req.body.selectedLines
   const verdict = getVerdict(vulnLines, neutralLines, selectedLines)
   let hint
-  if (await fs.stat('./data/static/codefixes/' + key + '.info.yml')) {
-    const codingChallengeInfos = yaml.load(await fs.readFile('./data/static/codefixes/' + key + '.info.yml', { encoding: 'utf8' }))
+  const codefixesBase = path.resolve('./data/static/codefixes')
+  const infoFilePath = path.resolve(codefixesBase, key + '.info.yml')
+  if (infoFilePath.startsWith(codefixesBase + path.sep) && await fs.stat(infoFilePath)) {
+    const codingChallengeInfos = yaml.load(await fs.readFile(infoFilePath, { encoding: 'utf8' }))
     if (codingChallengeInfos?.hints) {
       if (accuracy.getFindItAttempts(key) > codingChallengeInfos.hints.length) {
         if (vulnLines.length === 1) {

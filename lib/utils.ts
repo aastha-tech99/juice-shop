@@ -5,6 +5,7 @@
 
 import packageJson from '../package.json'
 import fs from 'node:fs'
+import path from 'node:path'
 import logger from './logger'
 import config from 'config'
 import download from 'download'
@@ -107,8 +108,14 @@ export const extractFilename = (url: string) => {
 
 export const downloadToFile = async (url: string, dest: string) => {
   try {
+    const resolvedDest = path.resolve(dest)
+    const projectRoot = path.resolve('.')
+    if (!resolvedDest.startsWith(projectRoot + path.sep)) {
+      logger.warn('Blocked download to path outside project root: ' + dest)
+      return
+    }
     const data = await download(url)
-    fs.writeFileSync(dest, data)
+    fs.writeFileSync(resolvedDest, data)
   } catch (err) {
     logger.warn('Failed to download ' + url + ' (' + getErrorMessage(err) + ')')
   }

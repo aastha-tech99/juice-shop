@@ -4,6 +4,7 @@
  */
 
 import fs from 'node:fs/promises'
+import path from 'node:path'
 import { type Request, type Response, type NextFunction } from 'express'
 import fileType from 'file-type'
 
@@ -37,7 +38,12 @@ export function profileImageFileUpload () {
       return
     }
 
-    const filePath = `frontend/dist/frontend/assets/public/images/uploads/${loggedInUser.data.id}.${uploadedFileType.ext}`
+    const uploadsDir = path.resolve('frontend/dist/frontend/assets/public/images/uploads')
+    const filePath = path.resolve(uploadsDir, `${loggedInUser.data.id}.${uploadedFileType.ext}`)
+    if (!filePath.startsWith(uploadsDir + path.sep)) {
+      next(new Error('Invalid file path'))
+      return
+    }
     try {
       await fs.writeFile(filePath, buffer)
     } catch (err) {

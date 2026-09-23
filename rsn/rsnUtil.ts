@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import path from 'node:path'
 import { diffLines, structuredPatch } from 'diff'
 import yaml from 'js-yaml'
 
@@ -63,7 +64,9 @@ const computeDiffs = async (keys: string[]) => {
     try {
       const snippet = await retrieveCodeSnippet(val.split('_')[0])
       if (snippet == null) continue
-      const fileData = fs.readFileSync(fixesPath + '/' + val).toString()
+      const resolvedFixPath = path.resolve(fixesPath, val)
+      if (!resolvedFixPath.startsWith(path.resolve(fixesPath) + path.sep)) continue
+      const fileData = fs.readFileSync(resolvedFixPath).toString()
       const diff = diffLines(filterString(fileData), filterString(snippet.snippet))
       let line = 0
       for (const part of diff) {
@@ -129,7 +132,8 @@ function findChangedFiles (current: CacheData, cached: CacheData): string[] {
 }
 
 function loadChallengeInfo (challengeName: string): ChallengeInfo | null {
-  const infoPath = `${fixesPath}/${challengeName}.info.yml`
+  const infoPath = path.resolve(fixesPath, `${challengeName}.info.yml`)
+  if (!infoPath.startsWith(path.resolve(fixesPath) + path.sep)) return null
   if (!fs.existsSync(infoPath)) return null
   const content = fs.readFileSync(infoPath, 'utf-8')
   return yaml.load(content) as ChallengeInfo
@@ -152,7 +156,9 @@ async function computeChallengeDiff (file: string): Promise<ChallengeDiff | null
   const snippet = await retrieveCodeSnippet(challengeName)
   if (!snippet) return null
 
-  const fileData = fs.readFileSync(fixesPath + '/' + file).toString()
+  const resolvedFilePath = path.resolve(fixesPath, file)
+  if (!resolvedFilePath.startsWith(path.resolve(fixesPath) + path.sep)) return null
+  const fileData = fs.readFileSync(resolvedFilePath).toString()
   const patch = structuredPatch(file, file, filterString(snippet.snippet), filterString(fileData))
 
   const lines: DiffLine[] = []

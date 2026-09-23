@@ -136,7 +136,11 @@ const errorhandler = require('errorhandler')
 
 const startTime = Date.now()
 
-const swaggerDocument = yaml.load(fs.readFileSync('./swagger.yml', 'utf8'))
+const swaggerFilePath = path.resolve('./swagger.yml')
+if (!swaggerFilePath.startsWith(path.resolve('.') + path.sep)) {
+  throw new Error('Swagger file path is outside project root')
+}
+const swaggerDocument = yaml.load(fs.readFileSync(swaggerFilePath, 'utf8'))
 
 const appName = config.get<string>('application.customMetricsPrefix')
 const startupGauge = new Prometheus.Gauge({

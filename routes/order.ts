@@ -42,7 +42,13 @@ export function placeOrder () {
           const { default: PDFDocument } = await import('pdfkit')
           const doc = new PDFDocument()
           const date = new Date().toJSON().slice(0, 10)
-          const fileWriter = doc.pipe(fs.createWriteStream(path.join('ftp/', pdfFile)))
+          const ftpDir = path.resolve('ftp')
+          const orderFilePath = path.resolve(ftpDir, pdfFile)
+          if (!orderFilePath.startsWith(ftpDir + path.sep)) {
+            next(new Error('Invalid file path'))
+            return
+          }
+          const fileWriter = doc.pipe(fs.createWriteStream(orderFilePath))
 
           fileWriter.on('finish', () => {
             void (async () => {

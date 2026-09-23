@@ -112,8 +112,11 @@ await new Promise((resolve, reject) => {
   archive.on('error', reject)
   archive.pipe(output)
 
+  const projectRoot = path.resolve('.')
   for (const file of files) {
-    archive.file(file, { name: `${prefix}/${file}` })
+    const resolvedFile = path.resolve(file)
+    if (!resolvedFile.startsWith(projectRoot + path.sep)) continue
+    archive.file(resolvedFile, { name: `${prefix}/${file}` })
   }
 
   archive.finalize()
@@ -122,9 +125,11 @@ await new Promise((resolve, reject) => {
 console.log(`Created ${archivePath}`)
 
 // Generate MD5 checksums
+const distDir = path.resolve('dist')
 for (const file of await fs.readdir('dist')) {
   if (file.endsWith('.md5')) continue
-  const filePath = path.join('dist', file)
+  const filePath = path.resolve('dist', file)
+  if (!filePath.startsWith(distDir + path.sep)) continue
   if (!(await fs.stat(filePath)).isFile()) continue
   const content = await fs.readFile(filePath)
   const hash = crypto.createHash('md5').update(content).digest('hex')
