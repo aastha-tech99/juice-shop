@@ -197,7 +197,7 @@ async function createUsers () {
           role,
           deluxeToken: role === security.roles.deluxe ? security.deluxeToken(completeEmail) : '',
           profileImage: `assets/public/images/uploads/${profileImage ?? (role === security.roles.admin ? 'defaultAdmin.png' : 'default.svg')}`,
-          totpSecret,
+          totpSecret: totpSecret || process.env.TOTP_SECRET || '',
           lastLoginIp
         })
         datacache.users[key] = user

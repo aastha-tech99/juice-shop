@@ -148,7 +148,7 @@
   email: wurstbrot
   username: wurstbrot
   password: 'EinBelegtesBrotMitSchinkenSCHINKEN!'
-  totpSecret: IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH # fixture TOTP secret for Juice Shop 2FA training challenge (not a production credential)
+  totpSecret: '' # ROTATE: set TOTP_SECRET env var at runtime; previous value was exposed in version control history
   key: timo
   role: 'admin'
   securityQuestion:
