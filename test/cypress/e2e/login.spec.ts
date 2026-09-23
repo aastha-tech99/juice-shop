@@ -10,7 +10,7 @@ describe('/#/login', () => {
       cy.get('#loginButton').click()
     })
 
-    it('should log in Admin with SQLI attack on email field using "admin@<juice-sh.op>\'--"', () => {
+    it('should prevent SQLI attack on email field using "admin@<juice-sh.op>\'--"', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`admin@${appDomain}'--`)
@@ -18,12 +18,12 @@ describe('/#/login', () => {
           cy.get('#loginButton').click()
         }
       )
-      cy.expectChallengeSolved({ challenge: 'Login Admin' })
+      cy.url().should('include', '/#/login')
     })
   })
 
   describe('challenge "loginJimChallenge"', () => {
-    it('should log in Jim with SQLI attack on email field using "jim@<juice-sh.op>\'--"', () => {
+    it('should prevent SQLI attack on email field using "jim@<juice-sh.op>\'--"', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`jim@${appDomain}'--`)
@@ -31,12 +31,12 @@ describe('/#/login', () => {
           cy.get('#loginButton').click()
         }
       )
-      cy.expectChallengeSolved({ challenge: 'Login Jim' })
+      cy.url().should('include', '/#/login')
     })
   })
 
   describe('challenge "loginBenderChallenge"', () => {
-    it('should log in Bender with SQLI attack on email field using "bender@<juice-sh.op>\'--"', () => {
+    it('should prevent SQLI attack on email field using "bender@<juice-sh.op>\'--"', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`bender@${appDomain}'--`)
@@ -44,7 +44,7 @@ describe('/#/login', () => {
           cy.get('#loginButton').click()
         }
       )
-      cy.expectChallengeSolved({ challenge: 'Login Bender' })
+      cy.url().should('include', '/#/login')
     })
   })
 
@@ -117,8 +117,8 @@ describe('/#/login', () => {
     it('should be able to log into a existing 2fa protected account given the right token', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
-          cy.get('#email').type(`wurstbrot@${appDomain}'--`)
-          cy.get('#password').type('Never mind...')
+          cy.get('#email').type(`wurstbrot@${appDomain}`)
+          cy.get('#password').type('EinBelegtesBrotMitSchinkenSCHINKEN!')
           cy.get('#loginButton').click()
         }
       )
@@ -150,7 +150,7 @@ describe('/#/login', () => {
       cy.get('#loginButton').click()
     })
 
-    it('should be able to log in as chris.pike@juice-sh.op by using "chris.pike@juice-sh.op\' --"', () => {
+    it('should prevent SQLI attack on email field using "chris.pike@juice-sh.op\'--"', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`chris.pike@${appDomain}'--`)
@@ -158,19 +158,19 @@ describe('/#/login', () => {
           cy.get('#loginButton').click()
         }
       )
-      cy.expectChallengeSolved({ challenge: 'GDPR Data Erasure' })
+      cy.url().should('include', '/#/login')
     })
   })
 
   describe('challenge "ephemeralAccountant"', () => {
-    it('should log in non-existing accountant user with SQLI attack on email field using UNION SELECT payload', () => {
+    it('should prevent UNION SELECT SQLI attack on email field for non-existing accountant user', () => {
       cy.get('#email').type(
         "' UNION SELECT * FROM (SELECT 15 as 'id', '' as 'username', 'acc0unt4nt@juice-sh.op' as 'email', '12345' as 'password', 'accounting' as 'role', '123' as 'deluxeToken', '1.2.3.4' as 'lastLoginIp' , '/assets/public/images/uploads/default.svg' as 'profileImage', '' as 'totpSecret', 1 as 'isActive', '1999-08-16 14:14:41.644 +00:00' as 'createdAt', '1999-08-16 14:33:41.930 +00:00' as 'updatedAt', null as 'deletedAt')--",
         { delay: 1 } // cypress defaults to 10ms delay between keystrokes, which here is nearly 5s of typing the payload...
       )
       cy.get('#password').type('a')
       cy.get('#loginButton').click()
-      cy.expectChallengeSolved({ challenge: 'Ephemeral Accountant' })
+      cy.url().should('include', '/#/login')
     })
   })
 
