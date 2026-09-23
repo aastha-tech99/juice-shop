@@ -19,6 +19,18 @@ import { UserModel } from '../models/user'
 
 const entities = new Entities()
 
+const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
+function sanitizeBody (body: Record<string, unknown>): Record<string, unknown> {
+  const safe: Record<string, unknown> = Object.create(null)
+  for (const key of Object.keys(body)) {
+    if (!DANGEROUS_KEYS.has(key)) {
+      safe[key] = body[key]
+    }
+  }
+  return safe
+}
+
 const router = express.Router()
 
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
@@ -105,7 +117,7 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
         const isForbiddenFile: boolean = (filePath.includes('ftp') || filePath.includes('ctf.key') || filePath.includes('encryptionkeys'))
         if (!isForbiddenFile) {
           res.render('dataErasureResult', {
-            ...req.body,
+            ...sanitizeBody(req.body),
             ...themeVars
           }, (error, html) => {
             if (!html || error) {
@@ -121,7 +133,7 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
         }
       } else {
         res.render('dataErasureResult', {
-          ...req.body,
+          ...sanitizeBody(req.body),
           ...themeVars
         })
       }
