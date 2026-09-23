@@ -44,8 +44,7 @@ describe('SecurityQuestionService', () => {
 
         let res: any
         service.findBy('x@y.z').subscribe((data) => (res = data))
-        // Not a password-in-URL — the @ is part of the email query parameter value, not URL credentials
-        const req = httpMock.expectOne('http://localhost:3000/rest/user/security-question?email=x@y.z')
+        const req = httpMock.expectOne(r => r.url === 'http://localhost:3000/rest/user/security-question' && r.params.get('email') === 'x@y.z')
         req.flush({ question: 'apiResponse' })
 
         expect(req.request.method).toBe('GET')
@@ -65,8 +64,7 @@ describe('SecurityQuestionService', () => {
 
         let capturedError: any
         service.findBy('e@x.ample').subscribe({ next: () => { throw new Error('expected error') }, error: (e) => { capturedError = e } })
-        // Not a password-in-URL — the @ is part of the email query parameter value, not URL credentials
-        const req = httpMock.expectOne('http://localhost:3000/rest/user/security-question?email=e@x.ample')
+        const req = httpMock.expectOne(r => r.url === 'http://localhost:3000/rest/user/security-question' && r.params.get('email') === 'e@x.ample')
         req.error(new ErrorEvent('Request failed'), { status: 404, statusText: 'Not Found' })
         expect(capturedError.status).toBe(404)
         httpMock.verify()
