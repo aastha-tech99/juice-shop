@@ -72,7 +72,7 @@ function verifySecurityAnswerChallenges (user: UserModel, answer: string) {
         }
       }
     })())
-    return user.id === users.john.id && security.safeCompare(answer, securityAnswer)
+    return user.id === users.john.id && security.safeCompare(answer, securityAnswer ?? '')
   })
   challengeUtils.solveIf(challenges.geoStalkingVisualChallenge, () => {
     const securityAnswer = ((() => {
@@ -83,6 +83,6 @@ function verifySecurityAnswerChallenges (user: UserModel, answer: string) {
         }
       }
     })())
-    return user.id === users.emma.id && security.safeCompare(answer, securityAnswer)
+    return user.id === users.emma.id && security.safeCompare(answer, securityAnswer ?? '')
   })
 }

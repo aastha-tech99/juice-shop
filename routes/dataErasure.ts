@@ -123,7 +123,7 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
         const lowerFilePath = filePath.toLowerCase()
         const isForbiddenFile: boolean = (lowerFilePath.includes('ftp') || lowerFilePath.includes('ctf.key') || lowerFilePath.includes('encryptionkeys'))
         if (!isForbiddenFile) {
-          const safeBody = sanitizeBody(req.body)
+          const safeBody = sanitizeBody(req.body as unknown as Record<string, unknown>)
           delete safeBody.layout
           res.render('dataErasureResult', {
             ...safeBody,
@@ -142,7 +142,7 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
           next(new Error('File access not allowed'))
         }
       } else {
-        const safeBody = sanitizeBody(req.body)
+        const safeBody = sanitizeBody(req.body as unknown as Record<string, unknown>)
         delete safeBody.layout
         res.render('dataErasureResult', {
           ...safeBody,
