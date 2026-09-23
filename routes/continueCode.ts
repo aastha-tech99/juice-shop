@@ -23,8 +23,8 @@ export function continueCode () {
 
 export function continueCodeFindIt () {
   const hashids = new Hashids('this is the salt for findIt challenges', 60, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const ids = []
       const challenges = await ChallengeModel.findAll({ where: { codingChallengeStatus: { [Op.gte]: 1 } } })
       for (const challenge of challenges) {
@@ -32,16 +32,14 @@ export function continueCodeFindIt () {
       }
       const continueCode = ids.length > 0 ? hashids.encode(ids) : undefined
       res.json({ continueCode })
-    } catch (error) {
-      next(error)
-    }
+    })().catch(next)
   }
 }
 
 export function continueCodeFixIt () {
   const hashids = new Hashids('yet another salt for the fixIt challenges', 60, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const ids = []
       const challenges = await ChallengeModel.findAll({ where: { codingChallengeStatus: { [Op.gte]: 2 } } })
       for (const challenge of challenges) {
@@ -49,8 +47,6 @@ export function continueCodeFixIt () {
       }
       const continueCode = ids.length > 0 ? hashids.encode(ids) : undefined
       res.json({ continueCode })
-    } catch (error) {
-      next(error)
-    }
+    })().catch(next)
   }
 }

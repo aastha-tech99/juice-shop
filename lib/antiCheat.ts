@@ -108,8 +108,8 @@ export const calculateCheatScore = (challenge: Challenge, isCheating = false) =>
   }
 }
 
-export const calculateFindItCheatScore = async (challenge: Challenge) => {
-  try {
+export const calculateFindItCheatScore = (challenge: Challenge): Promise<number> => {
+  return (async () => {
     const timestamp = new Date()
     let timeFactor = 0.001
     timeFactor *= (challenge.key === 'scoreBoardChallenge' && config.get('hackingInstructor.isEnabled') ? 0.5 : 1)
@@ -133,10 +133,10 @@ export const calculateFindItCheatScore = async (challenge: Challenge) => {
     solves.push({ challenge, phase: 'find it', timestamp, cheatScore })
 
     return cheatScore
-  } catch (err: unknown) {
+  })().catch((err: unknown) => {
     logger.warn('Error calculating FindIt cheat score for ' + challenge.key + ': ' + utils.getErrorMessage(err))
     return 0
-  }
+  })
 }
 
 export const calculateFixItCheatScore = async (challenge: Challenge) => {

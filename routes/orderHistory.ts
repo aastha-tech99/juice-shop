@@ -9,8 +9,8 @@ import { ordersCollection } from '../data/mongodb'
 import * as security from '../lib/insecurity'
 
 export function orderHistory () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const loggedInUser = security.authenticatedUsers.get(req.headers?.authorization?.replace('Bearer ', ''))
       if (loggedInUser?.data?.email && loggedInUser.data.id) {
         const email = loggedInUser.data.email
@@ -20,9 +20,7 @@ export function orderHistory () {
       } else {
         next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
       }
-    } catch (error) {
-      next(error)
-    }
+    })().catch(next)
   }
 }
 

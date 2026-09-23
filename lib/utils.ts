@@ -105,13 +105,13 @@ export const extractFilename = (url: string) => {
   return file
 }
 
-export const downloadToFile = async (url: string, dest: string) => {
-  try {
+export const downloadToFile = (url: string, dest: string): Promise<void> => {
+  return (async () => {
     const data = await download(url)
     fs.writeFileSync(dest, data)
-  } catch (err) {
+  })().catch((err) => {
     logger.warn('Failed to download ' + url + ' (' + getErrorMessage(err) + ')')
-  }
+  })
 }
 
 export const jwtFrom = ({ headers }: { headers: any }) => {

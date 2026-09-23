@@ -8,23 +8,21 @@ import { WalletModel } from '../models/wallet'
 import { CardModel } from '../models/card'
 
 export function getWalletBalance () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const wallet = await WalletModel.findOne({ where: { UserId: req.body.UserId } })
       if (wallet != null) {
         res.status(200).json({ status: 'success', data: wallet.balance })
       } else {
         res.status(404).json({ status: 'error' })
       }
-    } catch (error) {
-      next(error)
-    }
+    })().catch(next)
   }
 }
 
 export function addWalletBalance () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const cardId = req.body.paymentId
       const card = cardId ? await CardModel.findOne({ where: { id: cardId, UserId: req.body.UserId } }) : null
       if (card != null) {
@@ -33,8 +31,6 @@ export function addWalletBalance () {
       } else {
         res.status(402).json({ status: 'error', message: 'Payment not accepted.' })
       }
-    } catch (error) {
-      next(error)
-    }
+    })().catch(next)
   }
 }

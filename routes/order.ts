@@ -33,7 +33,8 @@ export function placeOrder () {
   return (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
     BasketModel.findOne({ where: { id }, include: [{ model: ProductModel, paranoid: false, as: 'Products' }] })
-      .then(async (basket: BasketModel | null) => {
+      .then((basket: BasketModel | null) => {
+        (async () => {
         if (basket != null) {
           const customer = security.authenticatedUsers.from(req)
           const email = customer ? customer.data ? customer.data.email : '' : ''
@@ -45,15 +46,13 @@ export function placeOrder () {
           const fileWriter = doc.pipe(fs.createWriteStream(path.join('ftp/', pdfFile)))
 
           fileWriter.on('finish', () => {
-            void (async () => {
-              try {
-                void basket.update({ coupon: null })
-                await BasketItemModel.destroy({ where: { BasketId: id } })
-                res.json({ orderConfirmation: orderId })
-              } catch (error: unknown) {
-                next(error)
-              }
-            })()
+            (async () => {
+              void basket.update({ coupon: null })
+              await BasketItemModel.destroy({ where: { BasketId: id } })
+              res.json({ orderConfirmation: orderId })
+            })().catch((error: unknown) => {
+              next(error)
+            })
           })
 
           doc.font('Times-Roman').fontSize(40).text(config.get<string>('application.name'), { align: 'center' })
@@ -181,6 +180,7 @@ export function placeOrder () {
         } else {
           next(new Error(`Basket with id=${id} does not exist.`))
         }
+        })().catch(next)
       }).catch((error: unknown) => {
         next(error)
       })

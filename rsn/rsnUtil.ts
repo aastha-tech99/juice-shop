@@ -49,8 +49,9 @@ function filterString (text: string) {
   return text
 }
 
-const computeDiffs = async (keys: string[]) => {
-  const data: CacheData = keys.reduce<CacheData>((prev, curr) => {
+const computeDiffs = (keys: string[]): Promise<CacheData> => {
+  return (async () => {
+    const data: CacheData = keys.reduce<CacheData>((prev, curr) => {
     return {
       ...prev,
       [curr]: {
@@ -103,6 +104,7 @@ const computeDiffs = async (keys: string[]) => {
     }
   }
   return data
+  })()
 }
 
 function findChangedFiles (current: CacheData, cached: CacheData): string[] {

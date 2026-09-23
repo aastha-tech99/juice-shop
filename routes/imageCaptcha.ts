@@ -10,8 +10,8 @@ import { ImageCaptchaModel } from '../models/imageCaptcha'
 import * as security from '../lib/insecurity'
 
 export function imageCaptchas () {
-  return async (req: Request, res: Response) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const { default: svgCaptcha } = await import('svg-captcha')
       const captcha = svgCaptcha.create({ size: 5, noise: 2, color: true })
 
@@ -29,14 +29,14 @@ export function imageCaptchas () {
       const imageCaptchaInstance = ImageCaptchaModel.build(imageCaptcha)
       await imageCaptchaInstance.save()
       res.json(imageCaptcha)
-    } catch (error) {
+    })().catch(() => {
       res.status(400).send(res.__('Unable to create CAPTCHA. Please try again.'))
-    }
+    })
   }
 }
 
-export const verifyImageCaptcha = () => async (req: Request, res: Response, next: NextFunction) => {
-  try {
+export const verifyImageCaptcha = () => (req: Request, res: Response, next: NextFunction) => {
+  (async () => {
     const user = security.authenticatedUsers.from(req)
     const UserId = user ? user.data ? user.data.id : undefined : undefined
     const captchas = await ImageCaptchaModel.findAll({
@@ -54,7 +54,7 @@ export const verifyImageCaptcha = () => async (req: Request, res: Response, next
     } else {
       res.status(401).send(res.__('Wrong answer to CAPTCHA. Please try again.'))
     }
-  } catch (error) {
+  })().catch(() => {
     res.status(401).send(res.__('Something went wrong while submitting CAPTCHA. Please try again.'))
-  }
+  })
 }

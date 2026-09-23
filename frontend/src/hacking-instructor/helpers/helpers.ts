@@ -199,22 +199,24 @@ export function waitForLogIn () {
 }
 
 export function waitForAdminLogIn () {
-  return async () => {
-    while (true) {
-      let role = ''
-      try {
-        const token: string = localStorage.getItem('token')
-        const decodedToken = jwtDecode(token)
-        const payload = decodedToken as any
-        role = payload.data.role
-      } catch {
-        // token decode failed; role stays empty, loop retries
+  return () => {
+    return (async () => {
+      while (true) {
+        let role = ''
+        try {
+          const token: string = localStorage.getItem('token')
+          const decodedToken = jwtDecode(token)
+          const payload = decodedToken as any
+          role = payload.data.role
+        } catch {
+          // token decode failed; role stays empty, loop retries
+        }
+        if (role === 'admin') {
+          break
+        }
+        await sleep(100)
       }
-      if (role === 'admin') {
-        break
-      }
-      await sleep(100)
-    }
+    })()
   }
 }
 

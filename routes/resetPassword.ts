@@ -14,8 +14,9 @@ import * as security from '../lib/insecurity'
 import { UserModel } from '../models/user'
 
 export function resetPassword () {
-  return async ({ body, connection }: Request, res: Response, next: NextFunction) => {
-    const email = body.email
+  return ({ body, connection }: Request, res: Response, next: NextFunction) => {
+    (async () => {
+      const email = body.email
     const answer = body.answer
     const newPassword = body.new
     const repeatPassword = body.repeat
@@ -50,7 +51,7 @@ export function resetPassword () {
       }
     } catch (error) {
       next(error)
-    }
+    })().catch(next)
   }
 }
 

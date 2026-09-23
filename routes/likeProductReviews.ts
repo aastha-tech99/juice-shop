@@ -14,8 +14,9 @@ import * as db from '../data/mongodb'
 const sleep = async (ms: number) => await new Promise(resolve => setTimeout(resolve, ms))
 
 export function likeProductReviews () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.body.id
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
+      const id = req.body.id
     const user = security.authenticatedUsers.from(req)
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' })
@@ -57,6 +58,6 @@ export function likeProductReviews () {
       }
     } catch (err) {
       res.status(400).json({ error: 'Wrong Params' })
-    }
+    })().catch(next)
   }
 }

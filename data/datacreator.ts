@@ -40,8 +40,9 @@ import replace from 'replace'
 
 const entities = new Entities()
 
-export default async () => {
-  const creators = [
+export default (): Promise<void> => {
+  return (async () => {
+    const creators = [
     createSecurityQuestions,
     createUsers,
     createChallenges,
@@ -63,6 +64,7 @@ export default async () => {
   for (const creator of creators) {
     await creator()
   }
+  })()
 }
 
 async function createChallenges () {
@@ -184,10 +186,11 @@ async function createChallenges () {
 }
 
 async function createUsers () {
-  const users = await loadStaticUserData()
+  try {
+    const users = await loadStaticUserData()
 
-  await Promise.all(
-    users.map(async ({ username, email, password, customDomain, key, role, deletedFlag, profileImage, securityQuestion, feedback, address, card, totpSecret, lastLoginIp = '' }) => {
+    await Promise.all(
+      users.map(async ({ username, email, password, customDomain, key, role, deletedFlag, profileImage, securityQuestion, feedback, address, card, totpSecret, lastLoginIp = '' }) => {
       try {
         const completeEmail = customDomain ? email : `${email}@${config.get<string>('application.domain')}`
         const user = await UserModel.create({
@@ -211,6 +214,9 @@ async function createUsers () {
       }
     })
   )
+  } catch (err) {
+    logger.error(`Could not create users: ${utils.getErrorMessage(err)}`)
+  }
 }
 
 async function createWallet () {
@@ -228,56 +234,70 @@ async function createWallet () {
 }
 
 async function createDeliveryMethods () {
-  const deliveries = await loadStaticDeliveryData()
+  try {
+    const deliveries = await loadStaticDeliveryData()
 
-  await Promise.all(
-    deliveries.map(async ({ name, price, deluxePrice, eta, icon }) => {
-      try {
-        await DeliveryModel.create({
-          name,
-          price,
-          deluxePrice,
-          eta,
-          icon
-        })
-      } catch (err) {
-        logger.error(`Could not insert Delivery Method: ${utils.getErrorMessage(err)}`)
-      }
-    })
-  )
+    await Promise.all(
+      deliveries.map(async ({ name, price, deluxePrice, eta, icon }) => {
+        try {
+          await DeliveryModel.create({
+            name,
+            price,
+            deluxePrice,
+            eta,
+            icon
+          })
+        } catch (err) {
+          logger.error(`Could not insert Delivery Method: ${utils.getErrorMessage(err)}`)
+        }
+      })
+    )
+  } catch (err) {
+    logger.error(`Could not create delivery methods: ${utils.getErrorMessage(err)}`)
+  }
 }
 
 async function createAddresses (UserId: number, addresses: StaticUserAddress[]) {
-  return await Promise.all(
-    addresses.map(async (address) => {
-      return await AddressModel.create({
-        UserId,
-        country: address.country,
-        fullName: address.fullName,
-        mobileNum: address.mobileNum,
-        zipCode: address.zipCode,
-        streetAddress: address.streetAddress,
-        city: address.city,
-        state: address.state ? address.state : null
-      }).catch((err: unknown) => {
-        logger.error(`Could not create address: ${utils.getErrorMessage(err)}`)
+  try {
+    return await Promise.all(
+      addresses.map(async (address) => {
+        return await AddressModel.create({
+          UserId,
+          country: address.country,
+          fullName: address.fullName,
+          mobileNum: address.mobileNum,
+          zipCode: address.zipCode,
+          streetAddress: address.streetAddress,
+          city: address.city,
+          state: address.state ? address.state : null
+        }).catch((err: unknown) => {
+          logger.error(`Could not create address: ${utils.getErrorMessage(err)}`)
+        })
       })
-    })
-  )
+    )
+  } catch (err) {
+    logger.error(`Could not create addresses: ${utils.getErrorMessage(err)}`)
+    return []
+  }
 }
 
 async function createCards (UserId: number, cards: StaticUserCard[]) {
-  return await Promise.all(cards.map(async (card) => {
-    return await CardModel.create({
-      UserId,
-      fullName: card.fullName,
-      cardNum: Number(card.cardNum),
-      expMonth: card.expMonth,
-      expYear: card.expYear
-    }).catch((err: unknown) => {
-      logger.error(`Could not create card: ${utils.getErrorMessage(err)}`)
-    })
-  }))
+  try {
+    return await Promise.all(cards.map(async (card) => {
+      return await CardModel.create({
+        UserId,
+        fullName: card.fullName,
+        cardNum: Number(card.cardNum),
+        expMonth: card.expMonth,
+        expYear: card.expYear
+      }).catch((err: unknown) => {
+        logger.error(`Could not create card: ${utils.getErrorMessage(err)}`)
+      })
+    }))
+  } catch (err) {
+    logger.error(`Could not create cards: ${utils.getErrorMessage(err)}`)
+    return []
+  }
 }
 
 async function deleteUser (userId: number) {

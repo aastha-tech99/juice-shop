@@ -9,9 +9,9 @@ import { UserModel } from '../models/user'
 import { SecurityQuestionModel } from '../models/securityQuestion'
 
 export function securityQuestion () {
-  return async ({ query }: Request, res: Response, next: NextFunction) => {
-    const email = query.email
-    try {
+  return ({ query }: Request, res: Response, next: NextFunction) => {
+    (async () => {
+      const email = query.email
       const answer = await SecurityAnswerModel.findOne({
         include: [{
           model: UserModel,
@@ -24,8 +24,6 @@ export function securityQuestion () {
       } else {
         res.json({})
       }
-    } catch (error) {
-      next(error)
-    }
+    })().catch(next)
   }
 }

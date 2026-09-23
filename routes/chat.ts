@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { type Request, type Response } from 'express'
+import { type Request, type Response, type NextFunction } from 'express'
 import config from 'config'
 import { streamText, tool, stepCountIs } from 'ai'
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible'
@@ -112,8 +112,9 @@ const provider = createOpenAICompatible({
 })
 
 export function chat () {
-  return async (req: Request, res: Response) => {
-    const chatTools = {
+  return (req: Request, res: Response) => {
+    (async () => {
+      const chatTools = {
       searchProducts: tool({
         description: `Search the ${appName} product catalog by keyword`,
         inputSchema: z.object({
@@ -273,6 +274,13 @@ export function chat () {
       res.write(`data: ${JSON.stringify({ error: 'LLM API is not reachable' })}\n\n`)
       res.write('data: [DONE]\n\n')
       res.end()
-    }
+    })().catch((err) => {
+      logger.warn('Chatbot unexpected error: ' + summarizeLlmError(err))
+      if (!res.writableEnded) {
+        res.write(`data: ${JSON.stringify({ error: 'Unexpected error' })}\n\n`)
+        res.write('data: [DONE]\n\n')
+        res.end()
+      }
+    })
   }
 }

@@ -9,8 +9,8 @@ import { DeliveryModel } from '../models/delivery'
 import * as security from '../lib/insecurity'
 
 export function getDeliveryMethods () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const methods = await DeliveryModel.findAll()
       if (methods) {
         const sendMethods = []
@@ -27,15 +27,13 @@ export function getDeliveryMethods () {
       } else {
         res.status(400).json({ status: 'error' })
       }
-    } catch (error) {
-      next(error)
-    }
+    })().catch(next)
   }
 }
 
 export function getDeliveryMethod () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const method = await DeliveryModel.findOne({ where: { id: req.params.id } })
       if (method != null) {
         const sendMethod = {
@@ -49,8 +47,6 @@ export function getDeliveryMethod () {
       } else {
         res.status(400).json({ status: 'error' })
       }
-    } catch (error) {
-      next(error)
-    }
+    })().catch(next)
   }
 }

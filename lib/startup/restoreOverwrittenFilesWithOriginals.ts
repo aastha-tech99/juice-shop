@@ -11,9 +11,9 @@ import { globSync } from 'glob'
 
 let restorationPromise: Promise<void> | null = null
 
-const restoreOverwrittenFilesWithOriginals = async () => {
+const restoreOverwrittenFilesWithOriginals = (): Promise<void> => {
   if (restorationPromise !== null) {
-    return await restorationPromise
+    return restorationPromise
   }
   restorationPromise = (async () => {
     if (process.env.NODE_ENV === 'test' && existsSync(path.resolve('i18n/en.json'))) {
@@ -37,7 +37,7 @@ const restoreOverwrittenFilesWithOriginals = async () => {
       logger.warn('Error restoring i18n files: ' + utils.getErrorMessage(err))
     }
   })()
-  return await restorationPromise
+  return restorationPromise
 }
 
 export default restoreOverwrittenFilesWithOriginals

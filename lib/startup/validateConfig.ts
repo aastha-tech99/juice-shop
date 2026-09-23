@@ -23,11 +23,12 @@ const specialMemories = [
   { name: '"Visual Geo Stalking" challenge memory', user: 'emma', keys: ['geoStalkingVisualSecurityQuestion', 'geoStalkingVisualSecurityAnswer'] }
 ] as const
 
-const validateConfig = async ({ products, memories, exitOnFailure = true }: { products?: ProductConfig[], memories?: MemoryConfig[], exitOnFailure: boolean }) => {
-  products = products ?? config.get('products') ?? []
-  memories = memories ?? config.get('memories') ?? []
+const validateConfig = ({ products, memories, exitOnFailure = true }: { products?: ProductConfig[], memories?: MemoryConfig[], exitOnFailure: boolean }): Promise<boolean> => {
+  return (async () => {
+    products = products ?? config.get('products') ?? []
+    memories = memories ?? config.get('memories') ?? []
 
-  let success = true
+    let success = true
   success = checkConfigSchema() && success
   success = checkMinimumRequiredNumberOfProducts(products) && success
   success = checkUnambiguousMandatorySpecialProducts(products) && success
@@ -49,6 +50,10 @@ const validateConfig = async ({ products, memories, exitOnFailure = true }: { pr
     }
   }
   return success
+  })().catch((err) => {
+    logger.warn('Configuration validation error: ' + (err instanceof Error ? err.message : String(err)))
+    return false
+  })
 }
 
 export const checkConfigSchema = (configuration = config.util.toObject()): boolean => {

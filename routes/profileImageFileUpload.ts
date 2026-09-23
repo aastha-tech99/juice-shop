@@ -12,8 +12,8 @@ import { UserModel } from '../models/user'
 import * as security from '../lib/insecurity'
 
 export function profileImageFileUpload () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const file = req.file
       const buffer = file?.buffer
       if (buffer === undefined) {
@@ -53,6 +53,6 @@ export function profileImageFileUpload () {
       res.redirect(process.env.BASE_PATH + '/profile')
     } catch (error) {
       next(error)
-    }
+    })().catch(next)
   }
 }

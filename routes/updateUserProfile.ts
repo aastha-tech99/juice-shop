@@ -13,8 +13,9 @@ import * as utils from '../lib/utils'
 import config from 'config'
 
 export function updateUserProfile () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const loggedInUser = security.authenticatedUsers.get(req.cookies.token)
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
+      const loggedInUser = security.authenticatedUsers.get(req.cookies.token)
 
     if (!loggedInUser) {
       next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
@@ -44,6 +45,6 @@ export function updateUserProfile () {
       res.redirect(process.env.BASE_PATH + '/profile')
     } catch (error) {
       next(error)
-    }
+    })().catch(next)
   }
 }

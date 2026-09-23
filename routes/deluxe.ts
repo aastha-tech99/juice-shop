@@ -14,8 +14,8 @@ import { CardModel } from '../models/card'
 import * as utils from '../lib/utils'
 
 export function upgradeToDeluxe () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const user = await UserModel.findOne({ where: { id: req.body.UserId, role: security.roles.customer } })
       if (user == null) {
         res.status(400).json({ status: 'error', error: 'Something went wrong. Please try again!' })
@@ -53,7 +53,7 @@ export function upgradeToDeluxe () {
       }
     } catch (err: unknown) {
       res.status(400).json({ status: 'error', error: 'Something went wrong: ' + utils.getErrorMessage(err) })
-    }
+    })().catch(next)
   }
 }
 

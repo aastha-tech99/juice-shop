@@ -12,8 +12,9 @@ import * as security from '../lib/insecurity'
 import * as utils from '../lib/utils'
 
 export function createProductReviews () {
-  return async (req: Request, res: Response) => {
-    const user = security.authenticatedUsers.from(req)
+  return (req: Request, res: Response) => {
+    (async () => {
+      const user = security.authenticatedUsers.from(req)
     challengeUtils.solveIf(
       challenges.forgedReviewChallenge,
       () => user?.data?.email !== req.body.author
@@ -29,7 +30,7 @@ export function createProductReviews () {
       })
       return res.status(201).json({ status: 'success' })
     } catch (err: unknown) {
-      return res.status(500).json(utils.getErrorMessage(err))
-    }
+      res.status(500).json(utils.getErrorMessage(err))
+    })().catch(() => { res.status(500).json({ error: 'Unexpected error' }) })
   }
 }

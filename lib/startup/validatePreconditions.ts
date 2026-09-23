@@ -49,7 +49,8 @@ export const preconditionsReady = new Promise<void>((resolve) => {
   resolvePreconditionsReady = resolve
 })
 
-const validatePreconditions = async ({ exitOnFailure = true } = {}) => {
+const validatePreconditions = ({ exitOnFailure = true } = {}): Promise<boolean> => {
+  return (async () => {
   let success = true
   success = checkIfRunningOnSupportedNodeVersion(process.version) && success
   success = checkIfRunningOnSupportedOS(process.platform) && success
@@ -109,6 +110,10 @@ const validatePreconditions = async ({ exitOnFailure = true } = {}) => {
     process.exit(1)
   }
   return success
+  })().catch((err) => {
+    logger.error('Precondition validation failed: ' + (err instanceof Error ? err.message : String(err)))
+    return false
+  })
 }
 
 export const checkIfRunningOnSupportedNodeVersion = (runningVersion: string) => {
@@ -160,12 +165,12 @@ export const checkIfEnvironmentVariableExists = (varName: string) => {
   return false
 }
 
-export const checkIfDomainReachable = async (domain: string) => {
-  try {
+export const checkIfDomainReachable = (domain: string): Promise<boolean> => {
+  return (async () => {
     await fetch(domain, { signal: AbortSignal.timeout(5000) })
     logger.info(`Domain ${colors.bold(domain)} is reachable (${colors.green('SUCCESS')})`)
     return true
-  } catch {
+  })().catch(() => {
     logger.warn(`Domain ${colors.bold(domain)} is not reachable (${colors.yellow('WARNING')})`)
     if (domainDependencies[domain]) {
       domainDependencies[domain].dependentChallenges.forEach((dependency: string) => {
@@ -173,7 +178,7 @@ export const checkIfDomainReachable = async (domain: string) => {
       })
     }
     return false
-  }
+  })
 }
 
 export const checkIfPortIsAvailable = async (port: number | string) => {

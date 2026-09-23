@@ -13,8 +13,8 @@ import * as security from '../lib/insecurity'
 import * as db from '../data/mongodb'
 
 export function dataExport () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const loggedInUser = security.authenticatedUsers.get(req.headers?.authorization?.replace('Bearer ', ''))
       if (loggedInUser?.data?.email && loggedInUser.data.id) {
         const username = loggedInUser.data.username
@@ -111,6 +111,6 @@ export function dataExport () {
       }
     } catch (error) {
       next(error)
-    }
+    })().catch(next)
   }
 }

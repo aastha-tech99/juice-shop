@@ -38,8 +38,8 @@ export function restoreProgress () {
 }
 
 export function restoreProgressFindIt () {
-  return async ({ params }: Request, res: Response, next: NextFunction) => {
-    try {
+  return ({ params }: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const hashids = new Hashids('this is the salt for findIt challenges', 60, hashidsAlphabet)
       const continueCodeFindIt = params.continueCode
       if (!hashidRegexp.test(continueCodeFindIt)) {
@@ -58,14 +58,14 @@ export function restoreProgressFindIt () {
       }
     } catch (error) {
       next(error)
-    }
+    })().catch(next)
   }
 }
 
 export function restoreProgressFixIt () {
   const hashids = new Hashids('yet another salt for the fixIt challenges', 60, hashidsAlphabet)
-  return async ({ params }: Request, res: Response, next: NextFunction) => {
-    try {
+  return ({ params }: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const continueCodeFixIt = params.continueCode
       if (!hashidRegexp.test(continueCodeFixIt)) {
         return res.status(404).send(invalidContinueCode)
@@ -83,6 +83,6 @@ export function restoreProgressFixIt () {
       }
     } catch (error) {
       next(error)
-    }
+    })().catch(next)
   }
 }

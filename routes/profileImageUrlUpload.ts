@@ -14,8 +14,9 @@ import * as utils from '../lib/utils'
 import logger from '../lib/logger'
 
 export function profileImageUrlUpload () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    if (req.body.imageUrl !== undefined) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
+      if (req.body.imageUrl !== undefined) {
       const url = req.body.imageUrl
       if (url.match(/(.)*solve\/challenges\/server-side(.)*/) !== null) req.app.locals.abused_ssrf_bug = true
       const loggedInUser = security.authenticatedUsers.get(req.cookies.token)
@@ -47,5 +48,6 @@ export function profileImageUrlUpload () {
     }
     res.location(process.env.BASE_PATH + '/profile')
     res.redirect(process.env.BASE_PATH + '/profile')
+    })().catch(next)
   }
 }

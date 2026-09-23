@@ -10,8 +10,9 @@ import { UserModel } from '../models/user'
 import * as security from '../lib/insecurity'
 
 export function changePassword () {
-  return async ({ query, headers, connection }: Request, res: Response, next: NextFunction) => {
-    const currentPassword = query.current as string
+  return ({ query, headers, connection }: Request, res: Response, next: NextFunction) => {
+    (async () => {
+      const currentPassword = query.current as string
     const newPassword = query.new as string
     const newPasswordInString = newPassword?.toString()
     const repeatPassword = query.repeat
@@ -56,6 +57,6 @@ export function changePassword () {
       res.json({ user })
     } catch (error) {
       next(error)
-    }
+    })().catch(next)
   }
 }

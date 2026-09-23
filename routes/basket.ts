@@ -13,8 +13,8 @@ import * as security from '../lib/insecurity'
 import { challenges } from '../data/datacache'
 
 export function retrieveBasket () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const id = req.params.id
       const basket = await BasketModel.findOne({ where: { id }, include: [{ model: ProductModel, paranoid: false, as: 'Products' }] })
       /* jshint eqeqeq:false */
@@ -31,6 +31,6 @@ export function retrieveBasket () {
       res.json(utils.queryResultToJson(basket))
     } catch (error) {
       next(error)
-    }
+    })().catch(next)
   }
 }

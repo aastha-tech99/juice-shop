@@ -36,23 +36,25 @@ const chatTools = {
     inputSchema: z.object({
       query: z.string().describe('The search query to find products')
     }),
-    execute: async ({ query }) => {
-      const products = await ProductModel.findAll({
-        where: {
-          [Op.or]: [
-            { name: { [Op.like]: `%${query}%` } },
-            { description: { [Op.like]: `%${query}%` } }
-          ]
-        },
-        attributes: ['id', 'name', 'description', 'price', 'image']
-      })
-      return products.map(p => ({
-        id: p.id,
-        name: p.name,
-        description: p.description,
-        price: p.price,
-        image: p.image
-      }))
+    execute: ({ query }) => {
+      return (async () => {
+        const products = await ProductModel.findAll({
+          where: {
+            [Op.or]: [
+              { name: { [Op.like]: `%${query}%` } },
+              { description: { [Op.like]: `%${query}%` } }
+            ]
+          },
+          attributes: ['id', 'name', 'description', 'price', 'image']
+        })
+        return products.map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          image: p.image
+        }))
+      })().catch(() => [])
     }
   }),
 
@@ -61,9 +63,11 @@ const chatTools = {
     inputSchema: z.object({
       id: z.string().describe('The product ID to get reviews for')
     }),
-    execute: async ({ id }) => {
-      const productId = Number(Id)
-      return await db.reviewsCollection.find({ $where: 'this.product == ' + productId }) as Review[]
+    execute: ({ id }) => {
+      return (async () => {
+        const productId = Number(Id)
+        return await db.reviewsCollection.find({ $where: 'this.product == ' + productId }) as Review[]
+      })().catch(() => [])
     }
   }),
 
@@ -72,20 +76,22 @@ const chatTools = {
     inputSchema: z.object({
       orderId: z.string().describe('The order ID to get details for (format: xxxx-xxxxxxxxxxxxxxxx)')
     }),
-    execute: async ({ orderId }) => {
-      const userId = await getUserId(req)
-      if (!userId) return { error: 'Customer not authenticated' }
+    execute: ({ orderId }) => {
+      return (async () => {
+        const userId = await getUserId(req)
+        if (!userId) return { error: 'Customer not authenticated' }
 
-      const user = await UserModel.findByPk(userId, { attributes: ['email'] })
-      if (!user) return { error: 'Customer not found' }
+        const user = await UserModel.findByPk(userId, { attributes: ['email'] })
+        if (!user) return { error: 'Customer not found' }
 
-      const maskedEmail = user.email ? user.email.replace(/[aeiou]/gi, '*') : undefined
-      const order = await db.ordersCollection.findOne({ orderId })
+        const maskedEmail = user.email ? user.email.replace(/[aeiou]/gi, '*') : undefined
+        const order = await db.ordersCollection.findOne({ orderId })
 
-      if (!order) return { error: 'Order not found' }
-      if (order.email !== maskedEmail) return { error: 'Order does not belong to the current customer' }
+        if (!order) return { error: 'Order not found' }
+        if (order.email !== maskedEmail) return { error: 'Order does not belong to the current customer' }
 
-      return order
+        return order
+      })().catch(() => ({ error: 'Failed to get order' }))
     }
   }),
 
@@ -94,9 +100,11 @@ const chatTools = {
     inputSchema: z.object({
       discount: z.number().describe('The discount percentage for the coupon (maximum 10)')
     }),
-    execute: async ({ discount }) => {
-      const couponCode = security.generateCoupon(discount)
-      return { couponCode, discount }
+    execute: ({ discount }) => {
+      return (async () => {
+        const couponCode = security.generateCoupon(discount)
+        return { couponCode, discount }
+      })().catch(() => ({ error: 'Failed to generate coupon' }))
     }
   })
 }

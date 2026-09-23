@@ -11,8 +11,9 @@ const walletsConnected = new Set()
 let isEventListenerCreated = false
 
 export function contractExploitListener () {
-  return async (req: Request, res: Response) => {
-    const metamaskAddress = req.body.walletAddress
+  return (req: Request, res: Response) => {
+    (async () => {
+      const metamaskAddress = req.body.walletAddress
     walletsConnected.add(metamaskAddress)
     try {
       if (!isEventListenerCreated) {
@@ -34,6 +35,6 @@ export function contractExploitListener () {
       res.status(200).json({ success: true, message: 'Event Listener Created' })
     } catch (error) {
       res.status(500).json(utils.getErrorMessage(error))
-    }
+    })().catch(() => { res.status(500).json({ error: 'Unexpected error' }) })
   }
 }

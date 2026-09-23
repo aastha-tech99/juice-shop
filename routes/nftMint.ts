@@ -11,8 +11,8 @@ const addressesMinted = new Set()
 let isEventListenerCreated = false
 
 export function nftMintListener () {
-  return async (req: Request, res: Response) => {
-    try {
+  return (req: Request, res: Response) => {
+    (async () => {
       if (!isEventListenerCreated) {
         const { WebSocketProvider, Contract } = await import('ethers')
         const provider = new WebSocketProvider(`wss://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY ?? ''}`)
@@ -31,7 +31,7 @@ export function nftMintListener () {
       res.status(200).json({ success: true, message: 'Event Listener Created' })
     } catch (error) {
       res.status(500).json(utils.getErrorMessage(error))
-    }
+    })().catch(() => { res.status(500).json({ error: 'Unexpected error' }) })
   }
 }
 

@@ -8,8 +8,8 @@ import { BasketModel } from '../models/basket'
 import * as security from '../lib/insecurity'
 
 export function applyCoupon () {
-  return async ({ params }: Request, res: Response, next: NextFunction) => {
-    try {
+  return ({ params }: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const id = params.id
       let coupon: string | undefined | null = params.coupon ? decodeURIComponent(params.coupon) : undefined
       const discount = security.discountFromCoupon(coupon)
@@ -23,12 +23,10 @@ export function applyCoupon () {
 
       await basket.update({ coupon: coupon?.toString() })
       if (discount) {
-        return res.json({ discount })
+        res.json({ discount })
       } else {
-        return res.status(404).send('Invalid coupon.')
+        res.status(404).send('Invalid coupon.')
       }
-    } catch (error) {
-      next(error)
-    }
+    })().catch(next)
   }
 }

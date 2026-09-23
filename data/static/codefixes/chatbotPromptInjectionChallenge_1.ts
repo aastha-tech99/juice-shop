@@ -3,9 +3,11 @@
         inputSchema: z.object({
           discount: z.number().describe('The discount percentage for the coupon (maximum 10)')
         }),
-        execute: async ({ discount }) => {
-          const couponCode = security.generateCoupon(discount)
-          return { couponCode, discount }
+        execute: ({ discount }) => {
+          return (async () => {
+            const couponCode = security.generateCoupon(discount)
+            return { couponCode, discount }
+          })().catch(() => ({ error: 'Failed to generate coupon' }))
         }
       })
     }

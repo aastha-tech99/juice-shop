@@ -10,8 +10,8 @@ import logger from '../lib/logger'
 import * as utils from '../lib/utils'
 
 export function getLanguageList () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const languages: Array<{ key: string, lang: any, icons: string[], shortKey: string, percentage: number, gauge: string }> = []
 
       const enContentStr = await readFile('frontend/dist/frontend/assets/i18n/en.json', 'utf-8')
@@ -74,7 +74,7 @@ export function getLanguageList () {
       res.status(200).json(languages)
     } catch (err: any) {
       next(err)
-    }
+    })().catch(next)
   }
 
   function calcPercentage (fileContent: any, enContent: any): number {

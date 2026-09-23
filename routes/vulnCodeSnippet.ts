@@ -32,15 +32,19 @@ const setStatusCode = (error: any) => {
 }
 
 export const retrieveCodeSnippet = async (challengeKey: string) => {
-  const codeChallenges = await getCodeChallenges()
-  if (codeChallenges.has(challengeKey)) {
-    return codeChallenges.get(challengeKey) ?? null
+  try {
+    const codeChallenges = await getCodeChallenges()
+    if (codeChallenges.has(challengeKey)) {
+      return codeChallenges.get(challengeKey) ?? null
+    }
+    return null
+  } catch {
+    return null
   }
-  return null
 }
 
-export const serveCodeSnippet = () => async (req: Request<SnippetRequestBody, Record<string, unknown>, Record<string, unknown>>, res: Response, next: NextFunction) => {
-  try {
+export const serveCodeSnippet = () => (req: Request<SnippetRequestBody, Record<string, unknown>, Record<string, unknown>>, res: Response, next: NextFunction) => {
+  (async () => {
     const snippetData = await retrieveCodeSnippet(req.params.challenge)
     if (snippetData == null) {
       res.status(404).json({ status: 'error', error: `No code challenge for challenge key: ${req.params.challenge}` })
@@ -50,12 +54,16 @@ export const serveCodeSnippet = () => async (req: Request<SnippetRequestBody, Re
   } catch (error) {
     const statusCode = setStatusCode(error)
     res.status(statusCode).json({ status: 'error', error: utils.getErrorMessage(error) })
-  }
+  })().catch(next)
 }
 
 export const retrieveChallengesWithCodeSnippet = async () => {
-  const codeChallenges = await getCodeChallenges()
-  return [...codeChallenges.keys()]
+  try {
+    const codeChallenges = await getCodeChallenges()
+    return [...codeChallenges.keys()]
+  } catch {
+    return []
+  }
 }
 
 export const getVerdict = (vulnLines: number[], neutralLines: number[], selectedLines: number[]) => {
@@ -67,8 +75,9 @@ export const getVerdict = (vulnLines: number[], neutralLines: number[], selected
   return notOkLines.length === 0
 }
 
-export const checkVulnLines = () => async (req: Request<Record<string, unknown>, Record<string, unknown>, VerdictRequestBody>, res: Response, next: NextFunction) => {
-  const key = req.body.key
+export const checkVulnLines = () => (req: Request<Record<string, unknown>, Record<string, unknown>, VerdictRequestBody>, res: Response, next: NextFunction) => {
+  (async () => {
+    const key = req.body.key
   let snippetData
   try {
     snippetData = await retrieveCodeSnippet(key)
@@ -120,5 +129,5 @@ export const checkVulnLines = () => async (req: Request<Record<string, unknown>,
     }
   } catch (error) {
     next(error)
-  }
+  })().catch(next)
 }

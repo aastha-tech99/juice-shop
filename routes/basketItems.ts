@@ -17,8 +17,9 @@ interface RequestWithRawBody extends Request {
 }
 
 export function addBasketItem () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const result = utils.parseJsonCustom((req as RequestWithRawBody).rawBody)
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
+      const result = utils.parseJsonCustom((req as RequestWithRawBody).rawBody)
     const productIds = []
     const basketIds = []
     const quantities = []
@@ -51,7 +52,7 @@ export function addBasketItem () {
       } catch (error) {
         next(error)
       }
-    }
+    })().catch(next)
   }
 }
 
@@ -63,8 +64,8 @@ export function quantityCheckBeforeBasketItemAddition () {
   }
 }
 export function quantityCheckBeforeBasketItemUpdate () {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    (async () => {
       const item = await BasketItemModel.findOne({ where: { id: req.params.id } })
       const user = security.authenticatedUsers.from(req)
       challengeUtils.solveIf(challenges.basketManipulateChallenge, () => { return user && req.body.BasketId && user.bid != req.body.BasketId }) // eslint-disable-line eqeqeq
@@ -80,7 +81,7 @@ export function quantityCheckBeforeBasketItemUpdate () {
       }
     } catch (error) {
       next(error)
-    }
+    })().catch(next)
   }
 }
 
