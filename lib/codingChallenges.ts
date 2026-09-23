@@ -55,10 +55,6 @@ function getCodeChallengesFromFile (file: FileMatch) {
   return challenges.map((challengeKey) => getCodingChallengeFromFileContent(fileContent, challengeKey))
 }
 
-function escapeRegExp (s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 export function getCodingChallengeFromFileContent (source: string, challengeKey: string) {
   const snippets = source.match(`[/#]{0,2} vuln-code-snippet start.*${challengeKey}([^])*vuln-code-snippet end.*${challengeKey}`)
   if (snippets == null) {
@@ -77,9 +73,9 @@ export function getCodingChallengeFromFileContent (source: string, challengeKey:
   const vulnLines = []
   const neutralLines = []
   for (let i = 0; i < lines.length; i++) {
-    if (new RegExp(`vuln-code-snippet vuln-line.*${escapeRegExp(challengeKey)}`).exec(lines[i]) != null) {
+    if (lines[i].includes('vuln-code-snippet vuln-line') && lines[i].includes(challengeKey)) {
       vulnLines.push(i + 1)
-    } else if (new RegExp(`vuln-code-snippet neutral-line.*${escapeRegExp(challengeKey)}`).exec(lines[i]) != null) {
+    } else if (lines[i].includes('vuln-code-snippet neutral-line') && lines[i].includes(challengeKey)) {
       neutralLines.push(i + 1)
     }
   }
