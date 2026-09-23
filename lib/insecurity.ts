@@ -39,7 +39,7 @@ interface IAuthenticatedUsers {
 }
 
 export const hash = (data: string) => crypto.createHash('md5').update(data).digest('hex')
-export const hmac = (data: string) => crypto.createHmac('sha256', 'pa4qacea4VK9t9nGv7yZtwmj').update(data).digest('hex')
+export const hmac = (data: string) => crypto.createHmac('sha256', process.env.HMAC_KEY ?? '').update(data).digest('hex') // ROTATE: previous HMAC key was exposed in version control history
 
 export const cutOffPoisonNullByte = (str: string) => {
   const nullByte = '%00'
@@ -147,8 +147,8 @@ export const roles = {
 }
 
 export const deluxeToken = (email: string) => {
-  const hmac = crypto.createHmac('sha256', privateKey)
-  return hmac.update(email + roles.deluxe).digest('hex')
+  const deluxeHmac = crypto.createHmac('sha256', process.env.DELUXE_TOKEN_SECRET ?? '') // ROTATE: previous key was exposed in version control history
+  return deluxeHmac.update(email + roles.deluxe).digest('hex')
 }
 
 export const isAccounting = () => {

@@ -197,16 +197,20 @@ void describe('insecurity', () => {
   })
 
   void describe('hmac', () => {
-    void it('returns SHA-256 HMAC with "pa4qacea4VK9t9nGv7yZtwmj" as salt any input string', () => {
-      assert.equal(security.hmac('admin123'), '6be13e2feeada221f29134db71c0ab0be0e27eccfc0fb436ba4096ba73aafb20')
-      assert.equal(security.hmac('password'), 'da28fc4354f4a458508a461fbae364720c4249c27f10fccf68317fc4bf6531ed')
-      assert.equal(security.hmac(''), 'f052179ec5894a2e79befa8060cfcb517f1e14f7f6222af854377b6481ae953e')
+    void it('returns SHA-256 HMAC using HMAC_KEY from environment for any input string', () => {
+      process.env.HMAC_KEY = 'test-hmac-key'
+      assert.equal(security.hmac('admin123'), '7f669e92813b842ff0032ac1afe037a4083e158f6a5ddd293428ab61af2864ff')
+      assert.equal(security.hmac('password'), '9d239cb23925f37d403c96ed19e416c2742b9c4b460ef1969415b208e7ef6282')
+      assert.equal(security.hmac(''), '6a7ae61c8f37909c4bbc3bbc2b4851a36ec44cfe9f93e02343bd19e03b99562b')
+      delete process.env.HMAC_KEY
     })
   })
 
   void describe('deluxeToken', () => {
-    void it('returns SHA-256 HMAC with private key as salt for email and deluxe role', () => {
-      assert.equal(security.deluxeToken('test@juice-sh.op'), '91e2b6493fda679d95ae05ac0d1cdce82c2ad4f7b518202a3ed54732531bc7e1')
+    void it('returns SHA-256 HMAC with DELUXE_TOKEN_SECRET from environment for email and deluxe role', () => {
+      process.env.DELUXE_TOKEN_SECRET = 'test-deluxe-secret'
+      assert.equal(security.deluxeToken('test@juice-sh.op'), 'e802777d57d017dccfbd23864f8311d9e557295a1e0e673f3829c64810fa6034')
+      delete process.env.DELUXE_TOKEN_SECRET
     })
   })
 
@@ -230,15 +234,19 @@ void describe('insecurity', () => {
 
   void describe('isDeluxe', () => {
     void it('returns true if decoded token has deluxe role and valid deluxe token', () => {
+      process.env.DELUXE_TOKEN_SECRET = 'test-deluxe-secret'
       const user = { data: { email: 'deluxe@juice-sh.op', role: 'deluxe', deluxeToken: security.deluxeToken('deluxe@juice-sh.op') } }
       const token = security.authorize(user)
       assert.equal(security.isDeluxe({ headers: { authorization: `Bearer ${token}` } } as unknown as Request), true)
+      delete process.env.DELUXE_TOKEN_SECRET
     })
 
     void it('returns false if decoded token has deluxe role but invalid deluxe token', () => {
+      process.env.DELUXE_TOKEN_SECRET = 'test-deluxe-secret'
       const user = { data: { email: 'deluxe@juice-sh.op', role: 'deluxe', deluxeToken: 'invalid' } }
       const token = security.authorize(user)
       assert.equal(security.isDeluxe({ headers: { authorization: `Bearer ${token}` } } as unknown as Request), false)
+      delete process.env.DELUXE_TOKEN_SECRET
     })
 
     void it('returns false if decoded token has other role', () => {
