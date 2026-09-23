@@ -75,7 +75,7 @@ describe('LastLoginIpComponent', () => {
     })
 
     it('should not set Last-Login IP if none is present in JWT', () => {
-        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fX0.bVBhvll6IaeR3aUdoOeyR8YZe2S2DfhGAxTGfd9enLw')
+        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fX0.bVBhvll6IaeR3aUdoOeyR8YZe2S2DfhGAxTGfd9enLw') // not a real secret - dummy JWT for unit test
         component.ngOnInit()
         expect(sanitizer.bypassSecurityTrustHtml).not.toHaveBeenCalled()
     })

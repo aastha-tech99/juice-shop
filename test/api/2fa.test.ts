@@ -39,7 +39,7 @@ void describe('/rest/2fa/verify', () => {
       type: 'password_valid_needs_second_factor_token'
     })
 
-    const totpToken = generateSync({ secret: 'IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH' })
+    const totpToken = generateSync({ secret: 'IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH' }) // not a real secret - TOTP seed for demo test account
 
     const res = await request(app)
       .post('/rest/2fa/verify')

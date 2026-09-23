@@ -50,7 +50,7 @@ void describe('/rest/user/data-export', () => {
   })
 
   void it('Export data with empty JSON body but valid token still succeeds without CAPTCHA', async () => {
-    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' }) // not a real secret - base64 of reversed email, demo challenge credential
     const authHeader = { Authorization: 'Bearer ' + token, 'content-type': 'application/json' }
 
     const res = await request(app)

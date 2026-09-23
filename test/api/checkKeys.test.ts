@@ -43,7 +43,7 @@ void describe('Web3 Key Derivation & NFT Unlock', () => {
     void it('POST public wallet key in request body gets rejected as such', async () => {
       const res = await request(app)
         .post('/rest/web3/submitKey')
-        .send({ privateKey: '0x02c7a2a93289c9fbda5990bac6596993e9bb0a8d3f178175a80b7cfd983983f506' })
+        .send({ privateKey: '0x02c7a2a93289c9fbda5990bac6596993e9bb0a8d3f178175a80b7cfd983983f506' }) // not a real secret - public Ethereum testnet key used in challenge test
 
       assert.equal(res.status, 401)
       assert.ok(res.headers['content-type']?.includes('application/json'))

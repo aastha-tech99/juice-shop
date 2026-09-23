@@ -123,7 +123,7 @@ describe('/#/login', () => {
         }
       )
 
-      cy.task<string>('GenerateAuthenticator', 'IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH').then(
+      cy.task<string>('GenerateAuthenticator', 'IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH').then( // not a real secret - TOTP seed for demo test account
         (totpToken: string) => {
           void cy.get('#totpToken').type(totpToken)
           void cy.get('#totpSubmitButton').click()

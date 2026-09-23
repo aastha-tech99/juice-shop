@@ -98,7 +98,7 @@ void describe('/rest/products/reviews', () => {
   void it('POST non-existing product review cannot be liked', async () => {
     const { token } = await login(app, {
       email: 'bjoern.kimminich@gmail.com',
-      password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
+      password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' // not a real secret - base64 of reversed email, demo challenge credential
     })
     const res = await request(app)
       .post('/rest/products/reviews')

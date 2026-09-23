@@ -33,7 +33,7 @@ void describe('/dataerasure', () => {
   })
 
   void it('GET erasure form rendering fails for users without assigned security answer', async () => {
-    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' }) // not a real secret - base64 of reversed email, demo challenge credential
 
     const res = await request(app)
       .get('/dataerasure/')
