@@ -133,11 +133,22 @@ export class ForgotPasswordComponent {
   }
 }
 
+function constantTimeEquals (a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false
+  }
+  let result = 0
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  }
+  return result === 0
+}
+
 function matchValidator (passwordControl: AbstractControl) {
   return function matchOtherValidate (repeatPasswordControl: UntypedFormControl) {
     const password = passwordControl.value
     const passwordRepeat = repeatPasswordControl.value
-    if (password !== passwordRepeat) {
+    if (!constantTimeEquals(password, passwordRepeat)) {
       return { notSame: true }
     }
     return null
