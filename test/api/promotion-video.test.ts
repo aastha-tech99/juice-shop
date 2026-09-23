@@ -34,7 +34,7 @@ void describe('/promotion', () => {
     const res = await request(app)
       .get('/promotion')
     assert.ok(res.headers['content-type']?.includes('text/html'))
-    assert.ok(res.text.includes('<script id="subtitle" type="text/vtt" data-label="English" data-lang="en">'))
+    assert.ok(res.text.includes('<script id="subtitle" type="text/vtt" data-label="English" data-lang="en" data-text="'))
   })
 })
 
