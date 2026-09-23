@@ -67,7 +67,7 @@ void describe('currentUser', () => {
     assert.equal(res.json.mock.calls.length, 1)
     const returnedUser = res.json.mock.calls[0].arguments[0].user
     assert.equal(returnedUser.password, undefined)
-    assert.equal(returnedUser.__proto__.constructor, Object)
+    assert.equal(Object.getPrototypeOf(returnedUser).constructor, Object)
     assert.deepEqual(returnedUser, {})
   })
 })

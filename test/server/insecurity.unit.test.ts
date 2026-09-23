@@ -21,7 +21,6 @@ const _testKeyPair = generateKeyPairSync('rsa', {
 process.env.JWT_PRIVATE_KEY = _testKeyPair.privateKey as string
 process.env.JWT_PUBLIC_KEY = _testKeyPair.publicKey as string
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const security = require('../../lib/insecurity') as typeof import('../../lib/insecurity')
 
 void describe('insecurity', () => {
