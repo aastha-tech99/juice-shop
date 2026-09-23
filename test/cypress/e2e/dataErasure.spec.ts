@@ -4,7 +4,7 @@ describe('/dataerasure', () => {
   })
 
   describe('challenge "lfrChallenge"', () => {
-    it('should be possible to perform local file read attack using the browser', () => {
+    it('should block local file read attack via path traversal in layout parameter', () => {
       cy.task('isDocker').then((isDocker) => {
         if (!isDocker) {
           cy.window().then(async () => {
@@ -20,12 +20,8 @@ describe('/dataerasure', () => {
               },
               body: params
             })
-            if (response.status === 200) {
-              console.log('Success')
-            }
+            expect(response.status).to.equal(500)
           })
-          cy.visit('/')
-          cy.expectChallengeSolved({ challenge: 'Local File Read' })
         }
       })
     })

@@ -113,11 +113,21 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
       }
 
       if (req.body.layout && utils.isChallengeEnabled(challenges.lfrChallenge)) {
-        const filePath: string = path.resolve(req.body.layout).toLowerCase()
-        const isForbiddenFile: boolean = (filePath.includes('ftp') || filePath.includes('ctf.key') || filePath.includes('encryptionkeys'))
+        const viewsDir = path.resolve('views')
+        const normalizedLayout = path.normalize(req.body.layout).replace(/^[\\/]+/, '')
+        const filePath: string = path.resolve(viewsDir, normalizedLayout)
+        if (normalizedLayout.includes('..') || !filePath.startsWith(viewsDir + path.sep)) {
+          next(new Error('File access not allowed'))
+          return
+        }
+        const lowerFilePath = filePath.toLowerCase()
+        const isForbiddenFile: boolean = (lowerFilePath.includes('ftp') || lowerFilePath.includes('ctf.key') || lowerFilePath.includes('encryptionkeys'))
         if (!isForbiddenFile) {
+          const safeBody = sanitizeBody(req.body)
+          delete safeBody.layout
           res.render('dataErasureResult', {
-            ...sanitizeBody(req.body),
+            ...safeBody,
+            layout: filePath,
             ...themeVars
           }, (error, html) => {
             if (!html || error) {
@@ -132,8 +142,10 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
           next(new Error('File access not allowed'))
         }
       } else {
+        const safeBody = sanitizeBody(req.body)
+        delete safeBody.layout
         res.render('dataErasureResult', {
-          ...sanitizeBody(req.body),
+          ...safeBody,
           ...themeVars
         })
       }
