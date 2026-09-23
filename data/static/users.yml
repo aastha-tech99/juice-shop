@@ -148,7 +148,7 @@
   email: wurstbrot
   username: wurstbrot
   password: 'EinBelegtesBrotMitSchinkenSCHINKEN!'
-  totpSecret: IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH
+  totpSecret: ''  # Credential removed from source; set TOTP_SECRET_TIMO env var at runtime. Rotate the original secret — it remains in git history.
   key: timo
   role: 'admin'
   securityQuestion:

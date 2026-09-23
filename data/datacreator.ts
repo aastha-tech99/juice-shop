@@ -190,6 +190,7 @@ async function createUsers () {
     users.map(async ({ username, email, password, customDomain, key, role, deletedFlag, profileImage, securityQuestion, feedback, address, card, totpSecret, lastLoginIp = '' }) => {
       try {
         const completeEmail = customDomain ? email : `${email}@${config.get<string>('application.domain')}`
+        const resolvedTotpSecret = totpSecret || process.env[`TOTP_SECRET_${key.toUpperCase()}`] || ''
         const user = await UserModel.create({
           username,
           email: completeEmail,
@@ -197,7 +198,7 @@ async function createUsers () {
           role,
           deluxeToken: role === security.roles.deluxe ? security.deluxeToken(completeEmail) : '',
           profileImage: `assets/public/images/uploads/${profileImage ?? (role === security.roles.admin ? 'defaultAdmin.png' : 'default.svg')}`,
-          totpSecret,
+          totpSecret: resolvedTotpSecret,
           lastLoginIp
         })
         datacache.users[key] = user
