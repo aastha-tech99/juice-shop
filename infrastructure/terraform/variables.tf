@@ -74,3 +74,8 @@ variable "lb_access_logs_bucket" {
   description = "S3 bucket name for ALB access logs"
   type        = string
 }
+
+variable "cloudwatch_kms_key_arn" {
+  description = "ARN of the KMS key for encrypting CloudWatch log groups"
+  type        = string
+}
