@@ -356,7 +356,7 @@ jobs:
       - name: "Check out Git repository"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
       - name: "Install Heroku CLI"
-        run: curl https://cli-assets.heroku.com/install.sh | sh
+        run: npm install -g heroku
       - name: "Set Heroku app & branch for ${{ github.ref }}"
         run: |
           if [ "$GITHUB_REF" == "refs/heads/master" ]; then
