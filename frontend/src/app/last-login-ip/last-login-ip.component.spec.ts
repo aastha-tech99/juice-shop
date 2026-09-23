@@ -69,12 +69,14 @@ describe('LastLoginIpComponent', () => {
     })
 
     it('should set Last-Login IP from JWT as trusted HTML', () => {
+        // Test-only: fixture JWT with dummy lastLoginIp payload, not a real secret
         localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Imxhc3RMb2dpbklwIjoiMS4yLjMuNCJ9fQ.RAkmdqwNypuOxv3SDjPO4xMKvd1CddKvDFYDBfUt3bg')
         component.ngOnInit()
         expect(sanitizer.bypassSecurityTrustHtml).toHaveBeenCalledWith('<small>1.2.3.4</small>')
     })
 
     it('should not set Last-Login IP if none is present in JWT', () => {
+        // Test-only: fixture JWT with empty data payload, not a real secret
         localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fX0.bVBhvll6IaeR3aUdoOeyR8YZe2S2DfhGAxTGfd9enLw')
         component.ngOnInit()
         expect(sanitizer.bypassSecurityTrustHtml).not.toHaveBeenCalled()
