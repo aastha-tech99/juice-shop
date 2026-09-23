@@ -71,6 +71,18 @@ void describe('fileServer', () => {
     assert.ok(next.mock.calls[0].arguments[0] instanceof Error)
   })
 
+  void it('should raise error for path traversal via poison null byte with dot-dot', () => {
+    req.params.file = '..%00.md'
+
+    servePublicFiles()(req, res, next)
+
+    assert.equal(res.sendFile.mock.calls.length, 0)
+    assert.equal(res.status.mock.calls.length, 1)
+    assert.equal(res.status.mock.calls[0].arguments[0], 403)
+    assert.equal(next.mock.calls.length, 1)
+    assert.ok(next.mock.calls[0].arguments[0] instanceof Error)
+  })
+
   void it('should solve "directoryListingChallenge" when requesting acquisitions.md', () => {
     challenges.directoryListingChallenge = { solved: false, save } as unknown as Challenge
     req.params.file = 'acquisitions.md'
