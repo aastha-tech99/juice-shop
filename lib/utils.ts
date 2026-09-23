@@ -5,6 +5,7 @@
 
 import packageJson from '../package.json'
 import fs from 'node:fs'
+import path from 'node:path'
 import logger from './logger'
 import config from 'config'
 import download from 'download'
@@ -105,10 +106,20 @@ export const extractFilename = (url: string) => {
   return file
 }
 
+export const ensureWithinBase = (baseDir: string, userPath: string): string => {
+  const resolvedBase = path.resolve(baseDir)
+  const resolved = path.resolve(baseDir, userPath)
+  if (resolved !== resolvedBase && !resolved.startsWith(resolvedBase + path.sep)) {
+    throw new Error('Path traversal detected')
+  }
+  return resolved
+}
+
 export const downloadToFile = async (url: string, dest: string) => {
   try {
+    const resolvedDest = ensureWithinBase('.', dest)
     const data = await download(url)
-    fs.writeFileSync(dest, data)
+    fs.writeFileSync(resolvedDest, data)
   } catch (err) {
     logger.warn('Failed to download ' + url + ' (' + getErrorMessage(err) + ')')
   }

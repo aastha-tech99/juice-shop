@@ -4,6 +4,7 @@
  */
 
 import fs from 'node:fs'
+import path from 'node:path'
 import config from 'config'
 import { type Request, type Response } from 'express'
 import { AllHtmlEntities as Entities } from 'html-entities'
@@ -77,16 +78,19 @@ export const promotionVideo = () => {
   }
 }
 
+const videosBaseDir = 'frontend/dist/frontend/assets/public/videos'
+
 function getSubsFromFile () {
   const subtitles = config.get<string>('application.promotion.subtitles') ?? 'owasp_promo.vtt'
-  const data = fs.readFileSync('frontend/dist/frontend/assets/public/videos/' + subtitles, 'utf8')
+  const safePath = utils.ensureWithinBase(videosBaseDir, subtitles)
+  const data = fs.readFileSync(safePath, 'utf8')
   return data.toString()
 }
 
 function videoPath () {
   if (config.get<string>('application.promotion.video') !== null) {
     const video = utils.extractFilename(config.get<string>('application.promotion.video'))
-    return 'frontend/dist/frontend/assets/public/videos/' + video
+    return utils.ensureWithinBase(videosBaseDir, video)
   }
-  return 'frontend/dist/frontend/assets/public/videos/owasp_promo.mp4'
+  return path.resolve(videosBaseDir, 'owasp_promo.mp4')
 }

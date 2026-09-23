@@ -10,6 +10,7 @@ import fileType from 'file-type'
 import logger from '../lib/logger'
 import { UserModel } from '../models/user'
 import * as security from '../lib/insecurity'
+import { ensureWithinBase } from '../lib/utils'
 
 export function profileImageFileUpload () {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -37,7 +38,7 @@ export function profileImageFileUpload () {
       return
     }
 
-    const filePath = `frontend/dist/frontend/assets/public/images/uploads/${loggedInUser.data.id}.${uploadedFileType.ext}`
+    const filePath = ensureWithinBase('frontend/dist/frontend/assets/public/images/uploads', `${loggedInUser.data.id}.${uploadedFileType.ext}`)
     try {
       await fs.writeFile(filePath, buffer)
     } catch (err) {

@@ -19,18 +19,28 @@ interface CachedCodeChallenge {
   neutralLines: number[]
 }
 
+function ensureWithinSnippetBase (targetPath: string): string {
+  const resolvedTarget = path.resolve(targetPath)
+  const resolvedRoot = path.resolve('.')
+  if (resolvedTarget !== resolvedRoot && !resolvedTarget.startsWith(resolvedRoot + path.sep)) {
+    throw new Error('Path traversal detected')
+  }
+  return resolvedTarget
+}
+
 export const findFilesWithCodeChallenges = async (paths: readonly string[]): Promise<FileMatch[]> => {
   const matches = []
   for (const currPath of paths) {
     try {
-      if ((await fs.lstat(currPath)).isDirectory()) {
-        const files = await fs.readdir(currPath)
+      const safePath = ensureWithinSnippetBase(currPath)
+      if ((await fs.lstat(safePath)).isDirectory()) {
+        const files = await fs.readdir(safePath)
         const moreMatches = await findFilesWithCodeChallenges(
-          files.map(file => path.resolve(currPath, file))
+          files.map(file => path.resolve(safePath, file))
         )
         matches.push(...moreMatches)
       } else {
-        const code = await fs.readFile(currPath, 'utf8')
+        const code = await fs.readFile(safePath, 'utf8')
         if (
           // strings are split so that it doesn't find itself...
           code.includes('// vuln-code' + '-snippet start') ||

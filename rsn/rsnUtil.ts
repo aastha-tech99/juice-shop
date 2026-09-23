@@ -1,10 +1,20 @@
 import fs from 'node:fs'
+import path from 'node:path'
 import { diffLines, structuredPatch } from 'diff'
 import yaml from 'js-yaml'
 
 import { retrieveCodeSnippet } from '../routes/vulnCodeSnippet'
 
 const fixesPath = 'data/static/codefixes'
+
+function ensureWithinFixesPath (filePath: string): string {
+  const resolvedBase = path.resolve(fixesPath)
+  const resolved = path.resolve(fixesPath, filePath)
+  if (resolved !== resolvedBase && !resolved.startsWith(resolvedBase + path.sep)) {
+    throw new Error('Path traversal detected')
+  }
+  return resolved
+}
 const cacheFile = 'rsn/cache.json'
 
 type CacheData = Record<string, {
@@ -63,7 +73,7 @@ const computeDiffs = async (keys: string[]) => {
     try {
       const snippet = await retrieveCodeSnippet(val.split('_')[0])
       if (snippet == null) continue
-      const fileData = fs.readFileSync(fixesPath + '/' + val).toString()
+      const fileData = fs.readFileSync(ensureWithinFixesPath(val)).toString()
       const diff = diffLines(filterString(fileData), filterString(snippet.snippet))
       let line = 0
       for (const part of diff) {
@@ -129,7 +139,7 @@ function findChangedFiles (current: CacheData, cached: CacheData): string[] {
 }
 
 function loadChallengeInfo (challengeName: string): ChallengeInfo | null {
-  const infoPath = `${fixesPath}/${challengeName}.info.yml`
+  const infoPath = ensureWithinFixesPath(challengeName + '.info.yml')
   if (!fs.existsSync(infoPath)) return null
   const content = fs.readFileSync(infoPath, 'utf-8')
   return yaml.load(content) as ChallengeInfo
@@ -152,7 +162,7 @@ async function computeChallengeDiff (file: string): Promise<ChallengeDiff | null
   const snippet = await retrieveCodeSnippet(challengeName)
   if (!snippet) return null
 
-  const fileData = fs.readFileSync(fixesPath + '/' + file).toString()
+  const fileData = fs.readFileSync(ensureWithinFixesPath(file)).toString()
   const patch = structuredPatch(file, file, filterString(snippet.snippet), filterString(fileData))
 
   const lines: DiffLine[] = []

@@ -167,6 +167,30 @@ void describe('utils', () => {
     }
   })
 
+  void describe('ensureWithinBase', () => {
+    void it('returns resolved path when file is within base directory', () => {
+      const result = utils.ensureWithinBase('/tmp/base', 'file.txt')
+      assert.equal(result, '/tmp/base/file.txt')
+    })
+
+    void it('throws on path traversal attempt with ..', () => {
+      assert.throws(() => {
+        utils.ensureWithinBase('/tmp/base', '../etc/passwd')
+      }, { message: 'Path traversal detected' })
+    })
+
+    void it('throws on absolute path outside base', () => {
+      assert.throws(() => {
+        utils.ensureWithinBase('/tmp/base', '/etc/passwd')
+      }, { message: 'Path traversal detected' })
+    })
+
+    void it('allows nested paths within base', () => {
+      const result = utils.ensureWithinBase('/tmp/base', 'sub/dir/file.txt')
+      assert.equal(result, '/tmp/base/sub/dir/file.txt')
+    })
+  })
+
   void describe('toISO8601', () => {
     void it('converts date to ISO 8601 representation', () => {
       assert.equal(utils.toISO8601(new Date('2025-12-15T00:00:00Z')), '2025-12-15')

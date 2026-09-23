@@ -280,8 +280,9 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   app.use('/infrastructure', serveIndexMiddleware, createProtectedDirectoryListing('infrastructure', { icons: true, view: 'details', filter: (filename: string) => filename !== 'README.md' }))
   app.use('/infrastructure', verify.accessControlChallenges())
   app.use('/infrastructure', (req: Request, res: Response, next: NextFunction) => {
+    const infraBase = path.resolve('infrastructure')
     const filePath = path.resolve('infrastructure', path.normalize(req.path).replace(/^[\\/]+/, ''))
-    if (!filePath.startsWith(path.resolve('infrastructure')) || filePath.endsWith('README.md')) {
+    if ((!filePath.startsWith(infraBase + path.sep) && filePath !== infraBase) || filePath.endsWith('README.md')) {
       return res.status(403).end()
     }
     if (filePath.endsWith('.tf') || filePath.endsWith('.yml') || filePath.endsWith('Dockerfile')) {

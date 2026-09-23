@@ -11,6 +11,7 @@ import { type Request, type Response, type NextFunction } from 'express'
 import * as security from '../lib/insecurity'
 import { UserModel } from '../models/user'
 import * as utils from '../lib/utils'
+import { ensureWithinBase } from '../lib/utils'
 import logger from '../lib/logger'
 
 export function profileImageUrlUpload () {
@@ -26,7 +27,8 @@ export function profileImageUrlUpload () {
             throw new Error('url returned a non-OK status code or an empty body')
           }
           const ext = ['jpg', 'jpeg', 'png', 'svg', 'gif'].includes(url.split('.').slice(-1)[0].toLowerCase()) ? url.split('.').slice(-1)[0].toLowerCase() : 'jpg'
-          const fileStream = fs.createWriteStream(`frontend/dist/frontend/assets/public/images/uploads/${loggedInUser.data.id}.${ext}`, { flags: 'w' })
+          const uploadPath = ensureWithinBase('frontend/dist/frontend/assets/public/images/uploads', `${loggedInUser.data.id}.${ext}`)
+          const fileStream = fs.createWriteStream(uploadPath, { flags: 'w' })
           await finished(Readable.fromWeb(response.body as any).pipe(fileStream))
           const user = await UserModel.findByPk(loggedInUser.data.id)
           await user?.update({ profileImage: `/assets/public/images/uploads/${loggedInUser.data.id}.${ext}` })

@@ -123,13 +123,21 @@ await new Promise((resolve, reject) => {
 console.log(`Created ${archivePath}`)
 
 // Generate MD5 checksums
+const distBase = path.resolve('dist')
+function ensureWithinDist (targetPath) {
+  const resolved = path.resolve(targetPath)
+  if (resolved !== distBase && !resolved.startsWith(distBase + path.sep)) {
+    throw new Error('Path traversal detected')
+  }
+  return resolved
+}
 for (const file of await fs.readdir('dist')) {
   if (file.endsWith('.md5')) continue
-  const filePath = path.join('dist', file)
+  const filePath = ensureWithinDist(path.join('dist', file))
   if (!(await fs.stat(filePath)).isFile()) continue
   const content = await fs.readFile(filePath)
   const hash = crypto.createHash('md5').update(content).digest('hex')
-  const hashFile = `${filePath}.md5`
+  const hashFile = ensureWithinDist(`${filePath}.md5`)
   await fs.writeFile(hashFile, hash)
   console.log(`Checksum ${hash} written to ${hashFile}`)
 }

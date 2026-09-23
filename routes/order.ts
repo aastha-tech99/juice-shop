@@ -18,6 +18,7 @@ import { BasketModel } from '../models/basket'
 import { WalletModel } from '../models/wallet'
 import * as security from '../lib/insecurity'
 import * as utils from '../lib/utils'
+import { ensureWithinBase } from '../lib/utils'
 import * as db from '../data/mongodb'
 
 interface Product {
@@ -42,7 +43,8 @@ export function placeOrder () {
           const { default: PDFDocument } = await import('pdfkit')
           const doc = new PDFDocument()
           const date = new Date().toJSON().slice(0, 10)
-          const fileWriter = doc.pipe(fs.createWriteStream(path.join('ftp/', pdfFile)))
+          const safePdfPath = ensureWithinBase('ftp', pdfFile)
+          const fileWriter = doc.pipe(fs.createWriteStream(safePdfPath))
 
           fileWriter.on('finish', () => {
             void (async () => {
