@@ -17,9 +17,33 @@ import * as utils from './utils'
 // @ts-expect-error FIXME no typescript definitions for z85 :(
 import * as z85 from 'z85'
 
-export const publicKey = fs ? fs.readFileSync('encryptionkeys/jwt.pub', 'utf8') : 'placeholder-public-key'
-// IMPORTANT: Rotate this RSA private key — the previous value was committed to version control and must be considered compromised
-const privateKey = process.env.JWT_PRIVATE_KEY || (fs && fs.existsSync('encryptionkeys/jwt.key') ? fs.readFileSync('encryptionkeys/jwt.key', 'utf8') : '')
+function loadOrGenerateKeys (): { publicKey: string, privateKey: string } {
+  const pubPath = 'encryptionkeys/jwt.pub'
+  const keyPath = 'encryptionkeys/jwt.key'
+  if (process.env.JWT_PRIVATE_KEY) {
+    return {
+      publicKey: fs && fs.existsSync(pubPath) ? fs.readFileSync(pubPath, 'utf8') : 'placeholder-public-key',
+      privateKey: process.env.JWT_PRIVATE_KEY
+    }
+  }
+  if (fs && fs.existsSync(keyPath) && fs.existsSync(pubPath)) {
+    return { publicKey: fs.readFileSync(pubPath, 'utf8'), privateKey: fs.readFileSync(keyPath, 'utf8') }
+  }
+  const pair = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+  })
+  if (fs) {
+    fs.mkdirSync('encryptionkeys', { recursive: true })
+    fs.writeFileSync(pubPath, pair.publicKey, 'utf8')
+    fs.writeFileSync(keyPath, pair.privateKey, 'utf8')
+  }
+  return { publicKey: pair.publicKey, privateKey: pair.privateKey }
+}
+const _keys = loadOrGenerateKeys()
+export const publicKey = _keys.publicKey
+const privateKey = _keys.privateKey
 
 interface ResponseWithUser {
   status?: string
