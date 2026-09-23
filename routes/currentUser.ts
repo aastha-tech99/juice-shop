@@ -29,9 +29,10 @@ export function retrieveLoggedInUser () {
 
         if (requestedFields.length > 0) {
           // When fields are specified, return only those fields if they are in the allowlist
+          // Iterate over static allowedFields to prevent property injection from user input
           const dataEntries = user?.data ? new Map(Object.entries(user.data)) : new Map()
-          for (const field of requestedFields) {
-            if (allowedFields.has(field) && dataEntries.has(field) && dataEntries.get(field) !== undefined) {
+          for (const field of allowedFields) {
+            if (requestedFields.includes(field) && dataEntries.has(field) && dataEntries.get(field) !== undefined) {
               baseUserMap.set(field, dataEntries.get(field))
             }
           }
