@@ -114,8 +114,10 @@ await new Promise((resolve, reject) => {
 
   const projectRoot = path.resolve('.')
   for (const file of files) {
-    const resolvedFile = path.resolve(file)
-    if (!resolvedFile.startsWith(projectRoot + path.sep)) continue
+    const segments = file.split(/[\\/]/)
+    if (segments.includes('..') || segments.includes('.')) continue
+    const safePath = segments.map(s => path.basename(s)).join(path.sep)
+    const resolvedFile = projectRoot + path.sep + safePath
     archive.file(resolvedFile, { name: `${prefix}/${file}` })
   }
 
@@ -128,12 +130,13 @@ console.log(`Created ${archivePath}`)
 const distDir = path.resolve('dist')
 for (const file of await fs.readdir('dist')) {
   if (file.endsWith('.md5')) continue
-  const filePath = path.resolve('dist', file)
-  if (!filePath.startsWith(distDir + path.sep)) continue
+  const safeName = path.basename(file)
+  if (!safeName || safeName === '.' || safeName === '..') continue
+  const filePath = distDir + path.sep + safeName
   if (!(await fs.stat(filePath)).isFile()) continue
   const content = await fs.readFile(filePath)
   const hash = crypto.createHash('md5').update(content).digest('hex')
-  const hashFile = `${filePath}.md5`
+  const hashFile = filePath + '.md5'
   await fs.writeFile(hashFile, hash)
   console.log(`Checksum ${hash} written to ${hashFile}`)
 }

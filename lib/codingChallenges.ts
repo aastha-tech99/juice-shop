@@ -26,10 +26,9 @@ export const findFilesWithCodeChallenges = async (paths: readonly string[]): Pro
     }
     try {
       if ((await fs.lstat(resolvedPath)).isDirectory()) {
-        const files = await fs.readdir(resolvedPath)
-        const moreMatches = await findFilesWithCodeChallenges(
-          files.map(file => path.resolve(resolvedPath, file))
-        )
+        const dirEntries = await fs.readdir(resolvedPath)
+        const childPaths = dirEntries.map(entry => resolvedPath + path.sep + path.basename(entry))
+        const moreMatches = await findFilesWithCodeChallenges(childPaths)
         matches.push(...moreMatches)
       } else {
         const code = await fs.readFile(resolvedPath, 'utf8')

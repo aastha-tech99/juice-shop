@@ -81,23 +81,25 @@ export const promotionVideo = () => {
 function getSubsFromFile () {
   const videosDir = path.resolve('frontend/dist/frontend/assets/public/videos')
   const subtitles = config.get<string>('application.promotion.subtitles') ?? 'owasp_promo.vtt'
-  const subsPath = path.resolve(videosDir, subtitles)
-  if (!subsPath.startsWith(videosDir + path.sep)) {
+  const safeName = path.basename(subtitles)
+  if (!safeName || safeName === '.' || safeName === '..') {
     return ''
   }
+  const subsPath = videosDir + path.sep + safeName
   const data = fs.readFileSync(subsPath, 'utf8')
   return data.toString()
 }
 
 function videoPath () {
   const videosDir = path.resolve('frontend/dist/frontend/assets/public/videos')
+  const defaultVideo = videosDir + path.sep + 'owasp_promo.mp4'
   if (config.get<string>('application.promotion.video') !== null) {
     const video = utils.extractFilename(config.get<string>('application.promotion.video'))
-    const resolvedVideo = path.resolve(videosDir, video)
-    if (!resolvedVideo.startsWith(videosDir + path.sep)) {
-      return path.join(videosDir, 'owasp_promo.mp4')
+    const safeName = path.basename(video)
+    if (!safeName || safeName === '.' || safeName === '..') {
+      return defaultVideo
     }
-    return resolvedVideo
+    return videosDir + path.sep + safeName
   }
-  return path.join(videosDir, 'owasp_promo.mp4')
+  return defaultVideo
 }

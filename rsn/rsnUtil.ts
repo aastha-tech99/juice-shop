@@ -64,8 +64,9 @@ const computeDiffs = async (keys: string[]) => {
     try {
       const snippet = await retrieveCodeSnippet(val.split('_')[0])
       if (snippet == null) continue
-      const resolvedFixPath = path.resolve(fixesPath, val)
-      if (!resolvedFixPath.startsWith(path.resolve(fixesPath) + path.sep)) continue
+      const safeVal = path.basename(val)
+      if (!safeVal || safeVal === '.' || safeVal === '..') continue
+      const resolvedFixPath = path.resolve(fixesPath) + path.sep + safeVal
       const fileData = fs.readFileSync(resolvedFixPath).toString()
       const diff = diffLines(filterString(fileData), filterString(snippet.snippet))
       let line = 0
@@ -138,8 +139,10 @@ function findChangedFiles (current: CacheData, cached: CacheData): string[] {
 }
 
 function loadChallengeInfo (challengeName: string): ChallengeInfo | null {
-  const infoPath = path.resolve(fixesPath, `${challengeName}.info.yml`)
-  if (!infoPath.startsWith(path.resolve(fixesPath) + path.sep)) return null
+  const safeName = path.basename(challengeName)
+  if (!safeName || safeName === '.' || safeName === '..') return null
+  const resolvedFixesDir = path.resolve(fixesPath)
+  const infoPath = resolvedFixesDir + path.sep + safeName + '.info.yml'
   if (!fs.existsSync(infoPath)) return null
   const content = fs.readFileSync(infoPath, 'utf-8')
   return yaml.load(content) as ChallengeInfo
@@ -162,8 +165,9 @@ async function computeChallengeDiff (file: string): Promise<ChallengeDiff | null
   const snippet = await retrieveCodeSnippet(challengeName)
   if (!snippet) return null
 
-  const resolvedFilePath = path.resolve(fixesPath, file)
-  if (!resolvedFilePath.startsWith(path.resolve(fixesPath) + path.sep)) return null
+  const safeFile = path.basename(file)
+  if (!safeFile || safeFile === '.' || safeFile === '..') return null
+  const resolvedFilePath = path.resolve(fixesPath) + path.sep + safeFile
   const fileData = fs.readFileSync(resolvedFilePath).toString()
   const patch = structuredPatch(file, file, filterString(snippet.snippet), filterString(fileData))
 

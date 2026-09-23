@@ -198,14 +198,12 @@ function loadSourceFile (relativePath: string): string {
       return ''
     }
     const segments = relativePath.split(/[/\\]/)
-    if (segments.includes('..') || segments.includes('.')) {
+    if (segments.includes('..') || segments.includes('.') || segments.length === 0) {
       return ''
     }
     const projectRoot = path.resolve('.')
-    const resolvedPath = path.join(projectRoot, relativePath)
-    if (!resolvedPath.startsWith(projectRoot + path.sep) && resolvedPath !== projectRoot) {
-      return ''
-    }
+    const safeSuffix = segments.map(s => path.basename(s)).join(path.sep)
+    const resolvedPath = projectRoot + path.sep + safeSuffix
     const content = fs.readFileSync(resolvedPath, 'utf8')
     sourceFileCache.set(relativePath, content)
     return content

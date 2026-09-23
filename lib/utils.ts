@@ -108,12 +108,18 @@ export const extractFilename = (url: string) => {
 
 export const downloadToFile = async (url: string, dest: string) => {
   try {
-    const resolvedDest = path.resolve(dest)
-    const projectRoot = path.resolve('.')
-    if (!resolvedDest.startsWith(projectRoot + path.sep)) {
+    if (path.isAbsolute(dest)) {
+      logger.warn('Blocked download to absolute path: ' + dest)
+      return
+    }
+    const segments = dest.split(/[\\/]/)
+    if (segments.includes('..') || segments.includes('.')) {
       logger.warn('Blocked download to path outside project root: ' + dest)
       return
     }
+    const projectRoot = path.resolve('.')
+    const safeSuffix = segments.map(s => path.basename(s)).join(path.sep)
+    const resolvedDest = projectRoot + path.sep + safeSuffix
     const data = await download(url)
     fs.writeFileSync(resolvedDest, data)
   } catch (err) {

@@ -28,11 +28,8 @@ export function profileImageUrlUpload () {
           }
           const ext = ['jpg', 'jpeg', 'png', 'svg', 'gif'].includes(url.split('.').slice(-1)[0].toLowerCase()) ? url.split('.').slice(-1)[0].toLowerCase() : 'jpg'
           const uploadsDir = path.resolve('frontend/dist/frontend/assets/public/images/uploads')
-          const uploadPath = path.resolve(uploadsDir, `${loggedInUser.data.id}.${ext}`)
-          if (!uploadPath.startsWith(uploadsDir + path.sep)) {
-            next(new Error('Invalid file path'))
-            return
-          }
+          const safeFilename = path.basename(`${loggedInUser.data.id}.${ext}`)
+          const uploadPath = uploadsDir + path.sep + safeFilename
           const fileStream = fs.createWriteStream(uploadPath, { flags: 'w' })
           await finished(Readable.fromWeb(response.body as any).pipe(fileStream))
           const user = await UserModel.findByPk(loggedInUser.data.id)

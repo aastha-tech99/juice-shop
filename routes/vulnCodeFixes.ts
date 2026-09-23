@@ -27,8 +27,9 @@ export const readFixes = (key: string) => {
   const resolvedFixesDir = path.resolve(FixesDir)
   for (const file of files) {
     if (file.startsWith(`${key}_`)) {
-      const fixFilePath = path.resolve(FixesDir, file)
-      if (!fixFilePath.startsWith(resolvedFixesDir + path.sep)) continue
+      const safeFile = path.basename(file)
+      if (!safeFile || safeFile === '.' || safeFile === '..') continue
+      const fixFilePath = resolvedFixesDir + path.sep + safeFile
       const fix = fs.readFileSync(fixFilePath).toString()
       const metadata = file.split('_')
       const number = metadata[1]
@@ -79,8 +80,9 @@ export const checkCorrectFix = () => async (req: Request<Record<string, unknown>
   } else {
     let explanation
     const codefixesBase = path.resolve('./data/static/codefixes')
-    const infoFilePath = path.resolve(codefixesBase, key + '.info.yml')
-    if (infoFilePath.startsWith(codefixesBase + path.sep) && fs.existsSync(infoFilePath)) {
+    const safeKey = path.basename(key)
+    const infoFilePath = codefixesBase + path.sep + safeKey + '.info.yml'
+    if (safeKey && safeKey !== '.' && safeKey !== '..' && fs.existsSync(infoFilePath)) {
       const codingChallengeInfos = yaml.load(fs.readFileSync(infoFilePath, 'utf8'))
       const selectedFixInfo = codingChallengeInfos?.fixes.find(({ id }: { id: number }) => id === selectedFix + 1)
       if (selectedFixInfo?.explanation) explanation = res.__(selectedFixInfo.explanation)

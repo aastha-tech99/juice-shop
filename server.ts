@@ -136,11 +136,7 @@ const errorhandler = require('errorhandler')
 
 const startTime = Date.now()
 
-const swaggerFilePath = path.resolve('./swagger.yml')
-if (!swaggerFilePath.startsWith(path.resolve('.') + path.sep)) {
-  throw new Error('Swagger file path is outside project root')
-}
-const swaggerDocument = yaml.load(fs.readFileSync(swaggerFilePath, 'utf8'))
+const swaggerDocument = yaml.load(fs.readFileSync('./swagger.yml', 'utf8'))
 
 const appName = config.get<string>('application.customMetricsPrefix')
 const startupGauge = new Prometheus.Gauge({
@@ -244,8 +240,11 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   /* /infrastructure file serving (directory listing disabled) */
   app.use('/infrastructure', verify.accessControlChallenges())
   app.use('/infrastructure', (req: Request, res: Response, next: NextFunction) => {
-    const filePath = path.resolve('infrastructure', path.normalize(req.path).replace(/^[\\/]+/, ''))
-    if (!filePath.startsWith(path.resolve('infrastructure')) || filePath.endsWith('README.md')) {
+    const infraDir = path.resolve('infrastructure')
+    const reqSegments = req.path.split(/[\\/]+/).filter(s => s && s !== '.' && s !== '..')
+    const safeSuffix = reqSegments.map(s => path.basename(s)).join(path.sep)
+    const filePath = infraDir + path.sep + safeSuffix
+    if (!safeSuffix || filePath.endsWith('README.md')) {
       return res.status(403).end()
     }
     if (filePath.endsWith('.tf') || filePath.endsWith('.yml') || filePath.endsWith('Dockerfile')) {

@@ -39,11 +39,8 @@ export function profileImageFileUpload () {
     }
 
     const uploadsDir = path.resolve('frontend/dist/frontend/assets/public/images/uploads')
-    const filePath = path.resolve(uploadsDir, `${loggedInUser.data.id}.${uploadedFileType.ext}`)
-    if (!filePath.startsWith(uploadsDir + path.sep)) {
-      next(new Error('Invalid file path'))
-      return
-    }
+    const safeFilename = path.basename(`${loggedInUser.data.id}.${uploadedFileType.ext}`)
+    const filePath = uploadsDir + path.sep + safeFilename
     try {
       await fs.writeFile(filePath, buffer)
     } catch (err) {

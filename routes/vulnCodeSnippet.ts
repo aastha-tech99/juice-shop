@@ -88,8 +88,9 @@ export const checkVulnLines = () => async (req: Request<Record<string, unknown>,
   const verdict = getVerdict(vulnLines, neutralLines, selectedLines)
   let hint
   const codefixesBase = path.resolve('./data/static/codefixes')
-  const infoFilePath = path.resolve(codefixesBase, key + '.info.yml')
-  if (infoFilePath.startsWith(codefixesBase + path.sep) && await fs.stat(infoFilePath)) {
+  const safeKey = path.basename(key)
+  const infoFilePath = codefixesBase + path.sep + safeKey + '.info.yml'
+  if (safeKey && safeKey !== '.' && safeKey !== '..' && await fs.stat(infoFilePath).catch(() => null)) {
     const codingChallengeInfos = yaml.load(await fs.readFile(infoFilePath, { encoding: 'utf8' }))
     if (codingChallengeInfos?.hints) {
       if (accuracy.getFindItAttempts(key) > codingChallengeInfos.hints.length) {

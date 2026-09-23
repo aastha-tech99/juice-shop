@@ -43,11 +43,8 @@ export function placeOrder () {
           const doc = new PDFDocument()
           const date = new Date().toJSON().slice(0, 10)
           const ftpDir = path.resolve('ftp')
-          const orderFilePath = path.resolve(ftpDir, pdfFile)
-          if (!orderFilePath.startsWith(ftpDir + path.sep)) {
-            next(new Error('Invalid file path'))
-            return
-          }
+          const safePdfFile = path.basename(pdfFile)
+          const orderFilePath = ftpDir + path.sep + safePdfFile
           const fileWriter = doc.pipe(fs.createWriteStream(orderFilePath))
 
           fileWriter.on('finish', () => {
