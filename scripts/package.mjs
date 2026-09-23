@@ -17,8 +17,17 @@ import { glob } from 'glob'
 function loadArchiver () {
   const require = createRequire(import.meta.url)
   try {
+    return require('archiver')
+  } catch {
+    // archiver not found locally, try global node_modules
+  }
+  try {
     const globalRoot = execSync('npm root -g', { encoding: 'utf8' }).trim()
-    return require(path.join(globalRoot, 'archiver'))
+    if (!path.isAbsolute(globalRoot)) {
+      throw new Error('npm root -g returned an unexpected non-absolute path')
+    }
+    const resolvedRoot = path.resolve(globalRoot)
+    return require(path.join(resolvedRoot, 'archiver'))
   } catch {
     console.error('archiver is not installed. Run: npm install -g archiver')
     process.exit(1)
