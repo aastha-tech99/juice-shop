@@ -39,16 +39,22 @@ export function waitForInputToHaveValue (inputSelector: string, value: string, o
 
     if (options.replacement?.length === 2) {
       if (!config) {
-        const res = await fetch('/rest/admin/application-configuration')
-        const json = await res.json()
-        config = json.config
+        try {
+          const res = await fetch('/rest/admin/application-configuration')
+          const json = await res.json()
+          config = json.config
+        } catch {
+          // configuration fetch failed; continue with original value
+        }
       }
-      const propertyChain = options.replacement[1].split('.')
-      let replacementValue = config
-      for (const property of propertyChain) {
-        replacementValue = replacementValue[property]
+      if (config) {
+        const propertyChain = options.replacement[1].split('.')
+        let replacementValue = config
+        for (const property of propertyChain) {
+          replacementValue = replacementValue[property]
+        }
+        value = value.replace(options.replacement[0], replacementValue)
       }
-      value = value.replace(options.replacement[0], replacementValue)
     }
 
     while (true) {
@@ -120,6 +126,7 @@ export function waitForElementToGetClicked (elementSelector: string) {
     )
     if (!element) {
       console.warn(`Could not find Element with selector "${elementSelector}"`)
+      return
     }
 
     await new Promise<void>((resolve) => {
@@ -155,11 +162,15 @@ export function waitForElementsInnerHtmlToBe (elementSelector: string, value: st
 export function waitInMs (timeInMs: number) {
   return async () => {
     if (!config) {
-      const res = await fetch('/rest/admin/application-configuration')
-      const json = await res.json()
-      config = json.config
+      try {
+        const res = await fetch('/rest/admin/application-configuration')
+        const json = await res.json()
+        config = json.config
+      } catch {
+        // configuration fetch failed; use default delay
+      }
     }
-    let delay = playbackDelays[config.hackingInstructor.hintPlaybackSpeed]
+    let delay = config ? playbackDelays[config.hackingInstructor.hintPlaybackSpeed] : 1.0
     delay ??= 1.0
     await sleep(timeInMs * delay)
   }

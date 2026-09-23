@@ -6,6 +6,7 @@
 import fs from 'node:fs'
 import config from 'config'
 import * as utils from '../utils'
+import logger from '../logger'
 // @ts-expect-error FIXME due to non-existing type definitions for replace
 import replace from 'replace'
 
@@ -15,10 +16,10 @@ const customizeApplication = async () => {
     customizeTerraformFiles()
   }
   if (config.get('application.logo')) {
-    void customizeLogo()
+    void customizeLogo().catch((err: unknown) => { logger.warn('Error customizing logo: ' + utils.getErrorMessage(err)) })
   }
   if (config.get('application.favicon')) {
-    void customizeFavicon()
+    void customizeFavicon().catch((err: unknown) => { logger.warn('Error customizing favicon: ' + utils.getErrorMessage(err)) })
   }
   if (config.get('application.theme')) {
     customizeTheme()
@@ -27,14 +28,14 @@ const customizeApplication = async () => {
     customizeCookieConsentBanner()
   }
   if (config.get('application.promotion')) {
-    void customizePromotionVideo()
-    void customizePromotionSubtitles()
+    void customizePromotionVideo().catch((err: unknown) => { logger.warn('Error customizing promotion video: ' + utils.getErrorMessage(err)) })
+    void customizePromotionSubtitles().catch((err: unknown) => { logger.warn('Error customizing promotion subtitles: ' + utils.getErrorMessage(err)) })
   }
   if (config.get('hackingInstructor')) {
-    void customizeHackingInstructorAvatar()
+    void customizeHackingInstructorAvatar().catch((err: unknown) => { logger.warn('Error customizing hacking instructor avatar: ' + utils.getErrorMessage(err)) })
   }
   if (config.get('application.chatBot')) {
-    void customizeChatbotAvatar()
+    void customizeChatbotAvatar().catch((err: unknown) => { logger.warn('Error customizing chatbot avatar: ' + utils.getErrorMessage(err)) })
   }
 }
 

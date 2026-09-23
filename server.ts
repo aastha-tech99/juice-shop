@@ -163,9 +163,9 @@ const collectDurationPromise = (name: string, func: (...args: any) => Promise<an
 /* Sets view engine to hbs */
 app.set('view engine', 'hbs')
 
-void collectDurationPromise('validatePreconditions', validatePreconditions)()
-void collectDurationPromise('cleanupFtpFolder', cleanupFtpFolder)()
-void collectDurationPromise('validateConfig', validateConfig)({})
+void collectDurationPromise('validatePreconditions', validatePreconditions)().catch(() => {})
+void collectDurationPromise('cleanupFtpFolder', cleanupFtpFolder)().catch(() => {})
+void collectDurationPromise('validateConfig', validateConfig)({}).catch(() => {})
 
 function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
   /* Locals */
@@ -782,8 +782,8 @@ export async function start (readyCallback?: () => void) {
     }
   })
 
-  void collectDurationPromise('customizeApplication', customizeApplication)() // vuln-code-snippet hide-line
-  void collectDurationPromise('customizeEasterEgg', customizeEasterEgg)() // vuln-code-snippet hide-line
+  void collectDurationPromise('customizeApplication', customizeApplication)().catch(() => {}) // vuln-code-snippet hide-line
+  void collectDurationPromise('customizeEasterEgg', customizeEasterEgg)().catch(() => {}) // vuln-code-snippet hide-line
 }
 
 export function close (exitCode: number | undefined) {

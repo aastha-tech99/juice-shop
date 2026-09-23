@@ -311,6 +311,8 @@ async function createRandomFakeUsers () {
     async () => await UserModel.create({
       email: getGeneratedRandomFakeUserEmail(),
       password: makeRandomString(5)
+    }).catch((err: unknown) => {
+      logger.error(`Could not create random fake user: ${utils.getErrorMessage(err)}`)
     })
   ))
 }
@@ -466,6 +468,9 @@ async function createProducts () {
               )
             )
           )
+          .catch((err: unknown) => {
+            logger.error(`Could not process product: ${utils.getErrorMessage(err)}`)
+          })
     )
   )
 

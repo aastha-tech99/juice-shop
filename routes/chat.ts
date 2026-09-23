@@ -189,7 +189,12 @@ export function chat () {
 
     const model = config.get<string>('application.chatBot.model')
     const messages = req.body?.messages ?? []
-    const userName = await getUserNameFromToken(req)
+    let userName: string | undefined
+    try {
+      userName = await getUserNameFromToken(req)
+    } catch {
+      // proceed without username if token decode fails
+    }
 
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache, no-transform')

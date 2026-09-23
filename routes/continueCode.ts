@@ -4,7 +4,7 @@
  */
 
 import Hashids from 'hashids/cjs'
-import { type Request, type Response } from 'express'
+import { type Request, type Response, type NextFunction } from 'express'
 import { ChallengeModel } from '../models/challenge'
 import { challenges } from '../data/datacache'
 import { Op } from 'sequelize'
@@ -23,26 +23,34 @@ export function continueCode () {
 
 export function continueCodeFindIt () {
   const hashids = new Hashids('this is the salt for findIt challenges', 60, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
-  return async (req: Request, res: Response) => {
-    const ids = []
-    const challenges = await ChallengeModel.findAll({ where: { codingChallengeStatus: { [Op.gte]: 1 } } })
-    for (const challenge of challenges) {
-      ids.push(challenge.id)
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const ids = []
+      const challenges = await ChallengeModel.findAll({ where: { codingChallengeStatus: { [Op.gte]: 1 } } })
+      for (const challenge of challenges) {
+        ids.push(challenge.id)
+      }
+      const continueCode = ids.length > 0 ? hashids.encode(ids) : undefined
+      res.json({ continueCode })
+    } catch (error) {
+      next(error)
     }
-    const continueCode = ids.length > 0 ? hashids.encode(ids) : undefined
-    res.json({ continueCode })
   }
 }
 
 export function continueCodeFixIt () {
   const hashids = new Hashids('yet another salt for the fixIt challenges', 60, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890')
-  return async (req: Request, res: Response) => {
-    const ids = []
-    const challenges = await ChallengeModel.findAll({ where: { codingChallengeStatus: { [Op.gte]: 2 } } })
-    for (const challenge of challenges) {
-      ids.push(challenge.id)
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const ids = []
+      const challenges = await ChallengeModel.findAll({ where: { codingChallengeStatus: { [Op.gte]: 2 } } })
+      for (const challenge of challenges) {
+        ids.push(challenge.id)
+      }
+      const continueCode = ids.length > 0 ? hashids.encode(ids) : undefined
+      res.json({ continueCode })
+    } catch (error) {
+      next(error)
     }
-    const continueCode = ids.length > 0 ? hashids.encode(ids) : undefined
-    res.json({ continueCode })
   }
 }

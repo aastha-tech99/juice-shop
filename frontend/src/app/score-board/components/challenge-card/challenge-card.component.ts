@@ -38,7 +38,7 @@ export class ChallengeCardComponent {
     void import('../../../../hacking-instructor').then(({ hasInstructions, startHackingInstructorFor }) => {
       this.hasInstructions = hasInstructions
       this.startHackingInstructorFor = startHackingInstructorFor
-    })
+    }).catch(() => {})
 
     effect(() => {
       const challenge = this.challenge()

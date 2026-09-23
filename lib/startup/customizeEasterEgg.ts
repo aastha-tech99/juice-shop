@@ -9,17 +9,21 @@ import * as utils from '../utils'
 import replace from 'replace'
 
 const customizeEasterEgg = async () => {
-  if (config.has('application.easterEggPlanet.overlayMap')) {
-    let overlay: string = config.get('application.easterEggPlanet.overlayMap')
-    if (utils.isUrl(overlay)) {
-      const overlayPath = overlay
-      overlay = utils.extractFilename(overlay)
-      await utils.downloadToFile(overlayPath, 'frontend/dist/frontend/assets/private/' + overlay)
+  try {
+    if (config.has('application.easterEggPlanet.overlayMap')) {
+      let overlay: string = config.get('application.easterEggPlanet.overlayMap')
+      if (utils.isUrl(overlay)) {
+        const overlayPath = overlay
+        overlay = utils.extractFilename(overlay)
+        await utils.downloadToFile(overlayPath, 'frontend/dist/frontend/assets/private/' + overlay)
+      }
+      replaceImagePath(overlay)
     }
-    replaceImagePath(overlay)
-  }
-  if (config.has('application.easterEggPlanet.name')) {
-    replaceThreeJsTitleTag()
+    if (config.has('application.easterEggPlanet.name')) {
+      replaceThreeJsTitleTag()
+    }
+  } catch {
+    // Easter egg customization is non-critical; continue startup
   }
 }
 

@@ -167,19 +167,22 @@ export const checkIfDomainReachable = async (domain: string) => {
     return true
   } catch {
     logger.warn(`Domain ${colors.bold(domain)} is not reachable (${colors.yellow('WARNING')})`)
-    domainDependencies[domain].dependentChallenges.forEach((dependency: string) => {
-      logger.warn(`${colors.italic(dependency)} will not work as intended without access to ${colors.bold(domain)}`)
-    })
+    if (domainDependencies[domain]) {
+      domainDependencies[domain].dependentChallenges.forEach((dependency: string) => {
+        logger.warn(`${colors.italic(dependency)} will not work as intended without access to ${colors.bold(domain)}`)
+      })
+    }
     return false
   }
 }
 
 export const checkIfPortIsAvailable = async (port: number | string) => {
   const portNumber = parseInt(port.toString())
-  return await new Promise((resolve, reject) => {
+  return await new Promise((resolve) => {
     portscanner.checkPortStatus(portNumber, function (error: unknown, status: string) {
       if (error) {
-        reject(error)
+        logger.warn(`Could not check port ${colors.bold(port.toString())} availability (${colors.red('ERROR')})`)
+        resolve(false)
       } else {
         if (status === 'open') {
           logger.warn(`Port ${colors.bold(port.toString())} is in use (${colors.red('ERROR')})`)
