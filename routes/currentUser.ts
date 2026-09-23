@@ -14,9 +14,8 @@ export function retrieveLoggedInUser () {
     let response: any
     const emptyUser = { id: undefined, email: undefined, lastLoginIp: undefined, profileImage: undefined }
     try {
-      if (security.verify(req.cookies.token)) {
-        user = security.authenticatedUsers.get(req.cookies.token)
-
+      user = security.authenticatedUsers.get(req.cookies.token)
+      if (user) {
         // Parse the fields parameter into an array, splitting by comma.
         // If not provided, both these variables will be undefined.
         const fieldsParam = req.query?.fields as string | undefined

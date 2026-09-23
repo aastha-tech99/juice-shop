@@ -13,7 +13,7 @@ import * as utils from '../lib/utils'
 
 export function saveLoginIp () {
   return (req: Request, res: Response, next: NextFunction) => {
-    (async () => {
+    return (async () => {
       const loggedInUser = security.authenticatedUsers.from(req)
       if (loggedInUser !== undefined) {
         let lastLoginIp = req.headers['true-client-ip']

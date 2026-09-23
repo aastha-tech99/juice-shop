@@ -115,6 +115,14 @@ export const serverSideChallenges = () => (req: Request, res: Response, next: Ne
 function jwtChallenge (challenge: Challenge, req: Request, algorithm: string, email: string | RegExp) {
   const token = utils.jwtFrom(req)
   if (token) {
+    try {
+      const header = JSON.parse(Buffer.from(token.split('.')[0], 'base64').toString())
+      if (!header.alg || !security.safeCompare(header.alg, 'RS256')) {
+        return
+      }
+    } catch {
+      return
+    }
     jwt.verify(token, security.publicKey, { algorithms: ['RS256'] }, (err: jwt.VerifyErrors | null, decoded: any) => {
       if (err === null && decoded !== null && typeof decoded !== 'string') {
         challengeUtils.solveIf(challenge, () => {

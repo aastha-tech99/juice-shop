@@ -5,18 +5,16 @@
 
 import vm from 'node:vm'
 
-// libxml2-wasm is ESM-only and uses top-level await, so it can neither be
-// statically imported nor require()'d from the CommonJS build output.
-// vm.runInThisContext preserves native import() from tsc's CommonJS transform
-// while avoiding dangerous new Function/eval constructs. An allowlist
-// restricts which modules may be loaded.
 const allowedSpecifiers = new Set(['libxml2-wasm', 'libxml2-wasm/lib/nodejs.mjs'])
+
+// eslint-disable-next-line no-new-func
+const importModule = new Function('specifier', 'return import(specifier)') as (specifier: string) => Promise<any>
 
 function dynamicImport (specifier: string): Promise<any> {
   if (!allowedSpecifiers.has(specifier)) {
     throw new Error(`Dynamic import of "${specifier}" is not allowed`)
   }
-  return vm.runInThisContext(`import(${JSON.stringify(specifier)})`) as Promise<any>
+  return importModule(specifier)
 }
 let libxml2Promise: Promise<any> | undefined
 

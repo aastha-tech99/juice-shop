@@ -14,7 +14,7 @@ import * as db from '../data/mongodb'
 
 export function dataExport () {
   return (req: Request, res: Response, next: NextFunction) => {
-    (async () => {
+    return (async () => {
       try {
         const loggedInUser = security.authenticatedUsers.get(req.headers?.authorization?.replace('Bearer ', ''))
         if (loggedInUser?.data?.email && loggedInUser.data.id) {

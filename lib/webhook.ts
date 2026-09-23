@@ -15,31 +15,27 @@ export const notify = async (challenge: { key: any, name: any }, cheatScore = -1
   if (!webhook) {
     return
   }
-  try {
-    const res = await fetch(webhook, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        solution: {
-          challenge: challenge.key,
-          hintsAvailable,
-          hintsUnlocked,
-          cheatScore,
-          totalCheatScore: totalCheatScore(),
-          issuedOn: new Date().toISOString()
-        },
-        ctfFlag: utils.ctfFlag(challenge.name),
-        issuer: {
-          hostName: os.hostname(),
-          os: `${os.type()} (${os.release()})`,
-          appName: config.get<string>('application.name'),
-          config: process.env.NODE_ENV ?? 'default',
-          version: utils.version()
-        }
-      })
+  const res = await fetch(webhook, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      solution: {
+        challenge: challenge.key,
+        hintsAvailable,
+        hintsUnlocked,
+        cheatScore,
+        totalCheatScore: totalCheatScore(),
+        issuedOn: new Date().toISOString()
+      },
+      ctfFlag: utils.ctfFlag(challenge.name),
+      issuer: {
+        hostName: os.hostname(),
+        os: `${os.type()} (${os.release()})`,
+        appName: config.get<string>('application.name'),
+        config: process.env.NODE_ENV ?? 'default',
+        version: utils.version()
+      }
     })
-    logger.info(`Webhook ${colors.bold(webhook)} notified about ${colors.cyan(challenge.key)} being solved: ${res.ok ? colors.green(res.status.toString()) : colors.red(res.status.toString())}`)
-  } catch (err: unknown) {
-    logger.warn('Webhook notification for ' + challenge.key + ' failed: ' + utils.getErrorMessage(err))
-  }
+  })
+  logger.info(`Webhook ${colors.bold(webhook)} notified about ${colors.cyan(challenge.key)} being solved: ${res.ok ? colors.green(res.status.toString()) : colors.red(res.status.toString())}`)
 }
