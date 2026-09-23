@@ -78,16 +78,21 @@ const validatePreconditions = async ({ exitOnFailure = true } = {}) => {
   const llmApiReachable = await checkIfDomainReachable(llmApiUrl)
   let llmApiKeyEnvVarExists = true
   let llmModelAvailable = true
-  preconditionResults[llmApiUrl] = llmApiReachable
+  Object.defineProperty(preconditionResults, llmApiUrl, { value: llmApiReachable, writable: true, enumerable: true, configurable: true })
   if (llmApiReachable) {
     const llmModel = config.get<string>('application.chatBot.model')
     llmModelAvailable = await checkIfLlmModelAvailable(llmApiUrl)
-    variableDependencies[llmModel] = {
-      dependency: 'LLM Model',
-      documentation: 'https://howto-llm.owasp-juice.shop',
-      dependentChallenges: ['"Chatbot Prompt Injection" challenge', '"Greedy Chatbot Manipulation" challenge', '"AI Debugging" challenge', '"System Prompt Extraction" challenge']
-    }
-    preconditionResults[llmModel] = llmModelAvailable
+    Object.defineProperty(variableDependencies, llmModel, {
+      value: {
+        dependency: 'LLM Model',
+        documentation: 'https://howto-llm.owasp-juice.shop',
+        dependentChallenges: ['"Chatbot Prompt Injection" challenge', '"Greedy Chatbot Manipulation" challenge', '"AI Debugging" challenge', '"System Prompt Extraction" challenge']
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    })
+    Object.defineProperty(preconditionResults, llmModel, { value: llmModelAvailable, writable: true, enumerable: true, configurable: true })
     if (!isOllamaUrl(llmApiUrl)) {
       variableDependencies.LLM_API_KEY = {
         dependency: 'LLM API Key',
@@ -147,13 +152,15 @@ export const checkIfRunningOnSupportedCPU = (runningArch: string) => {
 }
 
 export const checkIfEnvironmentVariableExists = (varName: string) => {
-  if (Object.prototype.hasOwnProperty.call(process.env, varName) && process.env[varName]) {
+  const envValue = Object.entries(process.env).find(([k]) => k === varName)?.[1]
+  if (envValue) {
     logger.info(`Environment variable ${colors.bold(varName)} is present (${colors.green('SUCCESS')})`)
     return true
   }
   logger.warn(`Environment variable ${colors.bold(varName)} is not present (${colors.yellow('WARNING')})`)
-  if (Object.prototype.hasOwnProperty.call(variableDependencies, varName)) {
-    variableDependencies[varName].dependentChallenges.forEach((dependency: string) => {
+  const varDep = Object.entries(variableDependencies).find(([k]) => k === varName)?.[1]
+  if (varDep) {
+    varDep.dependentChallenges.forEach((dependency: string) => {
       logger.warn(`${colors.italic(dependency)} will not work as intended without a valid ${colors.bold(varName)}`)
     })
   }
@@ -167,7 +174,7 @@ export const checkIfDomainReachable = async (domain: string) => {
     return true
   } catch {
     logger.warn(`Domain ${colors.bold(domain)} is not reachable (${colors.yellow('WARNING')})`)
-    const domainDep = Object.prototype.hasOwnProperty.call(domainDependencies, domain) ? domainDependencies[domain] : undefined
+    const domainDep = Object.entries(domainDependencies).find(([k]) => k === domain)?.[1]
     domainDep?.dependentChallenges.forEach((dependency: string) => {
       logger.warn(`${colors.italic(dependency)} will not work as intended without access to ${colors.bold(domain)}`)
     })

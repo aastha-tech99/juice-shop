@@ -18,7 +18,8 @@ void describe('Challenge Tags', () => {
       if (challenge.tags) {
         challenge.tags.forEach((tag: string) => {
           const tagKey = `TAG_${tag.toUpperCase().replace(/\s/g, '_')}`
-          assert.notEqual(en[tagKey], undefined, `Challenge "${challenge.name}" uses unsupported tag "${tag}". Only tags listed at https://pwning.owasp-juice.shop/companion-guide/latest/part1/challenges.html#_challenge_tags may be used. Tag Key: ${tagKey}`)
+          const enEntry = Object.entries(en).find(([k]) => k === tagKey)?.[1]
+          assert.notEqual(enEntry, undefined, `Challenge "${challenge.name}" uses unsupported tag "${tag}". Only tags listed at https://pwning.owasp-juice.shop/companion-guide/latest/part1/challenges.html#_challenge_tags may be used. Tag Key: ${tagKey}`)
         })
       }
     })

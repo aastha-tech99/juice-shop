@@ -42,7 +42,7 @@ ngAfterViewInit () {
   }
 
   encodeProductDescription (tableData: any[]) {
-    for (let i = 0; i < tableData.length; i++) {
-      tableData[i].description = tableData[i].description.replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+    for (const item of tableData) {
+      item.description = item.description.replaceAll('<', '&lt;').replaceAll('>', '&gt;')
     }
   }

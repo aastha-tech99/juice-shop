@@ -133,11 +133,11 @@ export class ChatConversationComponent implements OnInit {
       if (chunk.error) {
         this.messages.update(prev => {
           const updated = [...prev]
-          updated[assistantIndex] = {
+          updated.splice(assistantIndex, 1, {
             role: 'assistant',
             content: 'CHATBOT_ERROR_LLM_UNREACHABLE',
             error: true
-          }
+          })
           return updated
         })
         this.scrollToBottom()
@@ -146,20 +146,22 @@ export class ChatConversationComponent implements OnInit {
       if (chunk.deltaContent) {
         this.messages.update(prev => {
           const updated = [...prev]
-          updated[assistantIndex] = {
-            ...updated[assistantIndex],
-            content: updated[assistantIndex].content + chunk.deltaContent
-          }
+          const current = updated.at(assistantIndex)!
+          updated.splice(assistantIndex, 1, {
+            ...current,
+            content: current.content + chunk.deltaContent
+          })
           return updated
         })
       }
       if (chunk.deltaToolCalls) {
         this.messages.update(prev => {
           const updated = [...prev]
-          updated[assistantIndex] = {
-            ...updated[assistantIndex],
-            tool_calls: [...(updated[assistantIndex].tool_calls || []), ...chunk.deltaToolCalls!]
-          }
+          const current = updated.at(assistantIndex)!
+          updated.splice(assistantIndex, 1, {
+            ...current,
+            tool_calls: [...(current.tool_calls || []), ...chunk.deltaToolCalls!]
+          })
           return updated
         })
       }

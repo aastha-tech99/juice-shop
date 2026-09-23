@@ -200,9 +200,9 @@ function calculateApplicableDiscount (basket: BasketModel, req: Request) {
     return discount
   } else if (req.body.couponData) {
     const couponData = Buffer.from(req.body.couponData, 'base64').toString().split('-')
-    const couponCode = couponData[0]
-    const couponDate = Number(couponData[1])
-    const campaign = Object.prototype.hasOwnProperty.call(campaigns, couponCode) ? campaigns[couponCode as keyof typeof campaigns] : undefined
+    const [couponCode, couponDateStr] = couponData
+    const couponDate = Number(couponDateStr)
+    const campaign = Object.entries(campaigns).find(([k]) => k === couponCode)?.[1]
 
     if (campaign && couponDate == campaign.validOn) { // eslint-disable-line eqeqeq
       challengeUtils.solveIf(challenges.manipulateClockChallenge, () => { return campaign.validOn < new Date().getTime() })

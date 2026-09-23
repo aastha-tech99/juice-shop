@@ -38,12 +38,14 @@ export const forgedFeedbackChallenge = () => (req: Request, res: Response, next:
 
 export const captchaBypassChallenge = () => (req: Request, res: Response, next: NextFunction) => {
   if (challengeUtils.notSolved(challenges.captchaBypassChallenge)) {
-    if (req.app.locals.captchaReqId >= 10) {
-      if ((new Date().getTime() - req.app.locals.captchaBypassReqTimes[req.app.locals.captchaReqId - 10]) <= 20000) {
+    const reqTimes: number[] = req.app.locals.captchaBypassReqTimes
+    const reqId: number = req.app.locals.captchaReqId
+    if (reqId >= 10) {
+      if ((new Date().getTime() - (reqTimes.at(reqId - 10) ?? 0)) <= 20000) {
         challengeUtils.solve(challenges.captchaBypassChallenge)
       }
     }
-    req.app.locals.captchaBypassReqTimes[req.app.locals.captchaReqId - 1] = new Date().getTime()
+    reqTimes.splice(reqId - 1, 1, new Date().getTime())
     req.app.locals.captchaReqId++
   }
   next()

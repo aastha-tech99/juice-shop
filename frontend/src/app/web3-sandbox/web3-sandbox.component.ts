@@ -147,7 +147,7 @@ contract HelloWorld {
     }
     try {
       const selectedContractName = this.selectedContractName
-      const selectedContract = this.compiledContracts[selectedContractName]
+      const selectedContract = Object.entries(this.compiledContracts).find(([k]) => k === selectedContractName)?.[1]
 
       if (!selectedContract) {
         console.error('Selected contract not found.')
@@ -216,7 +216,7 @@ contract HelloWorld {
     }
     try {
       const selectedContract =
-        this.compiledContracts[this.selectedContractName]
+        Object.entries(this.compiledContracts).find(([k]) => k === this.selectedContractName)?.[1]
 
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
@@ -228,8 +228,8 @@ contract HelloWorld {
 
       const inputs =
         func.inputValues.trim() !== ''
-          ? func.inputValues.split(',').map((value, index) => {
-            const inputType = func.inputs[index].type
+          ? func.inputValues.split(',').map((value, idx) => {
+            const inputType = func.inputs.at(idx)?.type
             return this.parseInputValue(value.trim(), inputType)
           })
           : []
@@ -240,7 +240,8 @@ contract HelloWorld {
           'gwei'
         )
       }
-      const transaction = await contract.functions[func.name](
+      const contractFn = Object.entries(contract.functions).find(([k]) => k === func.name)?.[1]
+      const transaction = await contractFn!(
         ...inputs,
         transactionOptions
       )
@@ -257,9 +258,9 @@ contract HelloWorld {
         )
         if (updatedFunc) {
           updatedFunc.outputValue = outputValue
-          const index = this.contractFunctions.indexOf(func)
-          if (index !== -1) {
-            this.contractFunctions[index] = updatedFunc
+          const fnIndex = this.contractFunctions.indexOf(func)
+          if (fnIndex !== -1) {
+            this.contractFunctions.splice(fnIndex, 1, updatedFunc)
           }
         }
         console.log(func.outputValue)
@@ -272,9 +273,9 @@ contract HelloWorld {
       )
       if (updatedFunc) {
         updatedFunc.outputValue = error.message
-        const index = this.contractFunctions.indexOf(func)
-        if (index !== -1) {
-          this.contractFunctions[index] = updatedFunc
+        const fnIndex = this.contractFunctions.indexOf(func)
+        if (fnIndex !== -1) {
+          this.contractFunctions.splice(fnIndex, 1, updatedFunc)
         }
       }
     }

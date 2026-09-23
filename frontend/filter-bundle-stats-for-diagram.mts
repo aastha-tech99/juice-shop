@@ -12,7 +12,7 @@ const excludePattern = /\.(woff2?|ttf|eot|otf|svg)(#.*)?$/i
 
 for (const key of Object.keys(stats.inputs)) {
   if (excludePattern.test(key)) {
-    delete stats.inputs[key]
+    Reflect.deleteProperty(stats.inputs, key)
   }
 }
 
@@ -20,7 +20,7 @@ for (const output of Object.values(stats.outputs) as any[]) {
   if (output.inputs) {
     for (const key of Object.keys(output.inputs)) {
       if (excludePattern.test(key)) {
-        delete output.inputs[key]
+        Reflect.deleteProperty(output.inputs, key)
       }
     }
   }

@@ -105,12 +105,12 @@ async function createChallenges () {
     const challengeDependencies: any[] = []
     for (const [variable, dependency] of Object.entries(variableDependencies)) {
       if (dependency.dependentChallenges.some(dep => dep.includes(challenge.name) || dep.includes(challenge.key))) {
-        challengeDependencies.push({ ...dependency, key: variable, missing: !(Object.prototype.hasOwnProperty.call(preconditionResults, variable) && preconditionResults[variable]) })
+        challengeDependencies.push({ ...dependency, key: variable, missing: !(Object.entries(preconditionResults).find(([k]) => k === variable)?.[1]) })
       }
     }
     for (const [domain, dependency] of Object.entries(domainDependencies)) {
       if (dependency.dependentChallenges.some(dep => dep.includes(challenge.name) || dep.includes(challenge.key))) {
-        challengeDependencies.push({ ...dependency, key: domain, missing: !(Object.prototype.hasOwnProperty.call(preconditionResults, domain) && preconditionResults[domain]) })
+        challengeDependencies.push({ ...dependency, key: domain, missing: !(Object.entries(preconditionResults).find(([k]) => k === domain)?.[1]) })
       }
     }
 
@@ -141,7 +141,7 @@ async function createChallenges () {
   try {
     const createdChallenges = await ChallengeModel.bulkCreate(challengeRecords)
     for (const challenge of createdChallenges) {
-      datacache.challenges[challenge.key] = challenge
+      Object.defineProperty(datacache.challenges, challenge.key, { value: challenge, writable: true, enumerable: true, configurable: true })
     }
   } catch (err) {
     logger.error(`Could not bulk insert Challenges: ${utils.getErrorMessage(err)}`)
@@ -151,7 +151,7 @@ async function createChallenges () {
   if (pendingDependencies.length > 0) {
     const allDependencyRecords = pendingDependencies.flatMap(({ challengeKey, deps }) =>
       deps.map(dep => ({
-        ChallengeId: Object.prototype.hasOwnProperty.call(datacache.challenges, challengeKey) ? datacache.challenges[challengeKey].id : 0,
+        ChallengeId: Object.entries(datacache.challenges).find(([k]) => k === challengeKey)?.[1]?.id ?? 0,
         name: dep.dependency,
         documentation: dep.documentation,
         key: dep.key,
@@ -168,7 +168,7 @@ async function createChallenges () {
   if (pendingHints.length > 0) {
     const allHintRecords = pendingHints.flatMap(({ challengeKey, hints }) =>
       hints.map((hint, index) => ({
-        ChallengeId: Object.prototype.hasOwnProperty.call(datacache.challenges, challengeKey) ? datacache.challenges[challengeKey].id : 0,
+        ChallengeId: Object.entries(datacache.challenges).find(([k]) => k === challengeKey)?.[1]?.id ?? 0,
         text: hint.replace(/OWASP Juice Shop/, `${config.get<string>('application.name')}`)
           .replace('http://htmledit.squarefree.com', config.get<string>('challenges.overwriteUrlForCsrfChallenge')),
         order: index + 1,
@@ -200,7 +200,7 @@ async function createUsers () {
           totpSecret: totpSecret || process.env.TOTP_SECRET || '',
           lastLoginIp
         })
-        datacache.users[key] = user
+        Object.defineProperty(datacache.users, key, { value: user, writable: true, enumerable: true, configurable: true })
         if (securityQuestion != null) await createSecurityAnswer(user.id, securityQuestion.id, securityQuestion.answer)
         if (feedback != null) await createFeedback(user.id, feedback.comment, feedback.rating, user.email)
         if (deletedFlag) await deleteUser(user.id)
@@ -357,7 +357,8 @@ async function createMemories () {
         logger.warn(`Could not find user for memory ${memory.caption}!`)
         return
       }
-      const userIdOfMemory = datacache.users[memory.user].id.valueOf() ?? null
+      const userEntry = Object.entries(datacache.users).find(([k]) => k === memory.user)?.[1]
+      const userIdOfMemory = userEntry?.id.valueOf() ?? null
       if (!userIdOfMemory) {
         logger.warn(`Could not find saved user for memory ${memory.caption}!`)
         return
@@ -456,7 +457,7 @@ async function createProducts () {
               reviews.map(({ text, author }) =>
                 reviewsCollection.insert({
                   message: text,
-                  author: Object.prototype.hasOwnProperty.call(datacache.users, author) ? datacache.users[author].email : '',
+                  author: Object.entries(datacache.users).find(([k]) => k === author)?.[1]?.email ?? '',
                   product: id,
                   likesCount: 0,
                   likedBy: []

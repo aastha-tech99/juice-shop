@@ -80,8 +80,9 @@ export function getLanguageList () {
   function calcPercentage (fileContent: any, enContent: any): number {
     const totalStrings = Object.keys(enContent).length
     let differentStrings = 0
-    for (const key in fileContent) {
-      if (Object.prototype.hasOwnProperty.call(fileContent, key) && fileContent[key] !== enContent[key]) {
+    const enEntries = new Map<string, unknown>(Object.entries(enContent))
+    for (const [key, value] of Object.entries(fileContent)) {
+      if (enEntries.has(key) && value !== enEntries.get(key)) {
         differentStrings++
       }
     }

@@ -255,20 +255,20 @@ describe('SidenavComponent', () => {
 
     describe('socket subscription', () => {
         it('should set scoreBoardVisible to true when challenge solved is the scoreBoardChallenge', () => {
-            const handlers: Record<string, (challenge: any) => void> = {}
-            mockSocket.on = (event: string, cb: any) => { handlers[event] = cb }
+            const handlers = new Map<string, (challenge: any) => void>()
+            mockSocket.on = (event: string, cb: any) => { handlers.set(event, cb) }
             component.scoreBoardVisible = false
             component.ngOnInit()
-            handlers['challenge solved']({ key: 'scoreBoardChallenge' })
+            handlers.get('challenge solved')!({ key: 'scoreBoardChallenge' })
             expect(component.scoreBoardVisible).toBe(true)
         })
 
         it('should not change scoreBoardVisible for unrelated challenge keys', () => {
-            const handlers: Record<string, (challenge: any) => void> = {}
-            mockSocket.on = (event: string, cb: any) => { handlers[event] = cb }
+            const handlers = new Map<string, (challenge: any) => void>()
+            mockSocket.on = (event: string, cb: any) => { handlers.set(event, cb) }
             component.scoreBoardVisible = false
             component.ngOnInit()
-            handlers['challenge solved']({ key: 'somethingElse' })
+            handlers.get('challenge solved')!({ key: 'somethingElse' })
             expect(component.scoreBoardVisible).toBe(false)
         })
     })

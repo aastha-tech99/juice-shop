@@ -75,7 +75,7 @@ const computeDiffs = async (keys: string[]) => {
         const prev = line
         line += part.count
         if (!part.added) continue
-        const entry = Object.prototype.hasOwnProperty.call(data, val) ? data[val] : undefined
+        const entry = Object.entries(data).find(([k]) => k === val)?.[1]
         if (!entry) continue
         for (let i = 0; i < part.count; i++) {
           if (!snippet.vulnLines.includes(prev + i + 1) && !snippet.neutralLines.includes(prev + i + 1)) {
@@ -94,7 +94,7 @@ const computeDiffs = async (keys: string[]) => {
         const prev = line
         line += part.count
         if (!part.removed) continue
-        const entryForRemoval = Object.prototype.hasOwnProperty.call(data, val) ? data[val] : undefined
+        const entryForRemoval = Object.entries(data).find(([k]) => k === val)?.[1]
         if (!entryForRemoval) continue
         let temp = norm
         for (let i = 0; i < part.count; i++) {
@@ -114,13 +114,13 @@ const computeDiffs = async (keys: string[]) => {
 
 function findChangedFiles (current: CacheData, cached: CacheData): string[] {
   const changed: string[] = []
-  for (const key of Object.keys(current)) {
-    if (!Object.prototype.hasOwnProperty.call(cached, key)) {
+  const cachedMap = new Map(Object.entries(cached))
+  for (const [key, curEntry] of Object.entries(current)) {
+    const cacEntry = cachedMap.get(key)
+    if (!cacEntry) {
       changed.push(key)
       continue
     }
-    const curEntry = current[key]
-    const cacEntry = cached[key]
     const curAdded = [...curEntry.added].sort((a, b) => a - b)
     const cacAdded = [...cacEntry.added].sort((a, b) => a - b)
     const curRemoved = [...curEntry.removed].sort((a, b) => a - b)
@@ -128,8 +128,8 @@ function findChangedFiles (current: CacheData, cached: CacheData): string[] {
     if (
       curAdded.length !== cacAdded.length ||
       curRemoved.length !== cacRemoved.length ||
-      !curAdded.every((val, i) => cacAdded[i] === val) ||
-      !curRemoved.every((val, i) => cacRemoved[i] === val)
+      !curAdded.every((val, idx) => cacAdded.at(idx) === val) ||
+      !curRemoved.every((val, idx) => cacRemoved.at(idx) === val)
     ) {
       changed.push(key)
     }

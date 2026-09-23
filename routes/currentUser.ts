@@ -25,26 +25,25 @@ export function retrieveLoggedInUser () {
         // Allowlist of properties that may be requested via the fields parameter
         const allowedFields = new Set(['id', 'email', 'lastLoginIp', 'profileImage'])
 
-        let baseUser: any = {}
+        const baseUserMap = new Map<string, unknown>()
 
         if (requestedFields.length > 0) {
           // When fields are specified, return only those fields if they are in the allowlist
+          const dataEntries = user?.data ? new Map(Object.entries(user.data)) : new Map()
           for (const field of requestedFields) {
-            if (allowedFields.has(field) && user?.data[field as keyof typeof user.data] !== undefined) {
-              baseUser[field] = user?.data[field as keyof typeof user.data]
+            if (allowedFields.has(field) && dataEntries.has(field) && dataEntries.get(field) !== undefined) {
+              baseUserMap.set(field, dataEntries.get(field))
             }
           }
         } else {
           // If no fields parameter, return standard fields (not password field)
-          baseUser = {
-            id: user?.data?.id,
-            email: user?.data?.email,
-            lastLoginIp: user?.data?.lastLoginIp,
-            profileImage: user?.data?.profileImage
-          }
+          baseUserMap.set('id', user?.data?.id)
+          baseUserMap.set('email', user?.data?.email)
+          baseUserMap.set('lastLoginIp', user?.data?.lastLoginIp)
+          baseUserMap.set('profileImage', user?.data?.profileImage)
         }
 
-        response = { user: baseUser }
+        response = { user: Object.fromEntries(baseUserMap) }
       } else {
         response = { user: emptyUser }
       }

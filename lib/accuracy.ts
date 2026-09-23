@@ -44,12 +44,36 @@ export const reset = () => {
   solves.clear()
 }
 
+function getPhaseValue (entry: SolveEntry, phase: Phase): boolean {
+  return phase === 'find it' ? entry['find it'] : entry['fix it']
+}
+
+function getPhaseAttempts (entry: SolveEntry, phase: Phase): number {
+  return phase === 'find it' ? entry.attempts['find it'] : entry.attempts['fix it']
+}
+
+function setPhaseValue (entry: SolveEntry, phase: Phase, value: boolean): void {
+  if (phase === 'find it') {
+    entry['find it'] = value
+  } else {
+    entry['fix it'] = value
+  }
+}
+
+function incrementPhaseAttempts (entry: SolveEntry, phase: Phase): void {
+  if (phase === 'find it') {
+    entry.attempts['find it']++
+  } else {
+    entry.attempts['fix it']++
+  }
+}
+
 function totalAccuracy (phase: Phase) {
   let sumAccuracy = 0
   let totalSolved = 0
   for (const value of solves.values()) {
-    if (value[phase]) {
-      sumAccuracy += 1 / value.attempts[phase]
+    if (getPhaseValue(value, phase)) {
+      sumAccuracy += 1 / getPhaseAttempts(value, phase)
       totalSolved++
     }
   }
@@ -59,8 +83,8 @@ function totalAccuracy (phase: Phase) {
 function calculateAccuracy (challengeKey: ChallengeKey, phase: Phase) {
   let accuracy = 0
   const entry = solves.get(challengeKey)
-  if (entry && entry[phase]) {
-    accuracy = 1 / entry.attempts[phase]
+  if (entry && getPhaseValue(entry, phase)) {
+    accuracy = 1 / getPhaseAttempts(entry, phase)
   }
   logger.info(`Accuracy for '${phase === 'fix it' ? 'Fix It' : 'Find It'}' phase of coding challenge ${colors.cyan(challengeKey)}: ${accuracy > 0.5 ? colors.green(accuracy.toString()) : (accuracy > 0.25 ? colors.yellow(accuracy.toString()) : colors.red(accuracy.toString()))}`)
   return accuracy
@@ -72,8 +96,8 @@ function storeVerdict (challengeKey: ChallengeKey, phase: Phase, verdict: boolea
     entry = { 'find it': false, 'fix it': false, attempts: { 'find it': 0, 'fix it': 0 } }
     solves.set(challengeKey, entry)
   }
-  if (!entry[phase]) {
-    entry[phase] = verdict
-    entry.attempts[phase]++
+  if (!getPhaseValue(entry, phase)) {
+    setPhaseValue(entry, phase, verdict)
+    incrementPhaseAttempts(entry, phase)
   }
 }

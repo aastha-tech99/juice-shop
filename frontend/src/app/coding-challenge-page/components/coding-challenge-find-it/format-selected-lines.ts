@@ -6,18 +6,19 @@
 export function formatSelectedLines (lines: number[]): string {
   if (lines.length === 0) return ''
   const ranges: string[] = []
-  let start = lines[0]
+  const [first, ...rest] = lines
+  let start = first
   let end = start
-  for (let i = 1; i < lines.length; i++) {
-    if (lines[i] === end + 1) {
-      end = lines[i]
+  for (const line of rest) {
+    if (line === end + 1) {
+      end = line
     } else {
       ranges.push(start === end ? `${start}` : `${start}-${end}`)
-      start = lines[i]
+      start = line
       end = start
     }
   }
   ranges.push(start === end ? `${start}` : `${start}-${end}`)
   if (ranges.length <= 2) return ranges.join(' & ')
-  return ranges.slice(0, -1).join(', ') + ' & ' + ranges[ranges.length - 1]
+  return ranges.slice(0, -1).join(', ') + ' & ' + ranges.at(-1)
 }

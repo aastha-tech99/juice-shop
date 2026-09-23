@@ -18,13 +18,13 @@ import * as utils from './utils'
 import median from 'median'
 import { type ChallengeKey } from '@juice-shop/models/challenge'
 
-const tightlyCoupledChallenges = {
-  loginAdminChallenge: ['weakPasswordChallenge'],
-  nullByteChallenge: ['easterEggLevelOneChallenge', 'forgottenDevBackupChallenge', 'forgottenBackupChallenge', 'misplacedSignatureFileChallenge'],
-  deprecatedInterfaceChallenge: ['uploadTypeChallenge', 'xxeFileDisclosureChallenge', 'xxeDosChallenge', 'yamlBombChallenge'],
-  uploadSizeChallenge: ['uploadTypeChallenge', 'xxeFileDisclosureChallenge', 'xxeDosChallenge', 'yamlBombChallenge'],
-  uploadTypeChallenge: ['xxeFileDisclosureChallenge', 'xxeDosChallenge', 'yamlBombChallenge']
-}
+const tightlyCoupledChallenges = new Map<string, string[]>([
+  ['loginAdminChallenge', ['weakPasswordChallenge']],
+  ['nullByteChallenge', ['easterEggLevelOneChallenge', 'forgottenDevBackupChallenge', 'forgottenBackupChallenge', 'misplacedSignatureFileChallenge']],
+  ['deprecatedInterfaceChallenge', ['uploadTypeChallenge', 'xxeFileDisclosureChallenge', 'xxeDosChallenge', 'yamlBombChallenge']],
+  ['uploadSizeChallenge', ['uploadTypeChallenge', 'xxeFileDisclosureChallenge', 'xxeDosChallenge', 'yamlBombChallenge']],
+  ['uploadTypeChallenge', ['xxeFileDisclosureChallenge', 'xxeDosChallenge', 'yamlBombChallenge']]
+])
 
 const looselyCoupledChallenges = [
   ['easterEggLevelOneChallenge', 'forgottenDevBackupChallenge', 'forgottenBackupChallenge', 'misplacedSignatureFileChallenge'],
@@ -52,22 +52,22 @@ const preSolveInteractions: Array<{ challengeKey: ChallengeKey, urlFragments: st
   { challengeKey: 'rceOccupyChallenge', urlFragments: ['/api-docs', '/b2b/v2/orders'], interactions: [false, false] }
 ]
 
-const challengeSourceFiles: Record<string, string[]> = {
-  knownVulnerableComponentChallenge: ['ftp/package.json.bak'],
-  typosquattingNpmChallenge: ['ftp/package.json.bak'],
-  supplyChainAttackChallenge: ['ftp/package.json.bak'],
-  weirdCryptoChallenge: ['ftp/package.json.bak'],
-  vulnerableDockerImageChallenge: ['infrastructure/docker-compose.yml']
-}
+const challengeSourceFiles = new Map<string, string[]>([
+  ['knownVulnerableComponentChallenge', ['ftp/package.json.bak']],
+  ['typosquattingNpmChallenge', ['ftp/package.json.bak']],
+  ['supplyChainAttackChallenge', ['ftp/package.json.bak']],
+  ['weirdCryptoChallenge', ['ftp/package.json.bak']],
+  ['vulnerableDockerImageChallenge', ['infrastructure/docker-compose.yml']]
+])
 
 export const checkForPreSolveInteractions = () => ({ url }: Request, res: Response, next: NextFunction) => {
-  preSolveInteractions.forEach((preSolveInteraction) => {
-    preSolveInteraction.urlFragments.forEach((fragment, i) => {
+  for (const preSolveInteraction of preSolveInteractions) {
+    for (const [i, fragment] of preSolveInteraction.urlFragments.entries()) {
       if (url.endsWith(fragment)) {
-        preSolveInteraction.interactions[i] = true
+        preSolveInteraction.interactions.splice(i, 1, true)
       }
-    })
-  })
+    }
+  }
   next()
 }
 
@@ -153,8 +153,8 @@ export const totalCheatScore = () => {
 }
 
 function areTightlyCoupled (challenge: Challenge, previousChallenge: Challenge) {
-  const coupledToCurrent = Object.prototype.hasOwnProperty.call(tightlyCoupledChallenges, challenge.key) ? (tightlyCoupledChallenges as Record<string, string[]>)[challenge.key] : undefined
-  const coupledToPrevious = Object.prototype.hasOwnProperty.call(tightlyCoupledChallenges, previousChallenge.key) ? (tightlyCoupledChallenges as Record<string, string[]>)[previousChallenge.key] : undefined
+  const coupledToCurrent = tightlyCoupledChallenges.get(challenge.key)
+  const coupledToPrevious = tightlyCoupledChallenges.get(previousChallenge.key)
   return (coupledToCurrent?.indexOf(previousChallenge.key) ?? -1) > -1 || (coupledToPrevious?.indexOf(challenge.key) ?? -1) > -1
 }
 
@@ -215,7 +215,7 @@ function loadSourceFile (relativePath: string): string {
 }
 
 export function checkForSourceFileOverlap (challengeKey: string, submission: string): boolean {
-  const sourceFiles = Object.prototype.hasOwnProperty.call(challengeSourceFiles, challengeKey) ? challengeSourceFiles[challengeKey] : undefined
+  const sourceFiles = challengeSourceFiles.get(challengeKey)
   if (!sourceFiles || submission.length < 100) {
     return false
   }

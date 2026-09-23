@@ -11,8 +11,8 @@ void describe('isDocker', () => {
   let isDocker: any
   beforeEach(() => {
     try {
-      const path = require.resolve('../../lib/is-docker')
-      delete require.cache[path]
+      const resolvedPath = require.resolve('../../lib/is-docker')
+      Reflect.deleteProperty(require.cache, resolvedPath)
     } catch (e) {}
     isDocker = require('../../lib/is-docker').default
   })

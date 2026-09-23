@@ -32,21 +32,16 @@ void describe('challengeCountryMapping', () => {
   })
 
   void it('should have unique country codes in every mapping', async () => {
-    const countryCodeCounts: any = {}
+    const countryCodeCounts = new Map<string, number>()
 
-    for (const key of Object.keys(countryMapping)) {
-      const { code } = countryMapping[key]
+    for (const [, mapping] of Object.entries(countryMapping)) {
+      const { code } = mapping
 
-      if (!Object.prototype.hasOwnProperty.call(countryCodeCounts, code)) {
-        countryCodeCounts[code] = 0
-      }
-      countryCodeCounts[code]++
+      countryCodeCounts.set(code, (countryCodeCounts.get(code) ?? 0) + 1)
     }
 
-    for (const key of Object.keys(countryCodeCounts)) {
-      const count = countryCodeCounts[key]
-
-      assert.equal(count, 1, `Country "${key}" is used for multiple country mappings.`)
+    for (const [code, count] of countryCodeCounts.entries()) {
+      assert.equal(count, 1, `Country "${code}" is used for multiple country mappings.`)
     }
   })
 })

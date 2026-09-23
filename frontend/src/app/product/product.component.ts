@@ -73,11 +73,11 @@ export class ProductComponent {
       next: (basket) => {
         const productsInBasket: any = basket.Products
         let found = false
-        for (let i = 0; i < productsInBasket.length; i++) {
-          if (productsInBasket[i].id === id) {
+        for (const basketProduct of productsInBasket) {
+          if (basketProduct.id === id) {
             found = true
             this.basketService
-              .get(productsInBasket[i].BasketItem.id)
+              .get(basketProduct.BasketItem.id)
               .subscribe({
                 next: (existingBasketItem) => {
                   const newQuantity = existingBasketItem.quantity + 1

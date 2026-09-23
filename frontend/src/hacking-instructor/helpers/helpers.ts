@@ -44,16 +44,22 @@ export function waitForInputToHaveValue (inputSelector: string, value: string, o
         config = json.config
       }
       const dangerousKeys = new Set(['__proto__', 'constructor', 'prototype'])
-      const propertyChain = options.replacement[1].split('.')
+      const [replacementPattern, replacementPath] = options.replacement
+      const propertyChain = replacementPath.split('.')
       let replacementValue = config
       for (const property of propertyChain) {
         if (dangerousKeys.has(property)) {
           replacementValue = undefined
           break
         }
-        replacementValue = replacementValue[property]
+        if (replacementValue == null || typeof replacementValue !== 'object') {
+          replacementValue = undefined
+          break
+        }
+        const found = Object.entries(replacementValue).find(([k]) => k === property)
+        replacementValue = found ? found[1] : undefined
       }
-      value = value.replace(options.replacement[0], replacementValue)
+      value = value.replace(replacementPattern, replacementValue)
     }
 
     while (true) {
@@ -155,7 +161,8 @@ export function waitInMs (timeInMs: number) {
       const json = await res.json()
       config = json.config
     }
-    let delay = playbackDelays[config.hackingInstructor.hintPlaybackSpeed]
+    const playbackMap = new Map(Object.entries(playbackDelays))
+    let delay = playbackMap.get(config.hackingInstructor.hintPlaybackSpeed)
     delay ??= 1.0
     await sleep(timeInMs * delay)
   }
@@ -238,7 +245,7 @@ export function waitForSelectToHaveValue (selectSelector: string, value: string)
     )
 
     while (true) {
-      if (selectElement.options[selectElement.selectedIndex].value === value) {
+      if (selectElement.options.item(selectElement.selectedIndex)?.value === value) {
         break
       }
       await sleep(100)
@@ -253,7 +260,7 @@ export function waitForSelectToNotHaveValue (selectSelector: string, value: stri
     )
 
     while (true) {
-      if (selectElement.options[selectElement.selectedIndex].value !== value) {
+      if (selectElement.options.item(selectElement.selectedIndex)?.value !== value) {
         break
       }
       await sleep(100)

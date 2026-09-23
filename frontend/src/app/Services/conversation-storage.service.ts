@@ -37,7 +37,7 @@ export class ConversationStorageService {
     const all = this.getAll()
     const index = all.findIndex(c => c.id === conversation.id)
     if (index >= 0) {
-      all[index] = conversation
+      all.splice(index, 1, conversation)
     } else {
       all.push(conversation)
     }

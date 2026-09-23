@@ -24,21 +24,16 @@ void describe('challengeTutorialSequence', () => {
   })
 
   void it('should have unique tutorial orders', async () => {
-    const tutorialOrderCounts: any = {}
+    const tutorialOrderCounts = new Map<string, number>()
 
     for (const { tutorial } of challenges) {
       if (tutorial) {
         const order: string = tutorial.order
-        if (!Object.prototype.hasOwnProperty.call(tutorialOrderCounts, order)) {
-          tutorialOrderCounts[order] = 0
-        }
-        tutorialOrderCounts[order]++
+        tutorialOrderCounts.set(order, (tutorialOrderCounts.get(order) ?? 0) + 1)
       }
     }
 
-    for (const order of Object.keys(tutorialOrderCounts)) {
-      const count = tutorialOrderCounts[order]
-
+    for (const [order, count] of tutorialOrderCounts.entries()) {
       assert.equal(count, 1, `Tutorial order "${order}" is used for multiple challenges.`)
     }
   })

@@ -514,14 +514,14 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
     // translate challenge descriptions on-the-fly
     if (name === 'Challenge') {
       resource.list.fetch.after((req: Request, res: Response, context: { instance: string | any[], continue: any }) => {
-        for (let i = 0; i < context.instance.length; i++) {
-          let description = context.instance[i].description
+        for (const item of context.instance) {
+          let description = item.description
           if (description?.includes('<em>(This challenge is <strong>')) {
             const warning = description.substring(description.indexOf(' <em>(This challenge is <strong>'))
             description = description.substring(0, description.indexOf(' <em>(This challenge is <strong>'))
-            context.instance[i].description = req.__(description) + req.__(warning)
+            item.description = req.__(description) + req.__(warning)
           } else {
-            context.instance[i].description = req.__(description)
+            item.description = req.__(description)
           }
         }
         return context.continue

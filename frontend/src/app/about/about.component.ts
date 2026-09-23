@@ -112,20 +112,20 @@ export class AboutComponent implements OnInit {
         })
       )
       .subscribe((feedbacks) => {
-        for (let i = 0; i < feedbacks.length; i++) {
-
-          feedbacks[i].comment = `<figcaption><p class="feedback-comment">${
-            feedbacks[i].comment
-          }</p><div class="feedback-stars">(${this.stars[feedbacks[i].rating]})</div></figcaption>`
-          feedbacks[i].comment = this.sanitizer.bypassSecurityTrustHtml(
-            feedbacks[i].comment
+        feedbacks.forEach((feedback, i) => {
+          const starsHtml = this.stars.at(feedback.rating) ?? ''
+          feedback.comment = `<figcaption><p class="feedback-comment">${
+            feedback.comment
+          }</p><div class="feedback-stars">(${starsHtml})</div></figcaption>`
+          feedback.comment = this.sanitizer.bypassSecurityTrustHtml(
+            feedback.comment
           )
 
           this.galleryRef.addImage({
-            src: this.images[i % this.images.length],
-            args: feedbacks[i].comment
+            src: this.images.at(i % this.images.length),
+            args: feedback.comment
           })
-        }
+        })
       })
   }
 }

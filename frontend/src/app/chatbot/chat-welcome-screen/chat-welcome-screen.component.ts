@@ -62,16 +62,21 @@ export class ChatWelcomeScreenComponent implements OnInit {
     if (questions.length === 0) return
 
     this.translate.get(questions).subscribe(translations => {
-      const allSuggestions = questions.map(q => translations[q] !== q ? translations[q] : q)
+      const translationMap = new Map<string, string>(Object.entries(translations))
+      const allSuggestions = questions.map(q => {
+        const translated = translationMap.get(q)
+        return translated && translated !== q ? translated : q
+      })
 
       const currentMessage = this.message()
       const availableSuggestions = allSuggestions.filter(s => s !== currentMessage)
 
       if (availableSuggestions.length > 0) {
-        const chosen = availableSuggestions[Math.floor(Math.random() * availableSuggestions.length)]
+        const chosen = availableSuggestions.at(Math.floor(Math.random() * availableSuggestions.length))
         this.message.set(chosen)
       } else if (allSuggestions.length > 0) {
-        this.message.set(allSuggestions[0])
+        const [first] = allSuggestions
+        this.message.set(first)
       }
       this.inputBox()?.focus()
     })

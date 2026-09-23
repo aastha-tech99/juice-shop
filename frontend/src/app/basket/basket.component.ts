@@ -46,7 +46,8 @@ export class BasketComponent {
   }
 
   getBonusPoints (total: [number, number]): void {
-    sessionStorage.setItem('itemTotal', total[0].toString())
-    this.bonus = total[1]
+    const [itemTotal, bonus] = total
+    sessionStorage.setItem('itemTotal', itemTotal.toString())
+    this.bonus = bonus
   }
 }

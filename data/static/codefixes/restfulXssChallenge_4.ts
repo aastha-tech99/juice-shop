@@ -42,7 +42,7 @@ ngAfterViewInit () {
   }
 
   trustProductDescription (tableData: any[]) {
-    for (let i = 0; i < tableData.length; i++) {
-      tableData[i].description = this.sanitizer.bypassSecurityTrustScript(tableData[i].description)
+    for (const item of tableData) {
+      item.description = this.sanitizer.bypassSecurityTrustScript(item.description)
     }
   }

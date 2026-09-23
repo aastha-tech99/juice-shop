@@ -58,8 +58,8 @@ export const trunc = function (str: string, length: number) {
 
 export const version = (module?: string) => {
   if (module) {
-    // @ts-expect-error FIXME Ignoring any type issue on purpose
-    return Object.prototype.hasOwnProperty.call(packageJson.dependencies, module) ? packageJson.dependencies[module] : undefined
+    const depEntry = Object.entries(packageJson.dependencies).find(([k]) => k === module)
+    return depEntry ? depEntry[1] : undefined
   } else {
     return packageJson.version
   }
@@ -84,7 +84,7 @@ export const ctfFlag = (text: string) => {
 export const toMMMYY = (date: Date) => {
   const month = date.getMonth()
   const year = date.getFullYear()
-  return months[month] + year.toString().substring(2, 4)
+  return months.at(month) + year.toString().substring(2, 4)
 }
 
 export const toISO8601 = (date: Date) => {

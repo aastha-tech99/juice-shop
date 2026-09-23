@@ -30,13 +30,15 @@ export const makeKeyNonUpdatable = (model: ModelStatic<Model>, column: string) =
     const validationErrors: ValidationErrorItem[] = []
 
     changedKeys.forEach((fieldName: any) => {
-      if (!Object.prototype.hasOwnProperty.call(instance.rawAttributes, fieldName)) return
-      const fieldDefinition = instance.rawAttributes[fieldName]
+      const rawAttrsEntry = Object.entries(instance.rawAttributes).find(([k]) => k === fieldName)
+      if (!rawAttrsEntry) return
+      const fieldDefinition = rawAttrsEntry[1]
 
+      const prevDataEntry = Object.entries(instance._previousDataValues).find(([k]) => k === fieldName)
       if (
-        Object.prototype.hasOwnProperty.call(instance._previousDataValues, fieldName) &&
-        instance._previousDataValues[fieldName] !== undefined &&
-        instance._previousDataValues[fieldName] !== null &&
+        prevDataEntry &&
+        prevDataEntry[1] !== undefined &&
+        prevDataEntry[1] !== null &&
         (fieldDefinition.fieldName === column)
       ) {
         validationErrors.push(

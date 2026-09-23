@@ -38,8 +38,9 @@ export default defineConfig({
         },
         GetFromMemories (property: string) {
           for (const memory of config.get<MemoryConfig[]>('memories') as any) {
-            if (Object.prototype.hasOwnProperty.call(memory, property) && memory[property]) {
-              return memory[property]
+            const entry = Object.entries(memory).find(([k]) => k === property)
+            if (entry && entry[1]) {
+              return entry[1]
             }
           }
         },
