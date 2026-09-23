@@ -66,7 +66,7 @@ export class AdministrationComponent implements OnInit {
   }
 
   findAllUsers () {
-    this.userService.find().subscribe({
+    this.userService.find({ limit: 100 }).subscribe({
       next: (users) => {
         this.userDataSource = users
         this.userDataSourceHidden = users
@@ -85,7 +85,7 @@ export class AdministrationComponent implements OnInit {
   }
 
   findAllFeedbacks () {
-    this.feedbackService.find().subscribe({
+    this.feedbackService.find({ limit: 100 }).subscribe({
       next: (feedbacks) => {
         this.feedbackDataSource = feedbacks
         for (const feedback of this.feedbackDataSource) {

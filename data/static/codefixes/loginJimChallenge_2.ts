@@ -12,7 +12,7 @@ export function login () {
   }
 
   return (req: Request, res: Response, next: NextFunction) => {
-    models.sequelize.query('SELECT * FROM Users WHERE email = ? AND password = ? AND deletedAt IS NULL', { replacements: [req.body.email || '', security.hash(req.body.password || '')], model: models.User, plain: false })
+    models.sequelize.query('SELECT * FROM Users WHERE email = ? AND password = ? AND deletedAt IS NULL LIMIT 1', { replacements: [req.body.email || '', security.hash(req.body.password || '')], model: models.User, plain: false })
       .then((authenticatedUser) => {
         const user = utils.queryResultToJson(authenticatedUser)
         if (user.data?.id && user.data.totpSecret !== '') {
