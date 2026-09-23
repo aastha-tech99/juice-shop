@@ -130,13 +130,22 @@ export class ChangePasswordComponent {
   }
 }
 
+function constantTimeEqual (a: string, b: string): boolean {
+  let result = a.length ^ b.length
+  const maxLen = Math.max(a.length, b.length)
+  for (let i = 0; i < maxLen; i++) {
+    result |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0)
+  }
+  return result === 0
+}
+
 function matchValidator (newPasswordControl: AbstractControl) {
   return function matchOtherValidate (
     repeatNewPasswordControl: UntypedFormControl
   ) {
     const password = newPasswordControl.value
     const passwordRepeat = repeatNewPasswordControl.value
-    if (password !== passwordRepeat) {
+    if (!constantTimeEqual(password, passwordRepeat)) {
       return { notSame: true }
     }
     return null
