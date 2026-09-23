@@ -51,7 +51,7 @@ export function changePassword () {
       await user.update({ password: newPasswordInString })
       challengeUtils.solveIf(
         challenges.changePasswordBenderChallenge,
-        () => user.id === 3 && !currentPassword && user.password === security.hash('slurmCl4ssic')
+        () => user.id === 3 && !currentPassword && security.safeCompare(user.password, security.hash('slurmCl4ssic'))
       )
       res.json({ user })
     } catch (error) {

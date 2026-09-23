@@ -188,6 +188,30 @@ void describe('insecurity', () => {
     })
   })
 
+  void describe('safeCompare', () => {
+    void it('returns true for identical strings', () => {
+      assert.equal(security.safeCompare('test', 'test'), true)
+    })
+
+    void it('returns false for different strings of same length', () => {
+      assert.equal(security.safeCompare('test', 'tess'), false)
+    })
+
+    void it('returns false for different length strings', () => {
+      assert.equal(security.safeCompare('short', 'longer'), false)
+    })
+
+    void it('returns false for non-string inputs', () => {
+      assert.equal(security.safeCompare(undefined as any, 'test'), false)
+      assert.equal(security.safeCompare('test', undefined as any), false)
+      assert.equal(security.safeCompare(null as any, null as any), false)
+    })
+
+    void it('returns true for empty strings', () => {
+      assert.equal(security.safeCompare('', ''), true)
+    })
+  })
+
   void describe('hash', () => {
     void it('returns MD5 hash for any input string', () => {
       assert.equal(security.hash('admin123'), '0192023a7bbd73250516f069df18b500')

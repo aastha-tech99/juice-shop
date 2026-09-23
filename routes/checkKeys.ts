@@ -1,5 +1,6 @@
 import { type Request, type Response } from 'express'
 import * as challengeUtils from '../lib/challengeUtils'
+import * as security from '../lib/insecurity'
 import * as utils from '../lib/utils'
 import { challenges } from '../data/datacache'
 
@@ -13,14 +14,14 @@ export function checkKeys () {
       const publicKey = mnemonicWallet.publicKey
       const address = mnemonicWallet.address
       challengeUtils.solveIf(challenges.nftUnlockChallenge, () => {
-        return req.body.privateKey === privateKey
+        return security.safeCompare(req.body.privateKey || '', privateKey)
       })
-      if (req.body.privateKey === privateKey) {
+      if (security.safeCompare(req.body.privateKey || '', privateKey)) {
         res.status(200).json({ success: true, message: 'Challenge successfully solved', status: challenges.nftUnlockChallenge })
       } else {
-        if (req.body.privateKey === address) {
+        if (security.safeCompare(req.body.privateKey || '', address)) {
           res.status(401).json({ success: false, message: 'Looks like you entered the public address of my ethereum wallet!', status: challenges.nftUnlockChallenge })
-        } else if (req.body.privateKey === publicKey) {
+        } else if (security.safeCompare(req.body.privateKey || '', publicKey)) {
           res.status(401).json({ success: false, message: 'Looks like you entered the public key of my ethereum wallet!', status: challenges.nftUnlockChallenge })
         } else {
           res.status(401).json({ success: false, message: 'Looks like you entered a non-Ethereum private key to access me.', status: challenges.nftUnlockChallenge })
