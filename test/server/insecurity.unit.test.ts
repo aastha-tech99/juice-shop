@@ -213,10 +213,10 @@ void describe('insecurity', () => {
   })
 
   void describe('hash', () => {
-    void it('returns MD5 hash for any input string', () => {
-      assert.equal(security.hash('admin123'), '0192023a7bbd73250516f069df18b500')
-      assert.equal(security.hash('password'), '5f4dcc3b5aa765d61d8327deb882cf99')
-      assert.equal(security.hash(''), 'd41d8cd98f00b204e9800998ecf8427e')
+    void it('returns SHA-256 hash for any input string', () => {
+      assert.equal(security.hash('admin123'), '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9')
+      assert.equal(security.hash('password'), '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8')
+      assert.equal(security.hash(''), 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
     })
   })
 
