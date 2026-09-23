@@ -17,17 +17,20 @@ import * as utils from './utils'
 // @ts-expect-error FIXME no typescript definitions for z85 :(
 import * as z85 from 'z85'
 
-export const publicKey = fs ? fs.readFileSync('encryptionkeys/jwt.pub', 'utf8') : 'placeholder-public-key'
+export const publicKey = process.env.JWT_PUBLIC_KEY || (fs ? fs.readFileSync('encryptionkeys/jwt.pub', 'utf8') : '')
 
-function loadPrivateKey (): string { // ROTATE: previous RSA private key was exposed in version control history
+function loadPrivateKey (): string { // ROTATE: previous RSA private key was exposed in version control history — provide key via JWT_PRIVATE_KEY env var
   if (process.env.JWT_PRIVATE_KEY) return process.env.JWT_PRIVATE_KEY
   try {
-    return fs.readFileSync('encryptionkeys/jwt.key', 'utf8')
+    const fileContent = fs.readFileSync('encryptionkeys/jwt.key', 'utf8')
+    if (fileContent.includes('-----BEGIN') && fileContent.includes('-----END')) {
+      return fileContent
+    }
+    return ''
   } catch {
     return ''
   }
 }
-const privateKey = loadPrivateKey()
 
 interface ResponseWithUser {
   status?: string
@@ -60,7 +63,7 @@ export const cutOffPoisonNullByte = (str: string) => {
 
 export const isAuthorized = () => expressJwt(({ secret: publicKey }) as any)
 export const denyAll = () => expressJwt({ secret: '' + Math.random() } as any)
-export const authorize = (user = {}) => jwt.sign(user, privateKey, { expiresIn: '6h', algorithm: 'RS256' })
+export const authorize = (user = {}) => jwt.sign(user, loadPrivateKey(), { expiresIn: '6h', algorithm: 'RS256' })
 export const verify = (token: string) => token ? (jws.verify as ((token: string, secret: string) => boolean))(token, publicKey) : false
 export const decode = (token: string) => { return jws.decode(token)?.payload }
 

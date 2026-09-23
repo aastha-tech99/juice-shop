@@ -5,11 +5,24 @@
 
 // @ts-expect-error FIXME no typescript definitions for z85 :(
 import z85 from 'z85'
+import { generateKeyPairSync } from 'node:crypto'
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import * as security from '../../lib/insecurity'
 import type { UserModel } from '@juice-shop/models/user'
 import type { Request } from 'express'
+
+// Generate an ephemeral RSA key pair for tests and set env vars BEFORE
+// loading the insecurity module (which reads keys at init time).
+const _testKeyPair = generateKeyPairSync('rsa', {
+  modulusLength: 2048,
+  publicKeyEncoding: { type: 'pkcs1', format: 'pem' },
+  privateKeyEncoding: { type: 'pkcs1', format: 'pem' }
+})
+process.env.JWT_PRIVATE_KEY = _testKeyPair.privateKey as string
+process.env.JWT_PUBLIC_KEY = _testKeyPair.publicKey as string
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const security = require('../../lib/insecurity') as typeof import('../../lib/insecurity')
 
 void describe('insecurity', () => {
   void describe('cutOffPoisonNullByte', () => {
