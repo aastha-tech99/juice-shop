@@ -125,7 +125,7 @@ describe('AccountingComponent', () => {
         quantityService.getAll.mockReturnValue(throwError('Error'))
         component.loadQuantity()
         fixture.detectChanges()
-        expect(component.quantityMap).toEqual({})
+        expect(component.quantityMap).toEqual(new Map())
     })
 
     it('should log error from product search API call directly to browser console', () => {
@@ -236,10 +236,10 @@ describe('AccountingComponent', () => {
         ]))
         component.loadQuantity()
 
-        expect(component.quantityMap).toEqual({
-            1: { id: 11, quantity: 5 },
-            2: { id: 22, quantity: 0 }
-        })
+        expect(component.quantityMap).toEqual(new Map([
+            [1, { id: 11, quantity: 5 }],
+            [2, { id: 22, quantity: 0 }]
+        ]))
     })
 
     it('should expose products through a MatTableDataSource wired up to the paginator', () => {

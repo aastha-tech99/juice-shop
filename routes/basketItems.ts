@@ -38,9 +38,9 @@ export function addBasketItem () {
       res.status(401).send('{\'error\' : \'Invalid BasketId\'}')
     } else {
       const basketItem = {
-        ProductId: productIds[productIds.length - 1],
-        BasketId: basketIds[basketIds.length - 1],
-        quantity: quantities[quantities.length - 1]
+        ProductId: productIds.at(-1),
+        BasketId: basketIds.at(-1),
+        quantity: quantities.at(-1)
       }
       challengeUtils.solveIf(challenges.basketManipulateChallenge, () => { return user && basketItem.BasketId && basketItem.BasketId !== 'undefined' && user.bid != basketItem.BasketId }) // eslint-disable-line eqeqeq
 

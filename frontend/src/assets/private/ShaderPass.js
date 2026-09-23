@@ -28,9 +28,10 @@ THREE.ShaderPass.prototype = {
 
 	render: function ( renderer, writeBuffer, readBuffer, delta ) {
 
-		if ( this.uniforms[ this.textureID ] ) {
+		var uniform = Object.entries(this.uniforms).find(function(e) { return e[0] === this.textureID }.bind(this));
+		if ( uniform ) {
 
-			this.uniforms[ this.textureID ].value = readBuffer;
+			uniform[1].value = readBuffer;
 
 		}
 

@@ -54,15 +54,20 @@ export class DifficultyOverviewScoreCardComponent {
   )
 
   static calculateDifficultySummaries (challenges: EnrichedChallenge[]): DifficultySummary[] {
-    const summariesLookup: DifficultySummaries = structuredClone(INITIAL_SUMMARIES)
+    const summariesMap = new Map<number, DifficultySummary>()
+    for (const [k, v] of Object.entries(INITIAL_SUMMARIES)) {
+      summariesMap.set(Number(k), structuredClone(v))
+    }
     for (const challenge of challenges) {
-      summariesLookup[challenge.difficulty].availableChallenges += challenge.hasCodingChallenge ? 3 : 1
+      const entry = summariesMap.get(challenge.difficulty)
+      if (!entry) continue
+      entry.availableChallenges += challenge.hasCodingChallenge ? 3 : 1
       if (challenge.solved) {
-        summariesLookup[challenge.difficulty].solvedChallenges++
-        summariesLookup[challenge.difficulty].solvedChallenges += challenge.hasCodingChallenge ? challenge.codingChallengeStatus : 0
+        entry.solvedChallenges++
+        entry.solvedChallenges += challenge.hasCodingChallenge ? challenge.codingChallengeStatus : 0
       }
     }
-    return Object.values(summariesLookup)
+    return Array.from(summariesMap.values())
       .sort((a, b) => a.difficulty - b.difficulty)
   }
 }

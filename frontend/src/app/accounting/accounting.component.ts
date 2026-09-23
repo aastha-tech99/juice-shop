@@ -54,7 +54,7 @@ export class AccountingComponent implements AfterViewInit, OnDestroy {
   @ViewChild('paginator', { static: true }) paginator: MatPaginator
   private productSubscription: Subscription
   private quantitySubscription: Subscription
-  public quantityMap: any
+  public quantityMap: Map<any, any> = new Map()
 
   ngAfterViewInit () {
     this.loadQuantity()
@@ -65,13 +65,13 @@ export class AccountingComponent implements AfterViewInit, OnDestroy {
   loadQuantity () {
     this.quantitySubscription = this.quantityService.getAll().subscribe({
       next: (stock) => {
-        this.quantityMap = {}
-        stock.forEach((item) => {
-          this.quantityMap[item.ProductId] = {
+        this.quantityMap = new Map()
+        for (const item of stock) {
+          this.quantityMap.set(item.ProductId, {
             id: item.id,
             quantity: item.quantity
-          }
-        })
+          })
+        }
       },
       error: (err) => { console.log(err) }
     })

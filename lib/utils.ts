@@ -197,7 +197,7 @@ export const parseJsonCustom = (jsonString: string) => {
     result.push({ key: k, value: null })
   }
   parser.onvalue = (v: any) => {
-    result[result.length - 1].value = v
+    result.at(-1)!.value = v
   }
   parser.write(jsonString)
   parser.close()

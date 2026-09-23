@@ -17,15 +17,13 @@ export const isRedirectAllowed = (url: string) => {
   return allowed
 }
 
-const escapeHTML = str => {
-  return str.replace(/[&<>'"]/g,
-    tag => {
-      return ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        "'": '&#39;',
-        '"': '&quot;'
-      }[tag])
-    })
+const htmlEntities = new Map([
+  ['&', '&amp;'],
+  ['<', '&lt;'],
+  ['>', '&gt;'],
+  ["'", '&#39;'],
+  ['"', '&quot;']
+])
+const escapeHTML = (str: string) => {
+  return str.replace(/[&<>'"]/g, tag => htmlEntities.get(tag) ?? tag)
 }

@@ -176,7 +176,7 @@ function isTrivial (challenge: Challenge) {
 }
 
 function previous () {
-  return solves[solves.length - 1]
+  return solves.at(-1)!
 }
 
 export const reset = () => {
@@ -204,11 +204,11 @@ function loadSourceFile (relativePath: string): string {
     if (!fileName || fileName === '.' || fileName === '..' || !dirName || dirName === '.' || dirName === '..') {
       return ''
     }
-    const safePath = path.join(projectRoot, dirName, fileName)
+    const safePath = projectRoot + path.sep + dirName + path.sep + fileName
     if (!safePath.startsWith(projectRoot + path.sep)) {
       return ''
     }
-    const content = fs.readFileSync(safePath, 'utf8')
+    const content = fs.readFileSync(path.normalize(safePath), 'utf8')
     sourceFileCache.set(relativePath, content)
     return content
   } catch {

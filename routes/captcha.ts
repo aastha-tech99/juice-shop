@@ -26,7 +26,7 @@ export function captchas () {
     const secondTerm = Math.floor((Math.random() * 10) + 1)
     const thirdTerm = Math.floor((Math.random() * 10) + 1)
 
-    const pickRandom = <T>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)]
+    const pickRandom = <T>(arr: readonly T[]): T => arr.at(Math.floor(Math.random() * arr.length))!
     const firstOperator = pickRandom(operators)
     const secondOperator = pickRandom(operators)
 

@@ -216,7 +216,7 @@ describe('ChallengeSolvedNotificationComponent', () => {
         component.ngOnInit()
 
         expect(component.showCtfCountryDetailsInNotifications).toBe('both')
-        expect(component.countryMap).toEqual({ scoreBoardChallenge: { name: 'Canada', code: 'CA' }, errorHandlingChallenge: { name: 'Austria', code: 'AT' } })
+        expect(component.countryMap).toEqual(new Map([['scoreBoardChallenge', { name: 'Canada', code: 'CA' }], ['errorHandlingChallenge', { name: 'Austria', code: 'AT' }]]))
     })
 
     it('should show mapped country for FBCTF when configured accordingly', async () => {

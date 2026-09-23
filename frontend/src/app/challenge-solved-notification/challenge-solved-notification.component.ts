@@ -58,7 +58,7 @@ export class ChallengeSolvedNotificationComponent implements OnInit {
   public notifications: ChallengeSolvedNotification[] = []
   public showCtfFlagsInNotifications = false
   public showCtfCountryDetailsInNotifications = 'none'
-  public countryMap?: any
+  public countryMap?: Map<string, any>
   public codingChallengesEnabled = "solved"
 
   ngOnInit (): void {
@@ -95,7 +95,7 @@ export class ChallengeSolvedNotificationComponent implements OnInit {
           if (config.ctf.showCountryDetailsInNotifications !== 'none') {
             this.countryMappingService.getCountryMapping().subscribe({
               next: (countryMap: any) => {
-                this.countryMap = countryMap
+                this.countryMap = new Map(Object.entries(countryMap))
               },
               error: (err) => { console.log(err) }
             })
@@ -124,7 +124,7 @@ export class ChallengeSolvedNotificationComponent implements OnInit {
       .then((message) => {
         let country
         if (this.showCtfCountryDetailsInNotifications && this.showCtfCountryDetailsInNotifications !== 'none') {
-          country = this.countryMap[challenge.key]
+          country = this.countryMap?.get(challenge.key)
         }
         this.notifications.push({
           message,

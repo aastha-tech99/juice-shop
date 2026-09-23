@@ -110,9 +110,8 @@ contract HelloWorld {
   async compileAndFetchContracts (code: string) {
     try {
       this.deployedContractAddress = ''
-      const selectedVersion = compilerReleases[
-        this.selectedCompilerVersion
-      ] as string
+      const selectedVersion = Object.entries(compilerReleases)
+        .find(([k]) => k === this.selectedCompilerVersion)?.[1] as string
 
       if (!selectedVersion) {
         console.error('Selected compiler version not found.')

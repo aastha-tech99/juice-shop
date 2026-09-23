@@ -95,7 +95,7 @@ export class ChatService {
     let yielded = 0
     while (!done || yielded < chunks.length) {
       if (yielded < chunks.length) {
-        yield chunks[yielded++]
+        yield chunks.at(yielded++)!
       } else {
         await new Promise<void>((r) => { resolve = r })
       }

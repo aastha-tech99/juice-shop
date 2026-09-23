@@ -41,7 +41,7 @@ export class PasswordStrengthComponent implements OnChanges {
   }
 
   get progressColor (): string {
-    return this.ranges[Math.max(Math.floor(this.passwordStrength / (100 / this.ranges.length)) - 1, 0)] // map passwordStrength to value within ranges.length
+    return this.ranges.at(Math.max(Math.floor(this.passwordStrength / (100 / this.ranges.length)) - 1, 0))! // map passwordStrength to value within ranges.length
   }
 
   get containAtLeastMinChars (): boolean {
