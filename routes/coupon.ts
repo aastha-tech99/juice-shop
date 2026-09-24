@@ -5,6 +5,7 @@
 
 import { type Request, type Response, type NextFunction } from 'express'
 import { BasketModel } from '../models/basket'
+import { CouponUsageModel } from '../models/couponUsage'
 import * as security from '../lib/insecurity'
 
 export function applyCoupon () {
@@ -19,6 +20,16 @@ export function applyCoupon () {
       if (!basket) {
         next(new Error(`Basket with id=${id} does not exist.`))
         return
+      }
+
+      // Enforce per-user coupon usage limit (CWE-799)
+      if (coupon && basket.UserId) {
+        const alreadyUsed = await CouponUsageModel.findOne({
+          where: { UserId: basket.UserId, coupon }
+        })
+        if (alreadyUsed) {
+          return res.status(403).json({ error: 'Coupon has already been used.' })
+        }
       }
 
       await basket.update({ coupon: coupon?.toString() })

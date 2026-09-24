@@ -5,6 +5,7 @@ import { BasketItemModel } from './basketitem'
 import { ChallengeModel } from './challenge'
 import { ChallengeDependencyModel } from './challengeDependency'
 import { CardModel } from './card'
+import { CouponUsageModel } from './couponUsage'
 import { ComplaintModel } from './complaint'
 import { FeedbackModel } from './feedback'
 import { HintModel } from './hint'
@@ -47,6 +48,14 @@ const relationsInit = (_sequelize: Sequelize) => {
   makeKeyNonUpdatable(BasketItemModel, 'BasketId')
 
   CardModel.belongsTo(UserModel, {
+    constraints: true,
+    foreignKeyConstraint: true,
+    foreignKey: {
+      name: 'UserId'
+    }
+  })
+
+  CouponUsageModel.belongsTo(UserModel, {
     constraints: true,
     foreignKeyConstraint: true,
     foreignKey: {

@@ -19,6 +19,7 @@ import { BasketModel } from '../models/basket'
 import { WalletModel } from '../models/wallet'
 import * as security from '../lib/insecurity'
 import * as utils from '../lib/utils'
+import { CouponUsageModel } from '../models/couponUsage'
 import * as db from '../data/mongodb'
 
 interface Product {
@@ -38,6 +39,7 @@ export function placeOrder () {
         if (basket != null) {
           const customer = security.authenticatedUsers.from(req)
           const email = customer ? customer.data ? customer.data.email : '' : ''
+          const usedCoupon = basket.coupon ?? null
           const orderId = security.hash(email).slice(0, 4) + '-' + utils.randomHexString(16)
           const pdfFile = `order_${orderId}.pdf`
           const { default: PDFDocument } = await import('pdfkit')
@@ -48,6 +50,13 @@ export function placeOrder () {
           fileWriter.on('finish', () => {
             void (async () => {
               try {
+                // Record coupon usage to enforce per-user usage limit (CWE-799)
+                const couponToRecord = usedCoupon || appliedCouponCode
+                if (couponToRecord && basket.UserId) {
+                  await CouponUsageModel.findOrCreate({
+                    where: { UserId: basket.UserId, coupon: couponToRecord }
+                  })
+                }
                 void basket.update({ coupon: null })
                 await BasketItemModel.destroy({ where: { BasketId: id } })
                 res.json({ orderConfirmation: orderId })
@@ -113,7 +122,9 @@ export function placeOrder () {
             }
           }
           doc.moveDown()
-          const discount = calculateApplicableDiscount(basket, req) ?? 0
+          const appliedDiscount = calculateApplicableDiscount(basket, req)
+          const discount = appliedDiscount.discount ?? 0
+          const appliedCouponCode = appliedDiscount.couponCode
           let discountAmount = '0'
           if (discount > 0) {
             discountAmount = (totalPrice * (discount / 100)).toFixed(2)
@@ -200,11 +211,11 @@ export function placeOrder () {
   }
 }
 
-function calculateApplicableDiscount (basket: BasketModel, req: Request) {
+function calculateApplicableDiscount (basket: BasketModel, req: Request): { discount: number, couponCode: string | null } {
   const discount = security.discountFromCoupon(basket.coupon ?? undefined)
   if (discount) {
     challengeUtils.solveIf(challenges.forgedCouponChallenge, () => { return (discount ?? 0) >= 80 })
-    return discount
+    return { discount, couponCode: basket.coupon ?? null }
   } else if (req.body.couponData) {
     const couponData = Buffer.from(req.body.couponData, 'base64').toString().split('-')
     const couponCode = couponData[0]
@@ -213,10 +224,10 @@ function calculateApplicableDiscount (basket: BasketModel, req: Request) {
 
     if (campaign && couponDate == campaign.validOn) { // eslint-disable-line eqeqeq
       challengeUtils.solveIf(challenges.manipulateClockChallenge, () => { return campaign.validOn < new Date().getTime() })
-      return campaign.discount
+      return { discount: campaign.discount, couponCode }
     }
   }
-  return 0
+  return { discount: 0, couponCode: null }
 }
 
 const campaigns = {

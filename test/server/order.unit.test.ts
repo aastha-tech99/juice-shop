@@ -8,6 +8,7 @@ import assert from 'node:assert/strict'
 import { placeOrder } from '../../routes/order'
 import { BasketModel } from '../../models/basket'
 import { BasketItemModel } from '../../models/basketitem'
+import { CouponUsageModel } from '../../models/couponUsage'
 import { QuantityModel } from '../../models/quantity'
 import { WalletModel } from '../../models/wallet'
 import { DeliveryModel } from '../../models/delivery'
@@ -241,6 +242,7 @@ void describe('order', () => {
     mock.method(db.ordersCollection, 'insert', async () => {})
     mock.method(BasketItemModel, 'destroy', async () => {})
     mock.method(WalletModel, 'increment', async () => {})
+    mock.method(CouponUsageModel, 'findOrCreate', async () => [{ id: 1 }, true])
 
     const p = new Promise((resolve) => {
       res.json = (data: any) => { resolve(data) }
@@ -250,6 +252,36 @@ void describe('order', () => {
     await p
 
     assert.ok(true)
+  })
+
+  void it('should record coupon usage when placing order with a coupon', async () => {
+    const findOrCreateMock = mock.fn(async () => [{ id: 1 }, true])
+    mock.method(CouponUsageModel, 'findOrCreate', findOrCreateMock)
+
+    const basket = {
+      id: 1,
+      UserId: 42,
+      Products: [],
+      update: mock.fn(async () => {}),
+      coupon: 'test-coupon'
+    }
+    mock.method(BasketModel, 'findOne', async () => basket)
+    mock.method(security.authenticatedUsers, 'from', () => ({ data: { email: 'test@juice-sh.op', id: 42 } }))
+    mock.method(security, 'discountFromCoupon', () => 10)
+    mock.method(db.ordersCollection, 'insert', async () => {})
+    mock.method(BasketItemModel, 'destroy', async () => {})
+
+    const p = new Promise((resolve) => {
+      res.json = (data: any) => { resolve(data) }
+    })
+
+    placeOrder()(req, res, next)
+    await p
+
+    assert.equal(findOrCreateMock.mock.calls.length, 1)
+    assert.deepEqual(findOrCreateMock.mock.calls[0].arguments[0], {
+      where: { UserId: 42, coupon: 'test-coupon' }
+    })
   })
 
   void it('should call next with error if wallet balance is insufficient', async () => {

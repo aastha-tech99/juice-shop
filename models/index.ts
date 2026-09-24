@@ -7,6 +7,7 @@ import { AddressModelInit } from './address'
 import { BasketModelInit } from './basket'
 import { BasketItemModelInit } from './basketitem'
 import { CaptchaModelInit } from './captcha'
+import { CouponUsageModelInit } from './couponUsage'
 import { CardModelInit } from './card'
 import { ChallengeModelInit } from './challenge'
 import { ChallengeDependencyModelInit } from './challengeDependency'
@@ -48,6 +49,7 @@ function initModels (seq: Sequelize) {
   BasketModelInit(seq)
   BasketItemModelInit(seq)
   CaptchaModelInit(seq)
+  CouponUsageModelInit(seq)
   CardModelInit(seq)
   ChallengeModelInit(seq)
   ChallengeDependencyModelInit(seq)
