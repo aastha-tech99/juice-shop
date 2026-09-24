@@ -114,8 +114,11 @@ export class NavbarComponent implements OnInit {
   public itemTotal = 0
 
   @Output() public sidenavToggle = new EventEmitter()
+  private isInitialized = false
 
   ngOnInit (): void {
+    if (this.isInitialized) return
+    this.isInitialized = true
     this.getLanguages()
     this.basketService.getItemTotal().subscribe(x => (this.itemTotal = x))
     this.basketService.updateNumberOfCartItems()

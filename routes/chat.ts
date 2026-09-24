@@ -111,6 +111,9 @@ const provider = createOpenAICompatible({
   baseURL: config.get<string>('application.chatBot.llmApiUrl')
 })
 
+// Per-user guard to prevent concurrent chat stream race conditions (CWE-362)
+const chatInProgress = new Set<number>()
+
 export function chat () {
   return async (req: Request, res: Response) => {
     const chatTools = {
@@ -190,6 +193,13 @@ export function chat () {
     const model = config.get<string>('application.chatBot.model')
     const messages = req.body?.messages ?? []
     const userName = await getUserNameFromToken(req)
+    const userId = await getUserId(req)
+
+    if (userId && chatInProgress.has(userId)) {
+      res.status(429).json({ error: 'Chat request already in progress' })
+      return
+    }
+    if (userId) chatInProgress.add(userId)
 
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache, no-transform')
@@ -268,6 +278,8 @@ export function chat () {
       res.write(`data: ${JSON.stringify({ error: 'LLM API is not reachable' })}\n\n`)
       res.write('data: [DONE]\n\n')
       res.end()
+    } finally {
+      if (userId) chatInProgress.delete(userId)
     }
   }
 }

@@ -28,12 +28,17 @@ export function profileImageUrlUpload () {
           const ext = ['jpg', 'jpeg', 'png', 'svg', 'gif'].includes(url.split('.').slice(-1)[0].toLowerCase()) ? url.split('.').slice(-1)[0].toLowerCase() : 'jpg'
           const fileStream = fs.createWriteStream(`frontend/dist/frontend/assets/public/images/uploads/${loggedInUser.data.id}.${ext}`, { flags: 'w' })
           await finished(Readable.fromWeb(response.body as any).pipe(fileStream))
-          const user = await UserModel.findByPk(loggedInUser.data.id)
-          await user?.update({ profileImage: `/assets/public/images/uploads/${loggedInUser.data.id}.${ext}` })
+          // Atomic update to prevent race conditions on concurrent profile image uploads (CWE-362)
+          await UserModel.update(
+            { profileImage: `/assets/public/images/uploads/${loggedInUser.data.id}.${ext}` },
+            { where: { id: loggedInUser.data.id } }
+          )
         } catch (error) {
           try {
-            const user = await UserModel.findByPk(loggedInUser.data.id)
-            await user?.update({ profileImage: url })
+            await UserModel.update(
+              { profileImage: url },
+              { where: { id: loggedInUser.data.id } }
+            )
             logger.warn(`Error retrieving user profile image: ${utils.getErrorMessage(error)}; using image link directly`)
           } catch (error) {
             next(error)

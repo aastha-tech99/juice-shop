@@ -55,6 +55,7 @@ export class ChallengeSolvedNotificationComponent implements OnInit {
   private readonly snackBarHelperService = inject(SnackBarHelperService)
   private readonly router = inject(Router)
 
+  private isSavingProgress = false
   public notifications: ChallengeSolvedNotification[] = []
   public showCtfFlagsInNotifications = false
   public showCtfCountryDetailsInNotifications = 'none'
@@ -139,8 +140,11 @@ export class ChallengeSolvedNotificationComponent implements OnInit {
   }
 
   saveProgress () {
+    if (this.isSavingProgress) return
+    this.isSavingProgress = true
     this.challengeService.continueCode().subscribe({
       next: (continueCode) => {
+        this.isSavingProgress = false
         if (!continueCode) {
           throw (new Error('Received invalid continue code from the server!'))
         }
@@ -148,7 +152,10 @@ export class ChallengeSolvedNotificationComponent implements OnInit {
         expires.setFullYear(expires.getFullYear() + 1)
         this.cookieService.put('continueCode', continueCode, { expires })
       },
-      error: (err) => { console.log(err) }
+      error: (err) => {
+        this.isSavingProgress = false
+        console.log(err)
+      }
     })
   }
 

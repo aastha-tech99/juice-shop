@@ -178,7 +178,10 @@ export function placeOrder () {
               }
             }
             try {
-              await WalletModel.increment({ balance: totalPoints }, { where: { UserId: req.body.UserId } })
+              // Atomic increment — no read-modify-write race (CWE-362)
+              if (totalPoints > 0) {
+                await WalletModel.increment({ balance: totalPoints }, { where: { UserId: req.body.UserId } })
+              }
             } catch (error: unknown) {
               next(error)
               return

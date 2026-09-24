@@ -45,8 +45,11 @@ export class TwoFactorAuthEnterComponent {
   })
 
   public errored = false
+  private isSubmitting = false
 
   verify () {
+    if (this.isSubmitting) return
+    this.isSubmitting = true
     const fields: TokenEnterFormFields = this.twoFactorForm.value
 
     this.twoFactorAuthService.verify(fields.token).subscribe({
@@ -61,6 +64,7 @@ export class TwoFactorAuthEnterComponent {
         this.ngZone.run(async () => await this.router.navigate(['/search']))
       },
       error: (error) => {
+        this.isSubmitting = false
         this.errored = true
         setTimeout(() => {
           this.errored = false

@@ -46,6 +46,7 @@ export class ForgotPasswordComponent {
   public confirmation?: string
   public timeoutDuration = 1000
   private timeout
+  private isSubmitting = false
 
   findSecurityQuestion () {
     clearTimeout(this.timeout)
@@ -77,6 +78,8 @@ export class ForgotPasswordComponent {
   }
 
   resetPassword () {
+    if (this.isSubmitting) return
+    this.isSubmitting = true
     this.userService.resetPassword({
       email: this.emailControl.value,
       answer: this.securityQuestionControl.value,
@@ -84,6 +87,7 @@ export class ForgotPasswordComponent {
       repeat: this.repeatPasswordControl.value
     }).subscribe({
       next: () => {
+        this.isSubmitting = false
         this.error = undefined
         this.translate.get('PASSWORD_SUCCESSFULLY_CHANGED').subscribe({
           next: (passwordSuccessfullyChanged) => {
@@ -96,6 +100,7 @@ export class ForgotPasswordComponent {
         this.resetForm()
       },
       error: (error) => {
+        this.isSubmitting = false
         this.error = error.error
         this.confirmation = undefined
         this.resetErrorForm()

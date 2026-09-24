@@ -187,17 +187,25 @@ export const reset = () => {
 }
 
 const sourceFileCache = new Map<string, string>()
+// Guard to prevent concurrent file reads for the same path (CWE-362)
+const sourceFileLoading = new Set<string>()
 
 function loadSourceFile (relativePath: string): string {
   if (sourceFileCache.has(relativePath)) {
     return sourceFileCache.get(relativePath)!
   }
+  if (sourceFileLoading.has(relativePath)) {
+    return sourceFileCache.get(relativePath) ?? ''
+  }
+  sourceFileLoading.add(relativePath)
   try {
     const content = fs.readFileSync(path.resolve(relativePath), 'utf8')
     sourceFileCache.set(relativePath, content)
     return content
   } catch {
     return ''
+  } finally {
+    sourceFileLoading.delete(relativePath)
   }
 }
 

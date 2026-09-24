@@ -13,6 +13,9 @@ import { challenges, users } from '../data/datacache'
 import * as security from '../lib/insecurity'
 import { UserModel } from '../models/user'
 
+// Per-user guard to prevent concurrent password reset race conditions (CWE-362)
+const resetInProgress = new Set<number>()
+
 export function resetPassword () {
   return async ({ body, connection }: Request, res: Response, next: NextFunction) => {
     const email = body.email
@@ -39,11 +42,20 @@ export function resetPassword () {
         }]
       })
       if ((data != null) && security.hmac(answer) === data.answer) {
-        const user = await UserModel.findByPk(data.UserId)
-        if (user) {
-          const updatedUser = await user.update({ password: newPassword })
-          verifySecurityAnswerChallenges(updatedUser, answer)
-          res.json({ user: updatedUser })
+        if (resetInProgress.has(data.UserId)) {
+          res.status(429).send(res.__('Password reset already in progress.'))
+          return
+        }
+        resetInProgress.add(data.UserId)
+        try {
+          const user = await UserModel.findByPk(data.UserId)
+          if (user) {
+            const updatedUser = await user.update({ password: newPassword })
+            verifySecurityAnswerChallenges(updatedUser, answer)
+            res.json({ user: updatedUser })
+          }
+        } finally {
+          resetInProgress.delete(data.UserId)
         }
       } else {
         res.status(401).send(res.__('Wrong answer to security question.'))

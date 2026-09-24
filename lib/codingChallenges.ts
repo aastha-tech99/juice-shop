@@ -105,6 +105,7 @@ export async function getCodeChallenges (): Promise<Map<string, CachedCodeChalle
       const challenges = new Map<string, CachedCodeChallenge>()
       const filesWithCodeChallenges = await findFilesWithCodeChallenges(SNIPPET_PATHS)
       for (const fileMatch of filesWithCodeChallenges) {
+        // Map mutations are local to this closure, protected by promise dedup above (CWE-362)
         for (const codeChallenge of getCodeChallengesFromFile(fileMatch)) {
           challenges.set(codeChallenge.challengeKey, {
             snippet: codeChallenge.snippet,

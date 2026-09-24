@@ -82,6 +82,7 @@ export class PaymentComponent implements OnInit {
   public walletBalanceStr: string
   public totalPrice: any = 0
   public paymentMode = 'card'
+  private isSubmitting = false
   private readonly campaigns = {
     WMNSDY2019: { validOn: 1551999600000, discount: 75 },
     WMNSDY2020: { validOn: 1583622000000, discount: 60 },
@@ -215,15 +216,19 @@ export class PaymentComponent implements OnInit {
   }
 
   choosePayment () {
+    if (this.isSubmitting) return
+    this.isSubmitting = true
     sessionStorage.removeItem('itemTotal')
     if (this.mode === 'wallet') {
       this.walletService.put({ balance: this.totalPrice, paymentId: this.paymentId }).subscribe({
         next: () => {
+          this.isSubmitting = false
           sessionStorage.removeItem('walletTotal')
           this.ngZone.run(async () => await this.router.navigate(['/wallet']))
           this.snackBarHelperService.open('CHARGED_WALLET', 'confirmBar')
         },
         error: (err) => {
+          this.isSubmitting = false
           console.log(err)
           this.snackBarHelperService.open(err.error?.message, 'errorBar')
         }
@@ -231,10 +236,14 @@ export class PaymentComponent implements OnInit {
     } else if (this.mode === 'deluxe') {
       this.userService.upgradeToDeluxe(this.paymentMode, this.paymentId).subscribe({
         next: (data) => {
+          this.isSubmitting = false
           this.cookieService.put('token', data.token)
           this.ngZone.run(async () => await this.router.navigate(['/deluxe-membership']))
         },
-        error: (err) => { console.log(err) }
+        error: (err) => {
+          this.isSubmitting = false
+          console.log(err)
+        }
       })
     } else {
       if (this.paymentMode === 'wallet') {
@@ -246,6 +255,7 @@ export class PaymentComponent implements OnInit {
       } else {
         sessionStorage.setItem('paymentId', this.paymentId)
       }
+      this.isSubmitting = false
       this.ngZone.run(async () => await this.router.navigate(['/order-summary']))
     }
   }

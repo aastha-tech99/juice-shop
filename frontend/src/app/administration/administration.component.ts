@@ -40,6 +40,8 @@ export class AdministrationComponent implements OnInit {
   private readonly cookieService = inject(CookieService)
 
   public showToolCalls = signal(false)
+  private isLoadingUsers = false
+  private isLoadingFeedbacks = false
 
   public userDataSource: any
   public userDataSourceHidden: any
@@ -66,8 +68,11 @@ export class AdministrationComponent implements OnInit {
   }
 
   findAllUsers () {
+    if (this.isLoadingUsers) return
+    this.isLoadingUsers = true
     this.userService.find().subscribe({
       next: (users) => {
+        this.isLoadingUsers = false
         this.userDataSource = users
         this.userDataSourceHidden = users
         for (const user of this.userDataSource) {
@@ -78,6 +83,7 @@ export class AdministrationComponent implements OnInit {
         this.resultsLengthUser = users.length
       },
       error: (err) => {
+        this.isLoadingUsers = false
         this.error = err
         console.log(this.error)
       }

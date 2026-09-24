@@ -47,6 +47,7 @@ export class PurchaseBasketComponent implements OnInit {
   public bonus = 0
   public itemTotal = 0
   public userEmail: string
+  private isUpdatingQuantity = false
 
   ngOnInit (): void {
     if (this.allowEdit && !this.tableColumns.includes('remove')) {
@@ -161,6 +162,7 @@ export class PurchaseBasketComponent implements OnInit {
   }
 
   addToQuantity (id, value) {
+    if (this.isUpdatingQuantity) return
     if (this.cookieService.get('token') == null) {
       const existingGuestItem = this.basketService.getGuestBasketItems().find(item => item.ProductId === id)
       if (existingGuestItem == null) {
@@ -172,22 +174,28 @@ export class PurchaseBasketComponent implements OnInit {
       return
     }
 
+    this.isUpdatingQuantity = true
     this.basketService.get(id).subscribe({
       next: (basketItem) => {
 
         const newQuantity = basketItem.quantity + value
         this.basketService.put(id, { quantity: newQuantity < 1 ? 1 : newQuantity }).subscribe({
           next: () => {
+            this.isUpdatingQuantity = false
             this.load()
             this.basketService.updateNumberOfCartItems()
           },
           error: (err) => {
+            this.isUpdatingQuantity = false
             this.snackBarHelperService.open(err.error?.error, 'errorBar')
             console.log(err)
           }
         })
       },
-      error: (err) => { console.log(err) }
+      error: (err) => {
+        this.isUpdatingQuantity = false
+        console.log(err)
+      }
     })
   }
 

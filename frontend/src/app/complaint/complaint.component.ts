@@ -52,6 +52,7 @@ export class ComplaintComponent implements OnInit {
   public userEmail: any = undefined
   public complaint: any = undefined
   public confirmation: any
+  private isSubmitting = false
 
   ngOnInit (): void {
     this.initComplaint()
@@ -94,9 +95,12 @@ export class ComplaintComponent implements OnInit {
   }
 
   saveComplaint () {
+    if (this.isSubmitting) return
+    this.isSubmitting = true
     this.complaint.message = this.messageControl.value
     this.complaintService.save(this.complaint).subscribe({
       next: (savedComplaint: any) => {
+        this.isSubmitting = false
         this.translate.get('CUSTOMER_SUPPORT_COMPLAINT_REPLY', { ref: savedComplaint.id }).subscribe({
           next: (customerSupportReply) => {
             this.confirmation = customerSupportReply
@@ -109,7 +113,10 @@ export class ComplaintComponent implements OnInit {
         this.resetForm()
         this.fileUploadError = undefined
       },
-      error: (error) => error
+      error: (error) => {
+        this.isSubmitting = false
+        return error
+      }
     })
   }
 

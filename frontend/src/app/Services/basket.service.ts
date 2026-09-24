@@ -33,6 +33,7 @@ export class BasketService {
   public itemTotal = new Subject<any>()
   private readonly host = this.hostServer + '/api/BasketItems'
   private readonly guestBasketKey = 'guestBasket'
+  private isMerging = false
 
   find (id?: number) {
     return this.http.get(`${this.hostServer}/rest/basket/${id}`).pipe(map((response: any) => response.data), catchError((error) => { throw error }))
@@ -151,6 +152,8 @@ export class BasketService {
   }
 
   mergeGuestBasketIntoUserBasket (targetBasketId: number): Observable<void> {
+    if (this.isMerging) return of(void 0)
+    this.isMerging = true
     const mergedGuestBasketItems = this.getGuestBasketItems().reduce((basketMap, item) => {
       basketMap.set(item.ProductId, (basketMap.get(item.ProductId) ?? 0) + item.quantity)
       return basketMap
@@ -183,6 +186,7 @@ export class BasketService {
         return forkJoin(mergeRequests)
       }),
       tap(() => {
+        this.isMerging = false
         this.clearGuestBasket()
       }),
       map(() => void 0)

@@ -31,8 +31,11 @@ export class WelcomeBannerComponent implements OnInit {
   public showDismissBtn = true
 
   private readonly welcomeBannerStatusCookieKey = 'welcomebanner_status'
+  private isInitialized = false
 
   ngOnInit (): void {
+    if (this.isInitialized) return
+    this.isInitialized = true
     this.configurationService.getApplicationConfiguration().subscribe({
       next: (config) => {
         if (config?.application?.welcomeBanner) {

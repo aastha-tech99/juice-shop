@@ -51,8 +51,11 @@ export class SidenavComponent implements OnInit {
   public isShowing = false
   public offerScoreBoardTutorial = false
   @Output() public sidenavToggle = new EventEmitter()
+  private isInitialized = false
 
   ngOnInit (): void {
+    if (this.isInitialized) return
+    this.isInitialized = true
     this.administrationService.getApplicationVersion().subscribe({
       next: (version: any) => {
         if (version) {

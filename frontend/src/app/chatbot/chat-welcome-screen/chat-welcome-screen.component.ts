@@ -35,6 +35,7 @@ export class ChatWelcomeScreenComponent implements OnInit {
   conversationSelected = output<string>()
   private readonly inputBox = viewChild(ChatInputBoxComponent)
 
+  private isApplyingSuggestion = false
   conversations = signal<StoredConversation[]>(this.conversationStorage.getAll())
   chatBotName = signal('Juicy')
   chatBotAvatar = signal('assets/public/images/JuicyBot.png')
@@ -78,7 +79,10 @@ export class ChatWelcomeScreenComponent implements OnInit {
   }
 
   applySuggestion (key: string) {
+    if (this.isApplyingSuggestion) return
+    this.isApplyingSuggestion = true
     this.translate.get(key).subscribe(text => {
+      this.isApplyingSuggestion = false
       this.message.set(text)
       this.inputBox()?.focus()
     })

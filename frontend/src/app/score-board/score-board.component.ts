@@ -60,6 +60,8 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
   public lastUnlockedChallengeKey: string | null = null
 
   public isInitialized = false
+  private isRepeating = false
+  private isUnlocking = false
 
   private readonly subscriptions: Subscription[] = []
 
@@ -175,17 +177,29 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
   }
 
   async repeatChallengeNotification (challengeKey: string) {
-    const challenge = this.allChallenges.find((challenge) => challenge.key === challengeKey)
-    await firstValueFrom(this.challengeService.repeatNotification(encodeURIComponent(challenge.name)))
+    if (this.isRepeating) return
+    this.isRepeating = true
+    try {
+      const challenge = this.allChallenges.find((challenge) => challenge.key === challengeKey)
+      await firstValueFrom(this.challengeService.repeatNotification(encodeURIComponent(challenge.name)))
+    } finally {
+      this.isRepeating = false
+    }
   }
 
   unlockHint (hintId: number, challengeKey?: string) {
+    if (this.isUnlocking) return
+    this.isUnlocking = true
     this.lastUnlockedChallengeKey = challengeKey ?? null
     this.hintService.put(hintId, { unlocked: true }).subscribe({
       next: () => {
+        this.isUnlocking = false
         this.ngOnInit()
       },
-      error: (err) => { console.log(err) }
+      error: (err) => {
+        this.isUnlocking = false
+        console.log(err)
+      }
     })
   }
 

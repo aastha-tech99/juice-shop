@@ -62,8 +62,11 @@ export class LoginComponent implements OnInit {
   public testingUsername = 'testing@juice-sh.op'
   public testingPassword = '' // Credential loaded from environment at runtime - rotate any previously committed value
   public isLoggingIn = false
+  private isInitialized = false
 
   ngOnInit (): void {
+    if (this.isInitialized) return
+    this.isInitialized = true
     const email = this.cookieService.get('email')
     if (email) {
       this.user = {}

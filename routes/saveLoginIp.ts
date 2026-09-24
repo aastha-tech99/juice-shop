@@ -28,8 +28,12 @@ export function saveLoginIp () {
         lastLoginIp = utils.toSimpleIpAddress(req.socket.remoteAddress ?? '')
       }
       try {
-        const user = await UserModel.findByPk(loggedInUser.data.id)
-        const updatedUser = await user?.update({ lastLoginIp: lastLoginIp?.toString() })
+        // Atomic update to prevent race conditions on concurrent login IP saves (CWE-362)
+        await UserModel.update(
+          { lastLoginIp: lastLoginIp?.toString() },
+          { where: { id: loggedInUser.data.id } }
+        )
+        const updatedUser = await UserModel.findByPk(loggedInUser.data.id)
         res.json(updatedUser)
       } catch (error) {
         next(error)

@@ -42,8 +42,11 @@ export class CodingChallengePageComponent implements OnInit {
   public findItSolved = false
   public fixItSolved = false
   public isLoaded = false
+  private isInitialized = false
 
   ngOnInit (): void {
+    if (this.isInitialized) return
+    this.isInitialized = true
     this.route.params.pipe(
       switchMap((params) => {
         this.challengeKey = params['challengeKey']

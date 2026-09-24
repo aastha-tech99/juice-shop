@@ -24,9 +24,11 @@ export class OAuthComponent implements OnInit {
   private readonly route = inject(ActivatedRoute)
   private readonly ngZone = inject(NgZone)
   private isLoggingIn = false
-
+  private isInitialized = false
 
   ngOnInit (): void {
+    if (this.isInitialized) return
+    this.isInitialized = true
     this.userService.oauthLogin(this.parseRedirectUrlParams().access_token).subscribe({
       next: (profile: any) => {
         this.derivePassword(profile.email).then((password) => {

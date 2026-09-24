@@ -8,6 +8,9 @@ import { type ChallengeService } from '../../Services/challenge.service'
 import { type CookieService } from 'ngy-cookie'
 import { ResultState } from '../coding-challenge.types'
 
+// Guard to prevent concurrent verdict handling (CWE-362)
+let isHandlingVerdict = false
+
 export function handleVerdict (config: {
   verdict: boolean
   variant: 'FindIt' | 'FixIt'
@@ -18,6 +21,8 @@ export function handleVerdict (config: {
   setResult: (result: ResultState) => void
   setShaking: (shaking: boolean) => void
 }): void {
+  if (isHandlingVerdict) return
+  isHandlingVerdict = true
   let destroyed = false
   config.destroyRef.onDestroy(() => { destroyed = true })
   if (config.verdict) {
@@ -39,11 +44,13 @@ export function handleVerdict (config: {
     import('../../../confetti').then(module => {
       module.shootConfetti()
     }).then(() => {
+      isHandlingVerdict = false
       if (!destroyed) {
         config.solved.emit(undefined)
       }
     })
   } else {
+    isHandlingVerdict = false
     config.setResult(ResultState.Wrong)
     config.setShaking(true)
   }

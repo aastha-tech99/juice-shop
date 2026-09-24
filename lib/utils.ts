@@ -65,14 +65,17 @@ export const version = (module?: string) => {
 }
 
 let cachedCtfKey: string | undefined
+let ctfKeyInitialized = false
 const getCtfKey = () => {
-  if (!cachedCtfKey) {
+  // Double-check guard to prevent concurrent file reads during initialization (CWE-362)
+  if (!ctfKeyInitialized) {
     if (process.env.CTF_KEY !== undefined && process.env.CTF_KEY !== '') {
       cachedCtfKey = process.env.CTF_KEY
     } else {
       const data = fs.readFileSync('ctf.key', 'utf8')
       cachedCtfKey = data
     }
+    ctfKeyInitialized = true
   }
   return cachedCtfKey
 }

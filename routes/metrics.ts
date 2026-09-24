@@ -160,8 +160,12 @@ export function observeMetrics () {
     labelNames: ['type']
   })
 
+  // Guard to prevent overlapping metric update cycles (CWE-362)
+  let isUpdating = false
   const updateLoop = () => setInterval(() => {
     void (async () => {
+      if (isUpdating) return
+      isUpdating = true
       try {
         const version = utils.version()
         const { major, minor, patch } = version.match(/(?<major>\d+).(?<minor>\d+).(?<patch>\d+)/).groups
@@ -218,6 +222,8 @@ export function observeMetrics () {
         if (complaintCount) interactionsMetrics.set({ type: 'complaint' }, complaintCount)
       } catch (e: unknown) {
         logger.warn('Error during metrics update loop: + ' + utils.getErrorMessage(e))
+      } finally {
+        isUpdating = false
       }
     })()
   }, 5000)

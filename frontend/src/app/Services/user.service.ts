@@ -6,7 +6,7 @@
 import { environment } from '../../environments/environment'
 import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
-import { catchError, map } from 'rxjs/operators'
+import { catchError, map, share } from 'rxjs/operators'
 import { Subject } from 'rxjs'
 
 interface Passwords {
@@ -65,7 +65,7 @@ export class UserService {
   }
 
   oauthLogin (accessToken: string) {
-    return this.http.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + accessToken)
+    return this.http.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + accessToken).pipe(share())
   }
 
   saveLastLoginIp () {

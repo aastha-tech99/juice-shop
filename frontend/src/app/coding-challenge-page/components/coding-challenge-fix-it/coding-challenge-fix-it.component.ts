@@ -55,6 +55,7 @@ export class CodingChallengeFixItComponent implements OnInit, AfterViewInit, OnD
   public result: ResultState = ResultState.Undecided
   public shaking = false
   public onlyChangedLines = true
+  private isChecking = false
 
   ngOnInit (): void {
     if (this.alreadySolved()) {
@@ -109,9 +110,17 @@ export class CodingChallengeFixItComponent implements OnInit, AfterViewInit, OnD
   }
 
   checkFix (): void {
-    this.codeFixesService.check(this.challengeKey(), this.randomFixes[this.selectedFix].index).subscribe((verdict) => {
-      this.setVerdict(verdict.verdict)
-      this.explanation = verdict.explanation
+    if (this.isChecking) return
+    this.isChecking = true
+    this.codeFixesService.check(this.challengeKey(), this.randomFixes[this.selectedFix].index).subscribe({
+      next: (verdict) => {
+        this.isChecking = false
+        this.setVerdict(verdict.verdict)
+        this.explanation = verdict.explanation
+      },
+      error: () => {
+        this.isChecking = false
+      }
     })
   }
 
