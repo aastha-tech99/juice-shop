@@ -582,6 +582,11 @@ async function createFeedback (UserId: number | null, comment: string, rating: n
 }
 
 async function createComplaints () {
+  const user = await UserModel.findByPk(3)
+  if (!user?.isActive) {
+    logger.warn('Skipping complaint creation: user account not verified')
+    return
+  }
   return await ComplaintModel.create({
     UserId: 3,
     message: 'I\'ll build my own eCommerce business! With Black Jack! And Hookers!'

@@ -75,7 +75,7 @@ export class ChatConversationComponent implements OnInit {
     }
 
     const initialMessage = this.route.snapshot.queryParams['initialMessage']
-    if (initialMessage) {
+    if (initialMessage && this.isEmailVerified()) {
       void this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true })
       void this.sendMessage(initialMessage)
     }
@@ -111,8 +111,13 @@ export class ChatConversationComponent implements OnInit {
     this.isToolCallsCollapsed.update(prev => !prev)
   }
 
+  private isEmailVerified (): boolean {
+    const payload = this.loginGuard.tokenDecode()
+    return payload?.data?.isActive === true
+  }
+
   async sendMessage (content: string) {
-    if (!content || this.isLoading()) return
+    if (!content || this.isLoading() || !this.isEmailVerified()) return
 
     this.messages.update(prev => [...prev, { role: 'user', content }])
     this.messageInput.set('')

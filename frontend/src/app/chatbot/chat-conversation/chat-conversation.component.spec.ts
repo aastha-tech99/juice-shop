@@ -45,7 +45,7 @@ describe('ChatConversationComponent', () => {
             whoAmI: vi.fn().mockName("UserService.whoAmI")
         }
         loginGuard = {
-            tokenDecode: vi.fn().mockName("LoginGuard.tokenDecode")
+            tokenDecode: vi.fn().mockName("LoginGuard.tokenDecode").mockReturnValue({ data: { isActive: true } })
         }
         cookieService = {
             get: vi.fn().mockName("CookieService.get"),
@@ -97,6 +97,18 @@ describe('ChatConversationComponent', () => {
 
     it('should not send when already loading', async () => {
         component.isLoading.set(true)
+        await component.sendMessage('Hello')
+        expect(component.messages().length).toBe(0)
+    })
+
+    it('should not send when user email is not verified', async () => {
+        loginGuard.tokenDecode.mockReturnValue({ data: { isActive: false } })
+        await component.sendMessage('Hello')
+        expect(component.messages().length).toBe(0)
+    })
+
+    it('should not send when token is missing', async () => {
+        loginGuard.tokenDecode.mockReturnValue(null)
         await component.sendMessage('Hello')
         expect(component.messages().length).toBe(0)
     })
