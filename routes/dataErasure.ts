@@ -12,6 +12,14 @@ import { AllHtmlEntities as Entities } from 'html-entities'
 import { SecurityQuestionModel } from '../models/securityQuestion'
 import { PrivacyRequestModel } from '../models/privacyRequests'
 import { SecurityAnswerModel } from '../models/securityAnswer'
+import { AddressModel } from '../models/address'
+import { CardModel } from '../models/card'
+import { ComplaintModel } from '../models/complaint'
+import { FeedbackModel } from '../models/feedback'
+import { MemoryModel } from '../models/memory'
+import { RecycleModel } from '../models/recycle'
+import { WalletModel } from '../models/wallet'
+import { ImageCaptchaModel } from '../models/imageCaptcha'
 import * as challengeUtils from '../lib/challengeUtils'
 import { challenges } from '../data/datacache'
 import * as security from '../lib/insecurity'
@@ -84,6 +92,43 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
         UserId: loggedInUser.data.id,
         deletionRequested: true
       })
+
+      const userId = loggedInUser.data.id
+
+      // GDPR Art. 17: Actually erase user PII from all related tables
+      await AddressModel.destroy({ where: { UserId: userId } })
+      await CardModel.destroy({ where: { UserId: userId } })
+      await ComplaintModel.destroy({ where: { UserId: userId } })
+      await FeedbackModel.update({ UserId: null, comment: 'deleted' }, { where: { UserId: userId } })
+      await MemoryModel.destroy({ where: { UserId: userId } })
+      await RecycleModel.destroy({ where: { UserId: userId } })
+      await SecurityAnswerModel.destroy({ where: { UserId: userId } })
+      await WalletModel.destroy({ where: { UserId: userId } })
+      await ImageCaptchaModel.destroy({ where: { UserId: userId } })
+
+      // Anonymize and deactivate the user account
+      const deletedEmail = `deleted_${userId}@deleted.local`
+      await UserModel.update(
+        {
+          email: deletedEmail,
+          username: `deleted_${userId}`,
+          password: 'deleted',
+          lastLoginIp: '0.0.0.0',
+          profileImage: '/assets/public/images/uploads/default.svg',
+          totpSecret: '',
+          deluxeToken: '',
+          isActive: false
+        },
+        { where: { id: userId } }
+      )
+      await UserModel.destroy({ where: { id: userId } })
+
+      // Remove the authenticated session and revoke the token
+      const token = req.cookies.token
+      if (token) {
+        security.revokeToken(token)
+        delete security.authenticatedUsers.tokenMap[token]
+      }
 
       res.clearCookie('token')
 

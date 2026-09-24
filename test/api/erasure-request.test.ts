@@ -8,7 +8,7 @@ import assert from 'node:assert/strict'
 import request from 'supertest'
 import type { Express } from 'express'
 import { createTestApp } from './helpers/setup'
-import { login } from './helpers/auth'
+import { login, register } from './helpers/auth'
 import { challenges } from '../../data/datacache'
 import * as utils from '../../lib/utils'
 
@@ -51,23 +51,27 @@ void describe('/dataerasure', () => {
     assert.ok(res.text.includes('Error: Blocked illegal activity'))
   })
 
-  void it('POST erasure request does not actually delete the user', async () => {
-    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+  void it('POST erasure request anonymizes and deletes the user (GDPR Art. 17)', async () => {
+    const erasureEmail = 'erasure-test-user@juice-sh.op'
+    const erasurePassword = 'erasureTestPass123!'
+    await register(app, { email: erasureEmail, password: erasurePassword })
+    const { token } = await login(app, { email: erasureEmail, password: erasurePassword })
 
     const res = await request(app)
       .post('/dataerasure/')
       .set({ Cookie: 'token=' + token })
-      .field('email', 'bjoern.kimminich@gmail.com')
+      .field('email', erasureEmail)
 
     assert.equal(res.status, 200)
     assert.ok(res.headers['content-type']?.includes('text/html'))
 
+    // User should no longer be able to log in after erasure
     const loginRes = await request(app)
       .post('/rest/user/login')
       .set({ 'content-type': 'application/json' })
-      .send({ email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+      .send({ email: erasureEmail, password: erasurePassword })
 
-    assert.equal(loginRes.status, 200)
+    assert.equal(loginRes.status, 401)
   })
 
   void it('POST erasure form  fails on unauthenticated access', async () => {
@@ -79,7 +83,10 @@ void describe('/dataerasure', () => {
   })
 
   void it('POST erasure request with empty layout parameter returns', async () => {
-    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+    const email = 'erasure-layout-null@juice-sh.op'
+    const password = 'layoutNullPass123!'
+    await register(app, { email, password })
+    const { token } = await login(app, { email, password })
 
     const res = await request(app)
       .post('/dataerasure/')
@@ -91,7 +98,10 @@ void describe('/dataerasure', () => {
 
   if (utils.isChallengeEnabled(challenges.lfrChallenge)) {
     void it('POST erasure request with non-existing file path as layout parameter throws error', async () => {
-      const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+      const email = 'erasure-lfr-nofile@juice-sh.op'
+      const password = 'lfrNoFilePass123!'
+      await register(app, { email, password })
+      const { token } = await login(app, { email, password })
 
       const res = await request(app)
         .post('/dataerasure/')
@@ -103,7 +113,10 @@ void describe('/dataerasure', () => {
     })
 
     void it('POST erasure request with existing file path as layout parameter returns content truncated', async () => {
-      const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+      const email = 'erasure-lfr-package@juice-sh.op'
+      const password = 'lfrPackagePass123!'
+      await register(app, { email, password })
+      const { token } = await login(app, { email, password })
 
       const res = await request(app)
         .post('/dataerasure/')
