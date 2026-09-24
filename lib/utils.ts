@@ -77,7 +77,7 @@ const getCtfKey = () => {
     }
     ctfKeyInitialized = true
   }
-  return cachedCtfKey
+  return cachedCtfKey!
 }
 export const ctfFlag = (text: string) => {
   return crypto.createHmac('sha1', getCtfKey()).update(text).digest('hex')

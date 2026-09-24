@@ -180,8 +180,7 @@ export function placeOrder () {
               if (req.body.orderDetails && req.body.orderDetails.paymentId === 'wallet') {
               // Atomic balance check-and-decrement to prevent race conditions (CWE-362)
                 const [affectedRows] = await WalletModel.update(
-                // @ts-expect-error Sequelize literal for atomic balance update
-                  { balance: literal(`balance - ${Number(totalPrice)}`) },
+                  { balance: literal(`balance - ${Number(totalPrice)}`) as any },
                   { where: { UserId: req.body.UserId, balance: { [Op.gte]: totalPrice } } }
                 )
                 if (affectedRows === 0) {

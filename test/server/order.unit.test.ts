@@ -279,7 +279,7 @@ void describe('order', () => {
     await p
 
     assert.equal(findOrCreateMock.mock.calls.length, 1)
-    assert.deepEqual(findOrCreateMock.mock.calls[0].arguments[0], {
+    assert.deepEqual((findOrCreateMock.mock.calls[0] as any).arguments[0], {
       where: { UserId: 42, coupon: 'test-coupon' }
     })
   })
