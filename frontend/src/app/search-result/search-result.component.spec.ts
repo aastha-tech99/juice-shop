@@ -25,7 +25,7 @@ import { SocketIoService } from '../Services/socket-io.service'
 import { QuantityService } from '../Services/quantity.service'
 import { DeluxeGuard } from '../app.guard'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
-import { CookieModule, CookieService } from 'ngy-cookie'
+import { CookieService } from 'ngy-cookie'
 
 if (typeof globalThis.ResizeObserver === 'undefined') {
     globalThis.ResizeObserver = class ResizeObserver {

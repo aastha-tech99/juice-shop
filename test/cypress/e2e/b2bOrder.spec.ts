@@ -15,7 +15,7 @@ describe('/b2b/v2/order', () => {
                 cache: 'no-cache',
                 headers: {
                   'Content-type': 'application/json',
-                  Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`
+                  Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [undefined, ''])[1])}`
                 },
                 body: JSON.stringify({
                   orderLinesData: '(function dos() { while(true); })()'
@@ -45,7 +45,7 @@ describe('/b2b/v2/order', () => {
                 cache: 'no-cache',
                 headers: {
                   'Content-type': 'application/json',
-                  Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`
+                  Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [undefined, ''])[1])}`
                 },
                 body: JSON.stringify({
                   orderLinesData:

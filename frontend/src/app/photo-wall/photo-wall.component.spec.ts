@@ -27,7 +27,7 @@ import { MatInputModule } from '@angular/material/input'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { EventEmitter } from '@angular/core'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
-import { CookieModule, CookieService } from 'ngy-cookie'
+import { CookieService } from 'ngy-cookie'
 
 describe('PhotoWallComponent', () => {
     let component: PhotoWallComponent

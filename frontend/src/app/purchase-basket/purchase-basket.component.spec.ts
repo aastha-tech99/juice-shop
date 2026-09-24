@@ -22,7 +22,7 @@ import { DeluxeGuard } from '../app.guard'
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'
 import { EventEmitter } from '@angular/core'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
-import { CookieModule, CookieService } from 'ngy-cookie'
+import { CookieService } from 'ngy-cookie'
 
 describe('PurchaseBasketComponent', () => {
     let component: PurchaseBasketComponent

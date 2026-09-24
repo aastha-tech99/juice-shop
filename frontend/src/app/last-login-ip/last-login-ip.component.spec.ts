@@ -10,7 +10,7 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing'
 import { LastLoginIpComponent } from './last-login-ip.component'
 import { MatCardModule } from '@angular/material/card'
 import { DomSanitizer } from '@angular/platform-browser'
-import { CookieModule, CookieService } from 'ngy-cookie'
+import { CookieService } from 'ngy-cookie'
 
 describe('LastLoginIpComponent', () => {
     let component: LastLoginIpComponent

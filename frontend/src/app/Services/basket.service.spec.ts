@@ -127,8 +127,7 @@ describe('BasketService', () => {
         const service = TestBed.inject(BasketService)
         const httpMock = TestBed.inject(HttpTestingController)
 
-        let res: any
-        service.checkout(1, 'couponData1', { paymentId: '1', addressId: '1', deliveryMethodId: '1' }).subscribe((data) => (res = data))
+        service.checkout(1, 'couponData1', { paymentId: '1', addressId: '1', deliveryMethodId: '1' }).subscribe()
         const req1 = httpMock.expectOne('http://localhost:3000/rest/basket/1/checkout')
         req1.flush({ orderConfirmation: 'order1' })
         expect(req1.request.body.couponData).toBe('couponData1')
