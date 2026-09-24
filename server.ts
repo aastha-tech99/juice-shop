@@ -428,8 +428,8 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
     if (req.body.email !== undefined && req.body.password !== undefined && req.body.passwordRepeat !== undefined) {
       if (req.body.email.length !== 0 && req.body.password.length !== 0) {
         req.body.email = req.body.email.trim()
-        req.body.password = req.body.password.trim()
-        req.body.passwordRepeat = req.body.passwordRepeat.trim()
+        req.body.password = security.hash(req.body.password.trim())
+        req.body.passwordRepeat = security.hash(req.body.passwordRepeat.trim())
       } else {
         res.status(400).send(res.__('Invalid email/password cannot be empty'))
       }
