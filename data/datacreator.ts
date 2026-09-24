@@ -260,7 +260,7 @@ async function createAddresses (UserId: number, addresses: StaticUserAddress[]) 
         city: address.city,
         state: address.state ? address.state : null
       }).catch((err: unknown) => {
-        logger.error(`Could not create address: ${utils.getErrorMessage(err)}`)
+        logger.error(`Could not create address: ${err instanceof Error ? err.name : 'Unknown error'}`)
       })
     })
   )
