@@ -21,7 +21,7 @@ import { ActivatedRoute } from '@angular/router'
 import { MatTooltipModule } from '@angular/material/tooltip'
 import { of, throwError } from 'rxjs'
 import { UserService } from '../Services/user.service'
-import { CookieModule } from 'ngy-cookie'
+import { CookieModule, CookieService } from 'ngy-cookie'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 
 describe('OAuthComponent', () => {
@@ -79,9 +79,10 @@ describe('OAuthComponent', () => {
 
     it('removes authentication token and basket id on failed OAuth login attempt', () => {
         vi.spyOn(console, 'log').mockImplementation(() => {})
+        const cookieService = TestBed.inject(CookieService)
         userService.oauthLogin.mockReturnValue(throwError({ error: 'Error' }))
         component.ngOnInit()
-        expect(localStorage.getItem('token')).toBeNull()
+        expect(cookieService.get('token')).toBeFalsy()
         expect(sessionStorage.getItem('bid')).toBeNull()
     })
 
@@ -100,9 +101,10 @@ describe('OAuthComponent', () => {
 
     it('removes authentication token and basket id on failed subsequent regular login attempt', () => {
         vi.spyOn(console, 'log').mockImplementation(() => {})
+        const cookieService = TestBed.inject(CookieService)
         userService.login.mockReturnValue(throwError({ error: 'Error' }))
         component.login({ email: '' })
-        expect(localStorage.getItem('token')).toBeNull()
+        expect(cookieService.get('token')).toBeFalsy()
         expect(sessionStorage.getItem('bid')).toBeNull()
     })
 })

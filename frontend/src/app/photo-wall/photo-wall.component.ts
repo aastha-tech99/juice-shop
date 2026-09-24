@@ -12,6 +12,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faTwitter, faMastodon } from '@fortawesome/free-brands-svg-icons'
 import { faBold } from '@fortawesome/free-solid-svg-icons'
 import { SnackBarHelperService } from '../Services/snack-bar-helper.service'
+import { CookieService } from 'ngy-cookie'
 import { catchError } from 'rxjs/operators'
 import { EMPTY } from 'rxjs'
 import { MatInputModule } from '@angular/material/input'
@@ -35,6 +36,7 @@ export class PhotoWallComponent implements OnInit {
   private readonly photoWallService = inject(PhotoWallService)
   private readonly configurationService = inject(ConfigurationService)
   private readonly snackBarHelperService = inject(SnackBarHelperService)
+  private readonly cookieService = inject(CookieService)
 
   public emptyState = true
   public imagePreview: string
@@ -124,7 +126,7 @@ export class PhotoWallComponent implements OnInit {
   }
 
   isLoggedIn () {
-    return localStorage.getItem('token')
+    return this.cookieService.get('token')
   }
 
   resetForm () {

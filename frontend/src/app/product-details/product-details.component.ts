@@ -13,6 +13,7 @@ import { faArrowCircleLeft, faCrown, faPaperPlane, faThumbsUp, faUserEdit } from
 import { UntypedFormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { SnackBarHelperService } from '../Services/snack-bar-helper.service'
+import { CookieService } from 'ngy-cookie'
 import { type Review } from '../Models/review.model'
 import { type Product } from '../Models/product.model'
 import { MatInputModule } from '@angular/material/input'
@@ -43,6 +44,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   private readonly userService = inject(UserService)
   private readonly snackBar = inject(MatSnackBar)
   private readonly snackBarHelperService = inject(SnackBarHelperService)
+  private readonly cookieService = inject(CookieService)
 
   public author = 'Anonymous'
   public reviews$: any
@@ -101,6 +103,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   }
 
   isLoggedIn () {
-    return localStorage.getItem('token')
+    return this.cookieService.get('token')
   }
 }

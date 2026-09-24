@@ -19,6 +19,7 @@ import { faCartPlus, faEye } from '@fortawesome/free-solid-svg-icons'
 import { ProductTableEntry } from '../Models/product.model'
 import { QuantityService } from '../Services/quantity.service'
 import { DeluxeGuard } from '../app.guard'
+import { CookieService } from 'ngy-cookie'
 import { MatButtonModule } from '@angular/material/button'
 import { MatCardModule, MatCardTitle, MatCardContent } from '@angular/material/card'
 import { AsyncPipe } from '@angular/common'
@@ -44,6 +45,7 @@ export class SearchResultComponent implements OnDestroy, AfterViewInit {
   private readonly io = inject(SocketIoService)
   private readonly cdRef = inject(ChangeDetectorRef)
   private readonly elRef = inject(ElementRef)
+  private readonly cookieService = inject(CookieService)
 
   public tableData!: ProductTableEntry[]
   public pageSizeOptions: number[] = []
@@ -203,7 +205,7 @@ export class SearchResultComponent implements OnDestroy, AfterViewInit {
   }
 
   isLoggedIn (): boolean {
-    return localStorage.getItem('token') !== null
+    return this.cookieService.get('token') != null
   }
 
   isDeluxe () {

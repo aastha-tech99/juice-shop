@@ -6,6 +6,7 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { DomSanitizer } from '@angular/platform-browser'
 import { jwtDecode } from 'jwt-decode'
+import { CookieService } from 'ngy-cookie'
 import { TranslateModule } from '@ngx-translate/core'
 import { MatCardModule } from '@angular/material/card'
 
@@ -19,6 +20,7 @@ import { MatCardModule } from '@angular/material/card'
 
 export class LastLoginIpComponent implements OnInit {
   private readonly sanitizer = inject(DomSanitizer)
+  private readonly cookieService = inject(CookieService)
 
   lastLoginIp: any = '?'
 
@@ -32,7 +34,7 @@ export class LastLoginIpComponent implements OnInit {
 
   parseAuthToken () {
     let payload = {} as any
-    const token = localStorage.getItem('token')
+    const token = this.cookieService.get('token')
     if (token) {
       payload = jwtDecode(token)
       if (payload.data.lastLoginIp) {

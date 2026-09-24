@@ -103,9 +103,9 @@ describe('/profile', () => {
           cache: 'no-cache',
           headers: {
             'Content-type': 'application/x-www-form-urlencoded',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`,
             Origin: 'http://htmledit.squarefree.com', // FIXME Not allowed by browser due to "unsafe header not permitted"
-            Cookie: `token=${localStorage.getItem('token')}` // FIXME Not allowed by browser due to "unsafe header not permitted"
+            Cookie: `token=${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}` // FIXME Not allowed by browser due to "unsafe header not permitted"
           },
           body: formData
         })

@@ -65,7 +65,7 @@ export class SidenavComponent implements OnInit {
     this.getApplicationDetails()
     this.getScoreBoardStatus()
 
-    if (localStorage.getItem('token')) {
+    if (this.cookieService.get('token')) {
       this.getUserDetails()
     } else {
       this.userEmail = ''
@@ -88,12 +88,11 @@ export class SidenavComponent implements OnInit {
   }
 
   isLoggedIn () {
-    return localStorage.getItem('token')
+    return this.cookieService.get('token')
   }
 
   logout () {
     this.userService.saveLastLoginIp().subscribe({ next: () => { this.noop() }, error: (err) => { console.log(err) } })
-    localStorage.removeItem('token')
     this.cookieService.remove('token')
     sessionStorage.removeItem('bid')
     sessionStorage.removeItem('itemTotal')

@@ -49,7 +49,6 @@ export class OAuthComponent implements OnInit {
         const expires = new Date()
         expires.setHours(expires.getHours() + 8)
         this.cookieService.put('token', authentication.token, { expires })
-        localStorage.setItem('token', authentication.token)
         sessionStorage.setItem('bid', authentication.bid)
         this.userService.isLoggedIn.next(true)
         this.ngZone.run(async () => await this.router.navigate(['/']))
@@ -64,7 +63,6 @@ export class OAuthComponent implements OnInit {
   invalidateSession (error: Error) {
     console.log(error)
     this.cookieService.remove('token')
-    localStorage.removeItem('token')
     sessionStorage.removeItem('bid')
   }
 

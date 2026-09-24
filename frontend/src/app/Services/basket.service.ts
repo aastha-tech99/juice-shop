@@ -6,6 +6,7 @@
 import { environment } from '../../environments/environment'
 import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
+import { CookieService } from 'ngy-cookie'
 import { catchError, map } from 'rxjs/operators'
 import { type Observable, Subject, forkJoin, of } from 'rxjs'
 import { switchMap, tap } from 'rxjs/operators'
@@ -26,6 +27,7 @@ interface GuestBasketItem {
 })
 export class BasketService {
   private readonly http = inject(HttpClient)
+  private readonly cookieService = inject(CookieService)
 
   public hostServer = environment.hostServer
   public itemTotal = new Subject<any>()
@@ -61,7 +63,7 @@ export class BasketService {
   }
 
   updateNumberOfCartItems () {
-    if (localStorage.getItem('token')) {
+    if (this.cookieService.get('token')) {
       this.find(parseInt(sessionStorage.getItem('bid'), 10)).subscribe({
         next: (basket) => {
           this.itemTotal.next(basket.Products.reduce((itemTotal, product) => itemTotal + product.BasketItem.quantity, 0))

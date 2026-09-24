@@ -97,7 +97,7 @@ describe('NavbarComponent', () => {
             get: vi.fn().mockName("CookieService.get"),
             put: vi.fn().mockName("CookieService.put")
         }
-        cookieService.get.mockReturnValue('en')
+        cookieService.get.mockImplementation((key: string) => key === 'language' ? 'en' : undefined)
         mockSocket = new MockSocket()
         socketIoService = {
             socket: vi.fn().mockName("SocketIoService.socket")
@@ -174,7 +174,7 @@ describe('NavbarComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(NavbarComponent)
         component = fixture.componentInstance
-        localStorage.removeItem('token')
+        cookieService.get.mockImplementation((key: string) => key === 'language' ? 'en' : undefined)
         fixture.detectChanges()
     })
 
@@ -226,13 +226,13 @@ describe('NavbarComponent', () => {
 
     it('should set user email on page reload if user is authenticated', () => {
         userService.whoAmI.mockReturnValue(of({ email: 'dummy@dummy.com' }))
-        localStorage.setItem('token', 'token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : key === 'language' ? 'en' : undefined)
         component.ngOnInit()
         expect(component.userEmail).toBe('dummy@dummy.com')
     })
 
     it('should set user email on getting logged in', () => {
-        localStorage.removeItem('token')
+        cookieService.get.mockImplementation((key: string) => key === 'language' ? 'en' : undefined)
         userService.getLoggedInState.mockReturnValue(of(true))
         userService.whoAmI.mockReturnValue(of({ email: 'dummy@dummy.com' }))
         component.ngOnInit()
@@ -287,12 +287,6 @@ describe('NavbarComponent', () => {
         component.search('')
         await fixture.whenStable()
         expect(location.path()).toBe(encodeURI('/search'))
-    })
-
-    it('should remove authentication token from localStorage', () => {
-        const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')
-        component.logout()
-        expect(removeItemSpy).toHaveBeenCalledWith('token')
     })
 
     it('should remove authentication token from cookies', () => {
@@ -508,12 +502,11 @@ describe('NavbarComponent', () => {
             expect(component.itemTotal).toBe(42)
         })
 
-        it('should report isLoggedIn based on the auth token in localStorage', () => {
-            localStorage.removeItem('token')
+        it('should report isLoggedIn based on the auth token in cookie', () => {
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
             expect(component.isLoggedIn()).toBeFalsy()
-            localStorage.setItem('token', 'abc')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'abc' : undefined)
             expect(component.isLoggedIn()).toBe('abc')
-            localStorage.removeItem('token')
         })
 
         it('should detect accounting role from the decoded token', () => {

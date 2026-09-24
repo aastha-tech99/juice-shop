@@ -27,6 +27,7 @@ import { MatInputModule } from '@angular/material/input'
 import { MatSnackBar } from '@angular/material/snack-bar'
 import { EventEmitter } from '@angular/core'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { CookieModule, CookieService } from 'ngy-cookie'
 
 describe('PhotoWallComponent', () => {
     let component: PhotoWallComponent
@@ -35,6 +36,7 @@ describe('PhotoWallComponent', () => {
     let configurationService: any
     let snackBar: any
     let translateService
+    let cookieService: any
 
     beforeEach(async () => {
         configurationService = {
@@ -57,6 +59,11 @@ describe('PhotoWallComponent', () => {
         translateService.onDefaultLangChange = new EventEmitter()
         snackBar = {
             open: vi.fn().mockName("MatSnackBar.open")
+        }
+        cookieService = {
+            get: vi.fn().mockName("CookieService.get"),
+            put: vi.fn().mockName("CookieService.put"),
+            remove: vi.fn().mockName("CookieService.remove")
         }
 
         TestBed.configureTestingModule({
@@ -81,6 +88,7 @@ describe('PhotoWallComponent', () => {
                 { provide: ConfigurationService, useValue: configurationService },
                 { provide: TranslateService, useValue: translateService },
                 { provide: MatSnackBar, useValue: snackBar },
+                { provide: CookieService, useValue: cookieService },
                 provideHttpClient(withInterceptorsFromDi()),
                 provideHttpClientTesting()
             ]
@@ -223,12 +231,11 @@ describe('PhotoWallComponent', () => {
         ;(window as any).FileReader = originalFileReader
     })
 
-    it('should report logged in based on the presence of a token', () => {
-        localStorage.removeItem('token')
-        expect(component.isLoggedIn()).toBeNull()
-        localStorage.setItem('token', 'abc')
+    it('should report logged in based on the presence of a token in cookie', () => {
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
+        expect(component.isLoggedIn()).toBeUndefined()
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'abc' : undefined)
         expect(component.isLoggedIn()).toBe('abc')
-        localStorage.removeItem('token')
     })
 
     describe('template rendering', () => {
@@ -278,27 +285,25 @@ describe('PhotoWallComponent', () => {
         })
 
         it('should render the share-a-memory form only when a token is stored', () => {
-            localStorage.removeItem('token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
             fixture.detectChanges()
             expect((fixture.nativeElement as HTMLElement).querySelector('.share-memory-section')).toBeNull()
 
-            localStorage.setItem('token', 'token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
             fixture.detectChanges()
             expect((fixture.nativeElement as HTMLElement).querySelector('.share-memory-section')).toBeTruthy()
             expect((fixture.nativeElement as HTMLElement).querySelector('#submitButton')).toBeTruthy()
-            localStorage.removeItem('token')
         })
 
         it('should keep the submit button disabled while the form is invalid', () => {
-            localStorage.setItem('token', 'token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
             fixture.detectChanges()
             const submit = (fixture.nativeElement as HTMLElement).querySelector('#submitButton') as HTMLButtonElement
             expect(submit.disabled).toBe(true)
-            localStorage.removeItem('token')
         })
 
         it('should render the image preview once one is set and the image control is valid', () => {
-            localStorage.setItem('token', 'token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
             component.imagePreview = 'data:image/png;base64,abc'
             component.form.get('image').setValue('file')
             component.form.get('image').setErrors(null)
@@ -306,7 +311,6 @@ describe('PhotoWallComponent', () => {
             const preview = (fixture.nativeElement as HTMLElement).querySelector('.image-preview img') as HTMLImageElement
             expect(preview).toBeTruthy()
             expect(preview.getAttribute('src')).toBe('data:image/png;base64,abc')
-            localStorage.removeItem('token')
         })
     })
 })

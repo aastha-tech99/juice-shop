@@ -156,12 +156,6 @@ describe('SidenavComponent', () => {
         expect(component.scoreBoardVisible).toBe(true)
     })
 
-    it('should remove authentication token from localStorage', () => {
-        const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')
-        component.logout()
-        expect(removeItemSpy).toHaveBeenCalledWith('token')
-    })
-
     it('should remove authentication token from cookies', () => {
         component.logout()
         expect(cookieService.remove).toHaveBeenCalledWith('token')
@@ -231,7 +225,7 @@ describe('SidenavComponent', () => {
         })
 
         it('should clear userEmail when no token is stored on init', () => {
-            localStorage.removeItem('token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
             userService.getLoggedInState.mockReturnValue(of(false))
             component.userEmail = 'stale@example.com'
             component.ngOnInit()
@@ -371,40 +365,37 @@ describe('SidenavComponent', () => {
         })
 
         it('should render the login entry when the user is not logged in', () => {
-            localStorage.removeItem('token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
             fixture.detectChanges()
             const loginLink = (fixture.nativeElement as HTMLElement).querySelector('a[aria-label="Go to login page"]')
             expect(loginLink).toBeTruthy()
         })
 
         it('should render the user profile entry instead of the login entry when the user is logged in', () => {
-            localStorage.setItem('token', 'token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
             component.userEmail = 'user@juice-sh.op'
             fixture.detectChanges()
             const compiled: HTMLElement = fixture.nativeElement
             expect(compiled.querySelector('a[aria-label="Go to user profile"]')).toBeTruthy()
             expect(compiled.querySelector('a[aria-label="Go to login page"]')).toBeNull()
-            localStorage.removeItem('token')
         })
 
         it('should render the accounting entry only when user is logged in and has the accounting role', () => {
-            localStorage.setItem('token', 'token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
             loginGuard.tokenDecode.mockReturnValue({ data: { role: roles.accounting } })
             fixture.detectChanges()
             expect((fixture.nativeElement as HTMLElement).querySelector('a[aria-label="Go to accounting page"]')).toBeTruthy()
-            localStorage.removeItem('token')
         })
 
         it('should not render the accounting entry for non-accounting users', () => {
-            localStorage.setItem('token', 'token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
             loginGuard.tokenDecode.mockReturnValue({ data: { role: 'customer' } })
             fixture.detectChanges()
             expect((fixture.nativeElement as HTMLElement).querySelector('a[aria-label="Go to accounting page"]')).toBeNull()
-            localStorage.removeItem('token')
         })
 
         it('should render the orders-and-payment parent and expand its submenu on click', () => {
-            localStorage.setItem('token', 'token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
             fixture.detectChanges()
             const parent = (fixture.nativeElement as HTMLElement).querySelector('[aria-label="Show Orders and Payment Menu"]') as HTMLElement
             expect(parent).toBeTruthy()
@@ -416,11 +407,10 @@ describe('SidenavComponent', () => {
             expect(compiled.querySelector('a[aria-label="Go to saved address page"]')).toBeTruthy()
             expect(compiled.querySelector('a[aria-label="Go to saved payment methods page"]')).toBeTruthy()
             expect(compiled.querySelector('a[aria-label="Go to wallet page"]')).toBeTruthy()
-            localStorage.removeItem('token')
         })
 
         it('should render the privacy-and-security parent and expand its submenu on click', () => {
-            localStorage.setItem('token', 'token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
             fixture.detectChanges()
             const parent = (fixture.nativeElement as HTMLElement).querySelector('[aria-label="Show Privacy and Security Menu"]') as HTMLElement
             expect(parent).toBeTruthy()
@@ -433,21 +423,19 @@ describe('SidenavComponent', () => {
             expect(compiled.querySelector('a[aria-label="Go to change password page"]')).toBeTruthy()
             expect(compiled.querySelector('a[aria-label="Go to two factor authentication page"]')).toBeTruthy()
             expect(compiled.querySelector('a[aria-label="Go to last login ip page"]')).toBeTruthy()
-            localStorage.removeItem('token')
         })
 
         it('should render logout, complain and deluxe-membership entries when logged in', () => {
-            localStorage.setItem('token', 'token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
             fixture.detectChanges()
             const compiled: HTMLElement = fixture.nativeElement
             expect(compiled.querySelector('a[aria-label="Logout"]')).toBeTruthy()
             expect(compiled.querySelector('a[aria-label="Go to complain page"]')).toBeTruthy()
             expect(compiled.querySelector('a[aria-label="Go to deluxe membership page"]')).toBeTruthy()
-            localStorage.removeItem('token')
         })
 
         it('should not render logged-in-only entries when no token is stored', () => {
-            localStorage.removeItem('token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
             fixture.detectChanges()
             const compiled: HTMLElement = fixture.nativeElement
             expect(compiled.querySelector('a[aria-label="Logout"]')).toBeNull()

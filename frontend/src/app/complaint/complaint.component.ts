@@ -12,6 +12,7 @@ import { FileUploader, FileUploadModule } from 'ng2-file-upload'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBomb } from '@fortawesome/free-solid-svg-icons'
 import { TranslateService, TranslateModule } from '@ngx-translate/core'
+import { CookieService } from 'ngy-cookie'
 import { MatButtonModule } from '@angular/material/button'
 import { MatInputModule } from '@angular/material/input'
 import { MatFormFieldModule, MatLabel, MatHint, MatError } from '@angular/material/form-field'
@@ -33,6 +34,7 @@ export class ComplaintComponent implements OnInit {
   private readonly userService = inject(UserService)
   private readonly complaintService = inject(ComplaintService)
   private readonly translate = inject(TranslateService)
+  private readonly cookieService = inject(CookieService)
 
   public readonly maxMessageLength = 4096
 
@@ -42,7 +44,7 @@ export class ComplaintComponent implements OnInit {
   public fileUploadError: any = undefined // For controlling error handling related to file input.
   public uploader: FileUploader = new FileUploader({
     url: environment.hostServer + '/file-upload',
-    authToken: `Bearer ${localStorage.getItem('token')}`,
+    authToken: `Bearer ${this.cookieService.get('token')}`,
     allowedMimeType: ['application/pdf', 'application/xml', 'text/xml', 'application/zip', 'application/x-zip-compressed', 'multipart/x-zip', 'application/yaml', 'application/x-yaml', 'text/yaml', 'text/x-yaml'],
     maxFileSize: 100000
   })

@@ -17,7 +17,7 @@ describe('/api', () => {
                 cache: 'no-cache',
                 headers: {
                   'Content-type': 'application/json',
-                  Authorization: `Bearer ${localStorage.getItem('token')}`
+                  Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`
                 },
                 body: JSON.stringify({
                   name: 'RestXSS',
@@ -93,7 +93,7 @@ describe('/rest/saveLoginIp', () => {
                 method: 'GET',
                 cache: 'no-cache',
                 headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+                  Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`,
                   'True-Client-IP': '<iframe src="javascript:alert(`xss`)">'
                 }
               }

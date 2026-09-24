@@ -12,6 +12,7 @@ import { faTrashAlt } from '@fortawesome/free-regular-svg-icons/'
 import { faMinusSquare, faPlusSquare } from '@fortawesome/free-solid-svg-icons'
 import { DeluxeGuard } from '../app.guard'
 import { SnackBarHelperService } from '../Services/snack-bar-helper.service'
+import { CookieService } from 'ngy-cookie'
 import { TranslateModule } from '@ngx-translate/core'
 import { MatIconButton } from '@angular/material/button'
 import { forkJoin, of } from 'rxjs'
@@ -34,6 +35,7 @@ export class PurchaseBasketComponent implements OnInit {
   private readonly userService = inject(UserService)
   private readonly productService = inject(ProductService)
   private readonly snackBarHelperService = inject(SnackBarHelperService)
+  private readonly cookieService = inject(CookieService)
 
   @Input() public allowEdit = false
   @Input() public displayTotal = false
@@ -52,7 +54,7 @@ export class PurchaseBasketComponent implements OnInit {
     }
     this.load()
 
-    if (localStorage.getItem('token') == null) {
+    if (this.cookieService.get('token') == null) {
       this.userEmail = '(anonymous)'
       return
     }
@@ -70,7 +72,7 @@ export class PurchaseBasketComponent implements OnInit {
   }
 
   load () {
-    if (localStorage.getItem('token') == null) {
+    if (this.cookieService.get('token') == null) {
       this.loadGuestBasket()
       return
     }
@@ -135,7 +137,7 @@ export class PurchaseBasketComponent implements OnInit {
   }
 
   delete (id) {
-    if (localStorage.getItem('token') == null) {
+    if (this.cookieService.get('token') == null) {
       this.basketService.removeGuestBasketItem(id)
       this.load()
       return
@@ -159,7 +161,7 @@ export class PurchaseBasketComponent implements OnInit {
   }
 
   addToQuantity (id, value) {
-    if (localStorage.getItem('token') == null) {
+    if (this.cookieService.get('token') == null) {
       const existingGuestItem = this.basketService.getGuestBasketItems().find(item => item.ProductId === id)
       if (existingGuestItem == null) {
         return

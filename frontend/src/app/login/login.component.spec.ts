@@ -101,7 +101,6 @@ describe('LoginComponent', () => {
     })
 
     beforeEach(() => {
-        localStorage.removeItem('token')
         localStorage.removeItem('email')
         sessionStorage.removeItem('bid')
         fixture = TestBed.createComponent(LoginComponent)
@@ -149,10 +148,11 @@ describe('LoginComponent', () => {
         expect(location.path()).toBe('/search')
     })
 
-    it('stores the returned authentication token in localStorage', () => {
+    it('stores the returned authentication token in cookie', () => {
+        const cookieService = TestBed.inject(CookieService)
         userService.login.mockReturnValue(of({ token: 'token' }))
         component.login()
-        expect(localStorage.getItem('token')).toBe('token')
+        expect(cookieService.get('token')).toBe('token')
     })
 
     it('puts the returned basket id into browser session storage', () => {
@@ -162,9 +162,10 @@ describe('LoginComponent', () => {
     })
 
     it('removes authentication token and basket id on failed login attempt', () => {
+        const cookieService = TestBed.inject(CookieService)
         userService.login.mockReturnValue(throwError({ error: 'Error' }))
         component.login()
-        expect(localStorage.getItem('token')).toBeNull()
+        expect(cookieService.get('token')).toBeFalsy()
         expect(sessionStorage.getItem('bid')).toBeNull()
     })
 

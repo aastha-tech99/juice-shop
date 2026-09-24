@@ -10,12 +10,14 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing'
 import { LastLoginIpComponent } from './last-login-ip.component'
 import { MatCardModule } from '@angular/material/card'
 import { DomSanitizer } from '@angular/platform-browser'
+import { CookieModule, CookieService } from 'ngy-cookie'
 
 describe('LastLoginIpComponent', () => {
     let component: LastLoginIpComponent
     let fixture: ComponentFixture<LastLoginIpComponent>
     let sanitizer
     let translateService
+    let cookieService: any
 
     beforeEach(async () => {
         sanitizer = {
@@ -32,11 +34,17 @@ describe('LastLoginIpComponent', () => {
         translateService.onTranslationChange = new EventEmitter()
         translateService.onFallbackLangChange = new EventEmitter()
         translateService.onDefaultLangChange = new EventEmitter()
+        cookieService = {
+            get: vi.fn().mockName("CookieService.get"),
+            put: vi.fn().mockName("CookieService.put"),
+            remove: vi.fn().mockName("CookieService.remove")
+        }
 
         TestBed.configureTestingModule({
             providers: [
                 { provide: DomSanitizer, useValue: sanitizer },
-                { provide: TranslateService, useValue: translateService }
+                { provide: TranslateService, useValue: translateService },
+                { provide: CookieService, useValue: cookieService }
             ],
             imports: [
                 MatCardModule,
@@ -47,14 +55,10 @@ describe('LastLoginIpComponent', () => {
     })
 
     beforeEach(() => {
-        localStorage.clear()
+        cookieService.get.mockReturnValue(undefined)
         fixture = TestBed.createComponent(LastLoginIpComponent)
         component = fixture.componentInstance
         fixture.detectChanges()
-    })
-
-    afterEach(() => {
-        localStorage.clear()
     })
 
     it('should compile', () => {
@@ -63,19 +67,19 @@ describe('LastLoginIpComponent', () => {
 
     it('should log JWT parsing error to console', () => {
         console.log = vi.fn()
-        localStorage.setItem('token', 'definitelyInvalidJWT')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'definitelyInvalidJWT' : undefined)
         component.ngOnInit()
         expect(console.log).toHaveBeenCalled()
     })
 
     it('should set Last-Login IP from JWT as trusted HTML', () => {
-        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Imxhc3RMb2dpbklwIjoiMS4yLjMuNCJ9fQ.RAkmdqwNypuOxv3SDjPO4xMKvd1CddKvDFYDBfUt3bg')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Imxhc3RMb2dpbklwIjoiMS4yLjMuNCJ9fQ.RAkmdqwNypuOxv3SDjPO4xMKvd1CddKvDFYDBfUt3bg' : undefined)
         component.ngOnInit()
         expect(sanitizer.bypassSecurityTrustHtml).toHaveBeenCalledWith('<small>1.2.3.4</small>')
     })
 
     it('should not set Last-Login IP if none is present in JWT', () => {
-        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fX0.bVBhvll6IaeR3aUdoOeyR8YZe2S2DfhGAxTGfd9enLw')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fX0.bVBhvll6IaeR3aUdoOeyR8YZe2S2DfhGAxTGfd9enLw' : undefined)
         component.ngOnInit()
         expect(sanitizer.bypassSecurityTrustHtml).not.toHaveBeenCalled()
     })

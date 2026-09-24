@@ -25,6 +25,7 @@ import { SocketIoService } from '../Services/socket-io.service'
 import { QuantityService } from '../Services/quantity.service'
 import { DeluxeGuard } from '../app.guard'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { CookieModule, CookieService } from 'ngy-cookie'
 
 if (typeof globalThis.ResizeObserver === 'undefined') {
     globalThis.ResizeObserver = class ResizeObserver {
@@ -66,6 +67,7 @@ describe('SearchResultComponent', () => {
     let quantityService: any
     let deluxeGuard: any
     let snackBar: any
+    let cookieService: any
 
     beforeEach(async () => {
         dialog = {
@@ -121,6 +123,11 @@ describe('SearchResultComponent', () => {
             isDeluxe: vi.fn()
         }
         deluxeGuard.isDeluxe.mockReturnValue(false)
+        cookieService = {
+            get: vi.fn().mockName("CookieService.get"),
+            put: vi.fn().mockName("CookieService.put"),
+            remove: vi.fn().mockName("CookieService.remove")
+        }
 
         TestBed.configureTestingModule({
             imports: [TranslateModule.forRoot(),
@@ -144,6 +151,7 @@ describe('SearchResultComponent', () => {
                 { provide: SocketIoService, useValue: socketIoService },
                 { provide: QuantityService, useValue: quantityService },
                 { provide: DeluxeGuard, useValue: deluxeGuard },
+                { provide: CookieService, useValue: cookieService },
                 provideHttpClient(withInterceptorsFromDi()),
                 provideHttpClientTesting()
             ]
@@ -396,14 +404,13 @@ describe('SearchResultComponent', () => {
 
     describe('auth and deluxe helpers', () => {
         it('should report isLoggedIn=false when no token is set', () => {
-            localStorage.removeItem('token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
             expect(component.isLoggedIn()).toBe(false)
         })
 
         it('should report isLoggedIn=true when a token is set', () => {
-            localStorage.setItem('token', 'abc')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? 'abc' : undefined)
             expect(component.isLoggedIn()).toBe(true)
-            localStorage.removeItem('token')
         })
 
         it('should delegate isDeluxe to DeluxeGuard', () => {

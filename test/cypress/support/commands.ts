@@ -1,5 +1,11 @@
 import { type Challenge } from '../../../data/types'
 
+/** Read the JWT auth token from the cookie (replaces localStorage reads). */
+export function getTokenFromCookie (): string | null {
+  const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
 Cypress.Commands.add(
   'expectChallengeSolved',
   (context: { challenge: string }) => {

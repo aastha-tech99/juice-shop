@@ -59,7 +59,7 @@ describe('/rest/products/reviews', () => {
           method: 'PATCH',
           headers: {
             'Content-type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
+            Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`
           },
           body: JSON.stringify({
             id: { $ne: -1 },
@@ -101,7 +101,7 @@ describe('/rest/products/reviews', () => {
               method: 'PATCH',
               headers: {
                 'Content-type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`
               },
               body: JSON.stringify({ id: reviewId, message: 'injected' })
             }
@@ -130,7 +130,7 @@ describe('/rest/products/reviews', () => {
               method: 'POST',
               headers: {
                 'Content-type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`
               },
               body: JSON.stringify({ id: reviewId })
             }

@@ -108,11 +108,11 @@ describe('TwoFactorAuthEnterComponent', () => {
         expect(cookieService.get('token')).toBe('TOKEN')
     })
 
-    it('should store authentication token in local storage', () => {
+    it('should no longer store authentication token in local storage', () => {
         twoFactorAuthService.verify.mockReturnValue(of({ token: 'TOKEN' }))
         component.verify()
 
-        expect(localStorage.getItem('token')).toBe('TOKEN')
+        expect(localStorage.getItem('token')).toBeNull()
     })
 
     it('should store basket ID in session storage', () => {

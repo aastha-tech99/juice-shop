@@ -8,12 +8,21 @@ import { TestBed } from '@angular/core/testing'
 
 import { BasketService } from './basket.service'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { CookieModule, CookieService } from 'ngy-cookie'
 
 describe('BasketService', () => {
+    let cookieService: any
+
     beforeEach(() => {
+        cookieService = {
+            get: vi.fn().mockName("CookieService.get"),
+            put: vi.fn().mockName("CookieService.put"),
+            remove: vi.fn().mockName("CookieService.remove")
+        }
+
         TestBed.configureTestingModule({
-            imports: [],
-            providers: [BasketService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+            imports: [CookieModule.forRoot()],
+            providers: [BasketService, { provide: CookieService, useValue: cookieService }, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
         })
     })
 
@@ -118,7 +127,7 @@ describe('BasketService', () => {
         const service = TestBed.inject(BasketService)
         const httpMock = TestBed.inject(HttpTestingController)
 
-        localStorage.setItem('token', 'token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
         sessionStorage.setItem('bid', '42')
         const totals: number[] = []
         service.getItemTotal().subscribe((t) => totals.push(t))
@@ -135,7 +144,6 @@ describe('BasketService', () => {
             }
         })
         expect(totals).toEqual([5])
-        localStorage.removeItem('token')
         httpMock.verify()
     })
 
@@ -143,7 +151,7 @@ describe('BasketService', () => {
         const service = TestBed.inject(BasketService)
         const httpMock = TestBed.inject(HttpTestingController)
 
-        localStorage.setItem('token', 'token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
         sessionStorage.setItem('bid', '99')
         const consoleSpy = vi.spyOn(console, 'log')
         consoleSpy.mockClear()
@@ -153,14 +161,13 @@ describe('BasketService', () => {
         req.error(new ErrorEvent('Request failed'), { status: 500, statusText: 'Internal Error' })
 
         expect(consoleSpy).toHaveBeenCalled()
-        localStorage.removeItem('token')
         httpMock.verify()
     })
 
     it('should emit total number of guest basket items when anonymous', () => {
         const service = TestBed.inject(BasketService)
 
-        localStorage.removeItem('token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
         sessionStorage.setItem('guestBasket', JSON.stringify([
             { ProductId: 1, quantity: 2 },
             { ProductId: 2, quantity: 3 }
@@ -197,7 +204,7 @@ describe('BasketService', () => {
         const service = TestBed.inject(BasketService)
         const httpMock = TestBed.inject(HttpTestingController)
 
-        localStorage.removeItem('token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
         sessionStorage.setItem('guestBasket', JSON.stringify([
             { ProductId: 1, quantity: 2 },
             { ProductId: 1, quantity: 1 },

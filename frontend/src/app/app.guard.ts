@@ -7,15 +7,17 @@ import { type CanActivate, Router } from '@angular/router'
 import { jwtDecode } from 'jwt-decode'
 import { roles } from './roles'
 import { Injectable, NgZone, inject } from '@angular/core'
+import { CookieService } from 'ngy-cookie'
 
 @Injectable()
 export class LoginGuard implements CanActivate {
   private readonly router = inject(Router)
   private readonly ngZone = inject(NgZone)
+  private readonly cookieService = inject(CookieService)
 
 
   canActivate () {
-    if (localStorage.getItem('token')) {
+    if (this.cookieService.get('token')) {
       return true
     } else {
       this.forbidRoute('UNAUTHORIZED_ACCESS_ERROR')
@@ -32,7 +34,7 @@ export class LoginGuard implements CanActivate {
 
   tokenDecode () {
     let payload: any = null
-    const token = localStorage.getItem('token')
+    const token = this.cookieService.get('token')
     if (token) {
       try {
         payload = jwtDecode(token)

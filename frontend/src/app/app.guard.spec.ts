@@ -9,14 +9,24 @@ import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { RouterTestingModule } from '@angular/router/testing'
 import { ErrorPageComponent } from './error-page/error-page.component'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { CookieModule, CookieService } from 'ngy-cookie'
 
 describe('LoginGuard', () => {
+    let cookieService: any
+
     beforeEach(() => {
+        cookieService = {
+            get: vi.fn().mockName("CookieService.get"),
+            put: vi.fn().mockName("CookieService.put"),
+            remove: vi.fn().mockName("CookieService.remove")
+        }
+
         TestBed.configureTestingModule({
             imports: [RouterTestingModule.withRoutes([
                     { path: '403', component: ErrorPageComponent }
-                ])],
-            providers: [LoginGuard, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+                ]),
+                CookieModule.forRoot()],
+            providers: [LoginGuard, { provide: CookieService, useValue: cookieService }, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
         })
     })
 
@@ -29,21 +39,21 @@ describe('LoginGuard', () => {
     it('should open for authenticated users', () => {
         const guard = TestBed.inject(LoginGuard)
 
-        localStorage.setItem('token', 'TOKEN')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'TOKEN' : undefined)
         expect(guard.canActivate()).toBe(true)
     })
 
     it('should close for anonymous users', () => {
         const guard = TestBed.inject(LoginGuard)
 
-        localStorage.removeItem('token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
         expect(guard.canActivate()).toBe(false)
     })
 
     it('returns payload from decoding a valid JWT', () => {
         const guard = TestBed.inject(LoginGuard)
 
-        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' : undefined)
         expect(guard.tokenDecode()).toEqual({
             sub: '1234567890',
             name: 'John Doe',
@@ -54,14 +64,14 @@ describe('LoginGuard', () => {
     it('returns nothing when decoding an invalid JWT', () => {
         const guard = TestBed.inject(LoginGuard)
 
-        localStorage.setItem('token', '12345.abcde')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? '12345.abcde' : undefined)
         expect(guard.tokenDecode()).toBeNull()
     })
 
     it('returns nothing when decoding an non-existing JWT', () => {
         const guard = TestBed.inject(LoginGuard)
 
-        localStorage.removeItem('token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
         expect(guard.tokenDecode()).toBeNull()
     })
 })

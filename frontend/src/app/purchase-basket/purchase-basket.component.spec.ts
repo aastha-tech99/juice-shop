@@ -22,6 +22,7 @@ import { DeluxeGuard } from '../app.guard'
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'
 import { EventEmitter } from '@angular/core'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { CookieModule, CookieService } from 'ngy-cookie'
 
 describe('PurchaseBasketComponent', () => {
     let component: PurchaseBasketComponent
@@ -32,6 +33,7 @@ describe('PurchaseBasketComponent', () => {
     let translateService: any
     let deluxeGuard
     let snackBar: any
+    let cookieService: any
 
     beforeEach(async () => {
         basketService = {
@@ -77,6 +79,11 @@ describe('PurchaseBasketComponent', () => {
         snackBar = {
             open: vi.fn().mockName("MatSnackBar.open")
         }
+        cookieService = {
+            get: vi.fn().mockName("CookieService.get"),
+            put: vi.fn().mockName("CookieService.put"),
+            remove: vi.fn().mockName("CookieService.remove")
+        }
 
         TestBed.configureTestingModule({
             imports: [TranslateModule.forRoot(),
@@ -95,6 +102,7 @@ describe('PurchaseBasketComponent', () => {
                 { provide: UserService, useValue: userService },
                 { provide: ProductService, useValue: productService },
                 { provide: DeluxeGuard, useValue: deluxeGuard },
+                { provide: CookieService, useValue: cookieService },
                 provideHttpClient(withInterceptorsFromDi()),
                 provideHttpClientTesting()
             ]
@@ -103,7 +111,7 @@ describe('PurchaseBasketComponent', () => {
     })
 
     beforeEach(() => {
-        localStorage.setItem('token', 'token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? 'token' : undefined)
         fixture = TestBed.createComponent(PurchaseBasketComponent)
         component = fixture.componentInstance
         fixture.detectChanges()
@@ -128,7 +136,7 @@ describe('PurchaseBasketComponent', () => {
 
     it('should skip userService call and use anonymous label for guests', () => {
         userService.whoAmI.mockClear()
-        localStorage.removeItem('token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
 
         component.ngOnInit()
 
@@ -179,7 +187,7 @@ describe('PurchaseBasketComponent', () => {
     })
 
     it('should keep valid guest basket products when one guest product fetch fails', () => {
-        localStorage.removeItem('token')
+        cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
         basketService.getGuestBasketItems.mockReturnValue([
             { ProductId: 1, quantity: 2 },
             { ProductId: 2, quantity: 3 }
@@ -325,7 +333,7 @@ describe('PurchaseBasketComponent', () => {
 
     describe('guest basket', () => {
         beforeEach(() => {
-            localStorage.removeItem('token')
+            cookieService.get.mockImplementation((key: string) => key === 'token' ? undefined : undefined)
         })
 
         it('should reset data, totals and bonus when guest basket is empty', () => {

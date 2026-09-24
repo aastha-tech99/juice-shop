@@ -99,7 +99,6 @@ export class ServerStartedNotificationComponent implements OnInit {
     this.cookieService.remove('token')
     sessionStorage.removeItem('bid')
     sessionStorage.removeItem('itemTotal')
-    localStorage.removeItem('token')
     localStorage.removeItem('displayedDifficulties')
     localStorage.removeItem('showSolvedChallenges')
     localStorage.removeItem('showDisabledChallenges')

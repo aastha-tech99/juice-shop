@@ -99,7 +99,6 @@ export class LoginComponent implements OnInit {
     this.userService.login(this.user).subscribe({
       next: (authentication: any) => {
         const redirectUrl = this.route.snapshot.queryParamMap.get('redirectUrl') ?? '/search'
-        localStorage.setItem('token', authentication.token)
         const expires = new Date()
         expires.setHours(expires.getHours() + 8)
         this.cookieService.put('token', authentication.token, { expires })
@@ -122,7 +121,6 @@ export class LoginComponent implements OnInit {
           this.ngZone.run(async () => await this.router.navigate(['/2fa/enter']))
           return
         }
-        localStorage.removeItem('token')
         this.cookieService.remove('token')
         sessionStorage.removeItem('bid')
         this.error = error

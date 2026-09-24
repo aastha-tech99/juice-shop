@@ -5,6 +5,11 @@
 
 import { jwtDecode } from 'jwt-decode'
 
+function getCookieToken (): string | null {
+  const match = document.cookie.match(/(?:^|; )token=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
 let config
 const playbackDelays = {
   faster: 0.5,
@@ -170,7 +175,7 @@ export function waitForAngularRouteToBeVisited (route: string) {
 export function waitForLogIn () {
   return async () => {
     while (true) {
-      if (localStorage.getItem('token') !== null) {
+      if (getCookieToken() !== null) {
         break
       }
       await sleep(100)
@@ -183,7 +188,7 @@ export function waitForAdminLogIn () {
     while (true) {
       let role = ''
       try {
-        const token: string = localStorage.getItem('token')
+        const token: string = getCookieToken()
         const decodedToken = jwtDecode(token)
         const payload = decodedToken as any
         role = payload.data.role
@@ -201,7 +206,7 @@ export function waitForAdminLogIn () {
 export function waitForLogOut () {
   return async () => {
     while (true) {
-      if (localStorage.getItem('token') === null) {
+      if (getCookieToken() === null) {
         break
       }
       await sleep(100)

@@ -4,16 +4,19 @@
  */
 
 import { type HttpEvent, type HttpHandler, type HttpInterceptor, type HttpRequest } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
 import { type Observable } from 'rxjs'
+import { CookieService } from 'ngy-cookie'
 
 @Injectable()
 export class RequestInterceptor implements HttpInterceptor {
+  private readonly cookieService = inject(CookieService)
+
   intercept (req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (localStorage.getItem('token')) {
+    if (this.cookieService.get('token')) {
       req = req.clone({
         setHeaders: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${this.cookieService.get('token')}`
         }
       })
     }

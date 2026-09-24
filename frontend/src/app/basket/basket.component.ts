@@ -7,6 +7,7 @@ import { Component, NgZone, inject, ChangeDetectionStrategy } from '@angular/cor
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faCartArrowDown } from '@fortawesome/free-solid-svg-icons'
 import { Router } from '@angular/router'
+import { CookieService } from 'ngy-cookie'
 import { TranslateModule } from '@ngx-translate/core'
 import { MatButtonModule } from '@angular/material/button'
 import { PurchaseBasketComponent } from '../purchase-basket/purchase-basket.component'
@@ -24,12 +25,13 @@ library.add(faCartArrowDown)
 export class BasketComponent {
   private readonly router = inject(Router)
   private readonly ngZone = inject(NgZone)
+  private readonly cookieService = inject(CookieService)
 
   public productCount = 0
   public bonus = 0
 
   checkout (): void {
-    if (localStorage.getItem('token') == null) {
+    if (this.cookieService.get('token') == null) {
       this.ngZone.run(async () => await this.router.navigate(['/login'], {
         queryParams: {
           redirectUrl: '/basket'

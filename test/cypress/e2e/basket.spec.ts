@@ -14,7 +14,7 @@ describe('/#/basket', () => {
               cache: 'no-cache',
               headers: {
                 'Content-type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`
               },
               body: JSON.stringify({ quantity: -100000 })
             }
@@ -61,7 +61,7 @@ describe('/#/basket', () => {
             cache: 'no-cache',
             headers: {
               'Content-type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`
+              Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`
             },
             body: '{ "ProductId": 14,"BasketId":"1","quantity":1,"BasketId":"2" }'
           })
@@ -116,7 +116,7 @@ describe('/#/basket', () => {
               cache: 'no-cache',
               headers: {
                 'Content-type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${((document.cookie.match(/(?:^|;\s*)token=([^;]*)/) || [, ''])[1])}`
               },
               body: JSON.stringify({
                 BasketId: `${sessionStorage.getItem('bid')}`,
