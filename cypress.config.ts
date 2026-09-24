@@ -1,4 +1,5 @@
 import { defineConfig } from 'cypress'
+import crypto from 'node:crypto'
 import * as security from './lib/insecurity'
 import config from 'config'
 import type { Memory as MemoryConfig, Product as ProductConfig } from './lib/config.schema'
@@ -74,6 +75,22 @@ export default defineConfig({
         },
         isWindows () {
           return utils.isWindows()
+        },
+        GenerateUnsignedJwt () {
+          const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url')
+          const payload = Buffer.from(JSON.stringify({ data: { email: 'jwtn3d@juice-sh.op' }, iat: 1508639612, exp: 9999999999 })).toString('base64url')
+          return `${header}.${payload}.`
+        },
+        GenerateForgedHmacJwt () {
+          const header = Buffer.from(JSON.stringify({ typ: 'JWT', alg: 'HS256' })).toString('base64url')
+          const payload = Buffer.from(JSON.stringify({ data: { email: 'rsa_lord@juice-sh.op' }, iat: Math.floor(Date.now() / 1000) })).toString('base64url')
+          const signature = crypto.createHmac('sha256', security.publicKey)
+            .update(`${header}.${payload}`)
+            .digest('base64url')
+          return `${header}.${payload}.${signature}`
+        },
+        GenerateCloudAdminJwt () {
+          return security.authorize({ data: { email: 'cloud-admin@juice-sh.op' } })
         }
       })
     }

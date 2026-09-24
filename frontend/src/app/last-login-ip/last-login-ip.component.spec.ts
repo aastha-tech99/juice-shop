@@ -11,7 +11,13 @@ import { LastLoginIpComponent } from './last-login-ip.component'
 import { MatCardModule } from '@angular/material/card'
 import { DomSanitizer } from '@angular/platform-browser'
 
-const EMPTY_DATA_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fX0.bVBhvll6IaeR3aUdoOeyR8YZe2S2DfhGAxTGfd9enLw'
+// Build a test JWT at runtime to avoid hardcoded token strings
+function buildTestJwt (payload: object): string {
+    const encode = (obj: object) => btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode(payload)}.test`
+}
+
+const EMPTY_DATA_JWT = buildTestJwt({ data: {} })
 
 describe('LastLoginIpComponent', () => {
     let component: LastLoginIpComponent
@@ -71,7 +77,7 @@ describe('LastLoginIpComponent', () => {
     })
 
     it('should set Last-Login IP from JWT as trusted HTML', () => {
-        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Imxhc3RMb2dpbklwIjoiMS4yLjMuNCJ9fQ.RAkmdqwNypuOxv3SDjPO4xMKvd1CddKvDFYDBfUt3bg')
+        localStorage.setItem('token', buildTestJwt({ data: { lastLoginIp: '1.2.3.4' } }))
         component.ngOnInit()
         expect(sanitizer.bypassSecurityTrustHtml).toHaveBeenCalledWith('<small>1.2.3.4</small>')
     })

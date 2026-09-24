@@ -10,6 +10,12 @@ import { RouterTestingModule } from '@angular/router/testing'
 import { ErrorPageComponent } from './error-page/error-page.component'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 
+// Build a test JWT at runtime to avoid hardcoded token strings
+function buildTestJwt (payload: object): string {
+    const encode = (obj: object) => btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode(payload)}.test`
+}
+
 describe('LoginGuard', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -43,7 +49,7 @@ describe('LoginGuard', () => {
     it('returns payload from decoding a valid JWT', () => {
         const guard = TestBed.inject(LoginGuard)
 
-        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c')
+        localStorage.setItem('token', buildTestJwt({ sub: '1234567890', name: 'John Doe', iat: 1516239022 }))
         expect(guard.tokenDecode()).toEqual({
             sub: '1234567890',
             name: 'John Doe',

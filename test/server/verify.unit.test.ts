@@ -5,6 +5,7 @@
 
 import { describe, it, beforeEach, mock } from 'node:test'
 import assert from 'node:assert/strict'
+import crypto from 'node:crypto'
 import config from 'config'
 import { challenges, products, setRetrieveBlueprintChallengeFile } from '../../data/datacache'
 import type { Product, Challenge } from '@juice-shop/data/types'
@@ -13,6 +14,22 @@ import * as security from '../../lib/insecurity'
 import { type UserModel } from '@juice-shop/models/user'
 import * as verify from '../../routes/verify'
 import { isWindows } from '../../lib/utils'
+
+// Build test JWTs at runtime to avoid hardcoded token strings
+function buildUnsignedJwt (payload: object): string {
+  const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url')
+  const body = Buffer.from(JSON.stringify(payload)).toString('base64url')
+  return `${header}.${body}.`
+}
+
+function buildHmacJwt (payload: object): string {
+  const header = Buffer.from(JSON.stringify({ typ: 'JWT', alg: 'HS256' })).toString('base64url')
+  const body = Buffer.from(JSON.stringify(payload)).toString('base64url')
+  const signature = crypto.createHmac('sha256', security.publicKey)
+    .update(`${header}.${body}`)
+    .digest('base64url')
+  return `${header}.${body}.${signature}`
+}
 
 void describe('verify', () => {
   let req: any
@@ -280,7 +297,7 @@ void describe('verify', () => {
     })
 
     void it('"jwtUnsignedChallenge" is solved when forged unsigned token has email jwtn3d@juice-sh.op in the payload', () => {
-      req.headers = { authorization: 'Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJkYXRhIjp7ImVtYWlsIjoiand0bjNkQGp1aWNlLXNoLm9wIn0sImlhdCI6MTUwODYzOTYxMiwiZXhwIjo5OTk5OTk5OTk5fQ.' }
+      req.headers = { authorization: `Bearer ${buildUnsignedJwt({ data: { email: 'jwtn3d@juice-sh.op' }, iat: 1508639612, exp: 9999999999 })}` }
 
       verify.jwtChallenges()(req, res, next)
 
@@ -288,7 +305,7 @@ void describe('verify', () => {
     })
 
     void it('"jwtUnsignedChallenge" is solved when forged unsigned token has string "jwtn3d@" in the payload', () => {
-      req.headers = { authorization: 'Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJkYXRhIjp7ImVtYWlsIjoiand0bjNkQCJ9LCJpYXQiOjE1MDg2Mzk2MTIsImV4cCI6OTk5OTk5OTk5OX0.' }
+      req.headers = { authorization: `Bearer ${buildUnsignedJwt({ data: { email: 'jwtn3d@' }, iat: 1508639612, exp: 9999999999 })}` }
 
       verify.jwtChallenges()(req, res, next)
 
@@ -305,7 +322,7 @@ void describe('verify', () => {
     })
 
     void it('"jwtForgedChallenge" is solved when forged token HMAC-signed with public RSA-key has email rsa_lord@juice-sh.op in the payload', { skip: isWindows() ? 'not supported on Windows' : false }, () => {
-      req.headers = { authorization: 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjp7ImVtYWlsIjoicnNhX2xvcmRAanVpY2Utc2gub3AifSwiaWF0IjoxNTgyMjIxNTc1fQ.ycFwtqh4ht4Pq9K5rhiPPY256F9YCTIecd4FHFuSEAg' }
+      req.headers = { authorization: `Bearer ${buildHmacJwt({ data: { email: 'rsa_lord@juice-sh.op' }, iat: 1582221575 })}` }
 
       verify.jwtChallenges()(req, res, next)
 
@@ -313,7 +330,7 @@ void describe('verify', () => {
     })
 
     void it('"jwtForgedChallenge" is solved when forged token HMAC-signed with public RSA-key has string "rsa_lord@" in the payload', { skip: isWindows() ? 'not supported on Windows' : false }, () => {
-      req.headers = { authorization: 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjp7ImVtYWlsIjoicnNhX2xvcmRAIn0sImlhdCI6MTU4MjIyMTY3NX0.50f6VAIQk2Uzpf3sgH-1JVrrTuwudonm2DKn2ec7Tg8' }
+      req.headers = { authorization: `Bearer ${buildHmacJwt({ data: { email: 'rsa_lord@' }, iat: 1582221675 })}` }
 
       verify.jwtChallenges()(req, res, next)
 
