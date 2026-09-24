@@ -74,6 +74,7 @@ export class OrderHistoryComponent implements OnInit {
               total: Math.max(0, product.total)
             })
           }
+          Object.freeze(products)
           this.orders.push({
             orderId: order.orderId,
             totalPrice: Math.max(0, order.totalPrice),

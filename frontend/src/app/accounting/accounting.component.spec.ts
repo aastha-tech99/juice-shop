@@ -33,10 +33,10 @@ describe('AccountingComponent', () => {
     let snackBar: any
 
     beforeEach(async () => {
-        quantityService = {
+        quantityService = Object.freeze({
             getAll: vi.fn().mockName("QuantityService.getAll"),
             put: vi.fn().mockName("QuantityService.put")
-        }
+        })
         quantityService.getAll.mockReturnValue(of([]))
         quantityService.put.mockReturnValue(of({}))
         productService = {

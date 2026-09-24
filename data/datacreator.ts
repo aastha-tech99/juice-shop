@@ -794,7 +794,7 @@ async function createOrders () {
         email,
         totalPrice,
         bonus,
-        products,
+        products: Object.freeze(products),
         eta,
         delivered
       }).catch((err: unknown) => {

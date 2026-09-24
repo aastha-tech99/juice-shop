@@ -135,8 +135,8 @@ describe('AccountingComponent', () => {
 
     it('should reverse the order list and map all order fields including products', () => {
         orderHistoryService.get.mockReturnValue(of([
-            { orderId: 'first', totalPrice: 10, bonus: 1, products: [{ id: 1, name: 'P1', price: 5, quantity: 2, total: 10 }], delivered: true },
-            { orderId: 'second', totalPrice: 20, bonus: 2, products: [{ id: 2, name: 'P2', price: 10, quantity: 2, total: 20 }], delivered: false }
+            { orderId: 'first', totalPrice: 10, bonus: 1, products: Object.freeze([{ id: 1, name: 'P1', price: 5, quantity: 2, total: 10 }]), delivered: true },
+            { orderId: 'second', totalPrice: 20, bonus: 2, products: Object.freeze([{ id: 2, name: 'P2', price: 10, quantity: 2, total: 20 }]), delivered: false }
         ]))
         component.orders = []
         component.ngOnInit()

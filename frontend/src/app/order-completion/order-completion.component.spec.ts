@@ -92,7 +92,7 @@ describe('OrderCompletionComponent', () => {
     })
 
     it('should hold order details returned by backend API', () => {
-        trackOrderService.find.mockReturnValue(of({ data: [{ totalPrice: 2.88, promotionalAmount: 10, deliveryPrice: 2, addressId: 1, paymentId: 1, products: [{ quantity: 1, name: 'Apple Juice (1000ml)', price: 1.99, total: 1.99, bonus: 0 }, { quantity: 1, name: 'Apple Pomace', price: 0.89, total: 0.89, bonus: 0 }], bonus: 0, eta: '5' }] }))
+        trackOrderService.find.mockReturnValue(of({ data: [{ totalPrice: 2.88, promotionalAmount: 10, deliveryPrice: 2, addressId: 1, paymentId: 1, products: Object.freeze([{ quantity: 1, name: 'Apple Juice (1000ml)', price: 1.99, total: 1.99, bonus: 0 }, { quantity: 1, name: 'Apple Pomace', price: 0.89, total: 0.89, bonus: 0 }]), bonus: 0, eta: '5' }] }))
         component.ngOnInit()
         expect(component.promotionalDiscount).toBe(10)
         expect(component.deliveryPrice).toBe(2)

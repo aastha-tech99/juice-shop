@@ -46,7 +46,7 @@ import { Routing } from './app/app.routing'
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser'
 import { PhotoWallService } from './app/Services/photo-wall.service'
 import { DeliveryService } from './app/Services/delivery.service'
-import { OrderHistoryService } from './app/Services/order-history.service'
+/* OrderHistoryService is providedIn:'root'; no redundant re-registration needed */
 import { WalletService } from './app/Services/wallet.service'
 import { QuantityService } from './app/Services/quantity.service'
 import { AddressService } from './app/Services/address.service'
@@ -114,7 +114,6 @@ bootstrapApplication(AppComponent, {
         AddressService,
         QuantityService,
         WalletService,
-        OrderHistoryService,
         DeliveryService,
         PhotoWallService,
         provideHttpClient(withInterceptorsFromDi()),
