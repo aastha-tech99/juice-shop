@@ -36,6 +36,8 @@ export class OrderCompletionComponent implements OnInit {
   activatedRoute = inject(ActivatedRoute)
   private readonly basketService = inject(BasketService)
 
+  private static readonly MAX_COUPON_USES_PER_USER = 1
+  private static readonly MAX_COUPON_DISCOUNT_PERCENT = 75
   public tableColumns = ['product', 'price', 'quantity', 'total price']
   public dataSource
   public orderId: string
@@ -51,7 +53,8 @@ export class OrderCompletionComponent implements OnInit {
         this.orderId = paramMap.get('id')
         this.trackOrderService.find(this.orderId).subscribe({
           next: (results) => {
-            this.promotionalDiscount = results.data[0].promotionalAmount ? parseFloat(results.data[0].promotionalAmount) : 0
+            const rawPromo = results.data[0].promotionalAmount ? parseFloat(results.data[0].promotionalAmount) : 0
+            this.promotionalDiscount = Math.max(0, Math.min(rawPromo, OrderCompletionComponent.MAX_COUPON_DISCOUNT_PERCENT))
             this.deliveryPrice = results.data[0].deliveryPrice ? parseFloat(results.data[0].deliveryPrice) : 0
             this.orderDetails.addressId = results.data[0].addressId
             this.orderDetails.paymentId = results.data[0].paymentId

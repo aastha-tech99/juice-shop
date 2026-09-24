@@ -123,6 +123,23 @@ describe('BasketService', () => {
         httpMock.verify()
     })
 
+    it('should enforce per-user coupon usage limit on checkout', () => {
+        const service = TestBed.inject(BasketService)
+        const httpMock = TestBed.inject(HttpTestingController)
+
+        let res: any
+        service.checkout(1, 'couponData1', { paymentId: '1', addressId: '1', deliveryMethodId: '1' }).subscribe((data) => (res = data))
+        const req1 = httpMock.expectOne('http://localhost:3000/rest/basket/1/checkout')
+        req1.flush({ orderConfirmation: 'order1' })
+        expect(req1.request.body.couponData).toBe('couponData1')
+
+        service.checkout(1, 'couponData2', { paymentId: '1', addressId: '1', deliveryMethodId: '1' }).subscribe((data) => (res = data))
+        const req2 = httpMock.expectOne('http://localhost:3000/rest/basket/1/checkout')
+        req2.flush({ orderConfirmation: 'order2' })
+        expect(req2.request.body.couponData).toBeUndefined()
+        httpMock.verify()
+    })
+
     it('should emit total number of items when updating number of cart items', () => {
         const service = TestBed.inject(BasketService)
         const httpMock = TestBed.inject(HttpTestingController)

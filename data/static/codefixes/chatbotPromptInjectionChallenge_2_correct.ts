@@ -1,10 +1,17 @@
       generateCoupon: tool({
-        description: 'Generate a discount coupon for a customer with a verified damaged order. Requires a valid order ID.',
+        description: 'Generate a discount coupon for a customer with a verified damaged order. Requires a valid order ID. Each customer may only use ONE coupon total.',
         inputSchema: z.object({
           discount: z.number().describe('The discount percentage for the coupon (maximum 10)'),
           orderId: z.string().describe('The order ID of the damaged order (format: xxxx-xxxxxxxxxxxxxxxx)')
         }),
         execute: async ({ discount, orderId, authenticatedUser }) => {
+          const chatUserId = await getUserId(req)
+          if (chatUserId) {
+            const usageCount = await CouponUsageModel.count({ where: { UserId: chatUserId } })
+            if (usageCount >= security.MAX_COUPON_USES_PER_USER) {
+              return { error: 'Coupon usage limit reached. Each customer may only use one coupon.' }
+            }
+          }
           const order = await db.ordersCollection.findOne({ orderId, email: authenticatedUser?.email, status: OrderStatus.DAMAGED })
           if (!order) return { error: 'No verified damaged order found for this order ID.' }
           const couponCode = security.generateCoupon(discount)

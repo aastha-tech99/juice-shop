@@ -60,6 +60,10 @@ const PromotionSchema = z.object({
   subtitles: z.string()
 })
 
+const CouponPolicySchema = z.object({
+  maxUsesPerUser: z.number().int().min(1).default(1)
+})
+
 const EasterEggPlanetSchema = z.object({
   name: z.string(),
   overlayMap: z.string()
@@ -98,6 +102,7 @@ export const ApplicationSchema = z.object({
   cookieConsent: CookieConsentSchema,
   securityTxt: SecurityTxtSchema,
   promotion: PromotionSchema,
+  couponPolicy: CouponPolicySchema.optional(),
   easterEggPlanet: EasterEggPlanetSchema,
   googleOauth: GoogleOauthSchema
 })
@@ -201,6 +206,7 @@ export const ValidationSchema = z.preprocess(dropNulls, z.object({
     cookieConsent: CookieConsentSchema.partial().optional(),
     securityTxt: SecurityTxtSchema.partial().optional(),
     promotion: PromotionSchema.partial().optional(),
+    couponPolicy: CouponPolicySchema.partial().optional(),
     easterEggPlanet: EasterEggPlanetSchema.partial().optional(),
     googleOauth: GoogleOauthSchema.partial().optional()
   }).optional(),

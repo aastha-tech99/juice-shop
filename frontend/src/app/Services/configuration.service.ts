@@ -68,6 +68,9 @@ export interface Config {
       video: string
       subtitles: string
     }
+    couponPolicy: {
+      maxUsesPerUser: number
+    }
     easterEggPlanet: {
       name: string
       overlayMap: string

@@ -5,7 +5,7 @@ import { BasketItemModel } from './basketitem'
 import { ChallengeModel } from './challenge'
 import { ChallengeDependencyModel } from './challengeDependency'
 import { CardModel } from './card'
-import { CouponUsageModel } from './couponUsage'
+import { CouponUsageModel, MAX_COUPON_USES_PER_USER } from './couponUsage'
 import { ComplaintModel } from './complaint'
 import { FeedbackModel } from './feedback'
 import { HintModel } from './hint'
@@ -60,6 +60,13 @@ const relationsInit = (_sequelize: Sequelize) => {
     foreignKeyConstraint: true,
     foreignKey: {
       name: 'UserId'
+    }
+  })
+  // Per-user coupon usage is limited to MAX_COUPON_USES_PER_USER (CWE-799)
+  CouponUsageModel.addHook('beforeCreate', 'enforceCouponUsageLimit', async (instance: any) => {
+    const usageCount = await CouponUsageModel.count({ where: { UserId: instance.UserId, coupon: instance.coupon } })
+    if (usageCount >= MAX_COUPON_USES_PER_USER) {
+      throw new Error('Coupon usage limit reached for this user.')
     }
   })
 

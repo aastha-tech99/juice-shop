@@ -12,6 +12,8 @@ import {
   type Sequelize
 } from 'sequelize'
 
+export const MAX_COUPON_USES_PER_USER = 1
+
 class CouponUsage extends Model<
 InferAttributes<CouponUsage>,
 InferCreationAttributes<CouponUsage>
@@ -30,15 +32,23 @@ const CouponUsageModelInit = (sequelize: Sequelize) => {
         autoIncrement: true
       },
       UserId: {
-        type: DataTypes.INTEGER
+        type: DataTypes.INTEGER,
+        allowNull: false
       },
       coupon: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: false
       }
     },
     {
       tableName: 'CouponUsages',
-      sequelize
+      sequelize,
+      indexes: [
+        {
+          unique: true,
+          fields: ['UserId', 'coupon']
+        }
+      ]
     }
   )
 }

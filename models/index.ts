@@ -7,7 +7,7 @@ import { AddressModelInit } from './address'
 import { BasketModelInit } from './basket'
 import { BasketItemModelInit } from './basketitem'
 import { CaptchaModelInit } from './captcha'
-import { CouponUsageModelInit } from './couponUsage'
+import { CouponUsageModelInit, MAX_COUPON_USES_PER_USER } from './couponUsage'
 import { CardModelInit } from './card'
 import { ChallengeModelInit } from './challenge'
 import { ChallengeDependencyModelInit } from './challengeDependency'
@@ -76,4 +76,4 @@ function setSequelize (seq: Sequelize) {
 
 initModels(sequelize)
 
-export { sequelize, createSequelize, initModels, setSequelize }
+export { sequelize, createSequelize, initModels, setSequelize, MAX_COUPON_USES_PER_USER }

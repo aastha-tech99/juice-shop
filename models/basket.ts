@@ -14,6 +14,9 @@ import {
 } from 'sequelize'
 import { type ProductModel } from './product'
 
+// Coupon usage is enforced to a per-user limit via CouponUsageModel (CWE-799)
+export const COUPON_MAX_USES_PER_USER = 1
+
 class Basket extends Model<
 InferAttributes<Basket>,
 InferCreationAttributes<Basket>

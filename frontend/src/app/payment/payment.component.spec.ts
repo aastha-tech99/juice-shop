@@ -162,6 +162,17 @@ describe('PaymentComponent', () => {
         expect(component).toBeTruthy()
     })
 
+    it('should enforce per-user coupon usage limit', () => {
+        basketService.applyCoupon.mockReturnValue(of(10))
+        translateService.get.mockReturnValue(of('DISCOUNT_APPLIED'))
+        component.couponControl.setValue('TESTCOUPON1')
+        component.applyCoupon()
+        expect(component.couponConfirmation).toBeDefined()
+        component.couponControl.setValue('TESTCOUPON2')
+        component.applyCoupon()
+        expect(component.couponError).toBeDefined()
+    })
+
     it('should not hold blueSky or reddit URL if not defined in configuration', () => {
         configurationService.getApplicationConfiguration.mockReturnValue(of({}))
         expect(component.blueSkyUrl).toBeNull()

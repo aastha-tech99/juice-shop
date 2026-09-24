@@ -107,6 +107,12 @@ describe('OrderCompletionComponent', () => {
         expect(component.orderDetails.products[1].name).toBe('Apple Pomace')
     })
 
+    it('should clamp promotional discount to maximum allowed percentage', () => {
+        trackOrderService.find.mockReturnValue(of({ data: [{ totalPrice: 100, promotionalAmount: 99, deliveryPrice: 0, addressId: 1, paymentId: 1, products: [], bonus: 0, eta: '5' }] }))
+        component.ngOnInit()
+        expect(component.promotionalDiscount).toBe(75)
+    })
+
     it('should have bullet point list of products in tweet', () => {
         trackOrderService.find.mockReturnValue(of({ data: [{ products: [{ name: 'A' }, { name: 'B' }] }] }))
         configurationService.getApplicationConfiguration.mockReturnValue(of({}))

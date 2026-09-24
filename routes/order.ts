@@ -123,8 +123,17 @@ export function placeOrder () {
           }
           doc.moveDown()
           const appliedDiscount = calculateApplicableDiscount(basket, req)
-          const discount = appliedDiscount.discount ?? 0
+          let discount = appliedDiscount.discount ?? 0
           const appliedCouponCode = appliedDiscount.couponCode
+          // Enforce per-user coupon usage limit for campaign coupons (CWE-799)
+          if (discount > 0 && appliedCouponCode && basket.UserId) {
+            const priorUsageCount = await CouponUsageModel.count({
+              where: { UserId: basket.UserId, coupon: appliedCouponCode }
+            })
+            if (priorUsageCount >= security.MAX_COUPON_USES_PER_USER) {
+              discount = 0
+            }
+          }
           let discountAmount = '0'
           if (discount > 0) {
             discountAmount = (totalPrice * (discount / 100)).toFixed(2)

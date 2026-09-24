@@ -113,8 +113,12 @@ export const userEmailFrom = ({ headers }: any) => {
   return headers ? headers['x-user-email'] : undefined
 }
 
+export const MAX_COUPON_USES_PER_USER = 1
+export const MAX_COUPON_DISCOUNT_PERCENT = 75
+
 export const generateCoupon = (discount: number, date = new Date()) => {
-  const coupon = utils.toMMMYY(date) + '-' + discount
+  const clampedDiscount = Math.min(Math.max(0, Math.round(discount)), MAX_COUPON_DISCOUNT_PERCENT)
+  const coupon = utils.toMMMYY(date) + '-' + clampedDiscount
   return z85.encode(coupon)
 }
 

@@ -160,6 +160,20 @@ describe('OrderSummaryComponent', () => {
         expect(component.bonus).toBe(1)
     })
 
+    it('should enforce per-user coupon usage limit on repeated getMessage calls', () => {
+        sessionStorage.setItem('couponDiscount', '50')
+        component.getMessage([200, 2])
+        expect(component.promotionalDiscount).toBe(100)
+        component.getMessage([200, 2])
+        expect(component.promotionalDiscount).toBe(0)
+    })
+
+    it('should clamp coupon discount to maximum allowed percentage', () => {
+        sessionStorage.setItem('couponDiscount', '99')
+        component.getMessage([100, 1])
+        expect(component.promotionalDiscount).toBe(75)
+    })
+
     it('should remove session details from session storage', () => {
         basketService.checkout.mockReturnValue(of({ orderConfirmationId: '1234123412341234' }))
         const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')

@@ -65,6 +65,8 @@ export class PaymentComponent implements OnInit {
   private readonly ngZone = inject(NgZone)
   private readonly snackBarHelperService = inject(SnackBarHelperService)
 
+  private static readonly MAX_COUPON_USES_PER_USER = 1
+  private couponAppliedCount = 0
   public couponConfirmation: any
   public couponError: any
   public card: any = {}
@@ -153,6 +155,15 @@ export class PaymentComponent implements OnInit {
   }
 
   applyCoupon () {
+    if (this.couponAppliedCount >= PaymentComponent.MAX_COUPON_USES_PER_USER) {
+      this.couponConfirmation = undefined
+      this.translate.get('COUPON_ALREADY_USED').subscribe({
+        next: (msg) => { this.couponError = { error: msg || 'Coupon usage limit reached.' } },
+        error: () => { this.couponError = { error: 'Coupon usage limit reached.' } }
+      })
+      this.resetCouponForm()
+      return
+    }
     this.campaignCoupon = this.couponControl.value
     this.clientDate = new Date()
 
@@ -192,6 +203,7 @@ export class PaymentComponent implements OnInit {
   }
 
   showConfirmation (discount) {
+    this.couponAppliedCount++
     this.resetCouponForm()
     this.couponError = undefined
     sessionStorage.setItem('couponDiscount', discount)

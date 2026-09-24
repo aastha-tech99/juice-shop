@@ -29,6 +29,8 @@ export class BasketService {
   private readonly http = inject(HttpClient)
   private readonly cookieService = inject(CookieService)
 
+  private static readonly MAX_COUPON_USES_PER_USER = 1
+  private couponUsageCount = 0
   public hostServer = environment.hostServer
   public itemTotal = new Subject<any>()
   private readonly host = this.hostServer + '/api/BasketItems'
@@ -56,7 +58,11 @@ export class BasketService {
   }
 
   checkout (id?: number, couponData?: string, orderDetails?: OrderDetail) {
-    return this.http.post(`${this.hostServer}/rest/basket/${id}/checkout`, { couponData, orderDetails }).pipe(map((response: any) => response.orderConfirmation), catchError((error) => { throw error }))
+    const effectiveCouponData = couponData && this.couponUsageCount < BasketService.MAX_COUPON_USES_PER_USER ? couponData : undefined
+    if (effectiveCouponData) {
+      this.couponUsageCount++
+    }
+    return this.http.post(`${this.hostServer}/rest/basket/${id}/checkout`, { couponData: effectiveCouponData, orderDetails }).pipe(map((response: any) => response.orderConfirmation), catchError((error) => { throw error }))
   }
 
   applyCoupon (id?: number, coupon?: string) {

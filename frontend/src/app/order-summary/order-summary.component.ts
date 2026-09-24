@@ -33,6 +33,9 @@ export class OrderSummaryComponent implements OnInit {
   private readonly ngZone = inject(NgZone)
   private readonly snackBarHelperService = inject(SnackBarHelperService)
 
+  private static readonly MAX_COUPON_USES_PER_USER = 1
+  private static readonly MAX_COUPON_DISCOUNT_PERCENT = 75
+  private couponAppliedCount = 0
   public bonus = 0
   public itemTotal = 0
   public deliveryPrice = 0
@@ -67,7 +70,14 @@ export class OrderSummaryComponent implements OnInit {
 
   getMessage (total) {
     this.itemTotal = total[0]
-    this.promotionalDiscount = sessionStorage.getItem('couponDiscount') ? (parseFloat(sessionStorage.getItem('couponDiscount')) / 100) * this.itemTotal : 0
+    const rawDiscount = sessionStorage.getItem('couponDiscount') ? parseFloat(sessionStorage.getItem('couponDiscount')) : 0
+    const clampedDiscount = Math.min(Math.max(0, rawDiscount), OrderSummaryComponent.MAX_COUPON_DISCOUNT_PERCENT)
+    if (clampedDiscount > 0 && this.couponAppliedCount < OrderSummaryComponent.MAX_COUPON_USES_PER_USER) {
+      this.promotionalDiscount = (clampedDiscount / 100) * this.itemTotal
+      this.couponAppliedCount++
+    } else {
+      this.promotionalDiscount = 0
+    }
     this.bonus = total[1]
   }
 

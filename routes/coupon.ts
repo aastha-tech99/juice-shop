@@ -24,10 +24,10 @@ export function applyCoupon () {
 
       // Enforce per-user coupon usage limit (CWE-799)
       if (coupon && basket.UserId) {
-        const alreadyUsed = await CouponUsageModel.findOne({
+        const usageCount = await CouponUsageModel.count({
           where: { UserId: basket.UserId, coupon }
         })
-        if (alreadyUsed) {
+        if (usageCount >= security.MAX_COUPON_USES_PER_USER) {
           return res.status(403).json({ error: 'Coupon has already been used.' })
         }
       }
