@@ -38,6 +38,7 @@ describe('LoginComponent', () => {
     let configurationService: any
     let basketService: any
     let windowRefService: any
+    let cookieService: CookieService
     let location: Location
 
     beforeEach(async () => {
@@ -98,10 +99,11 @@ describe('LoginComponent', () => {
             .compileComponents()
 
         location = TestBed.inject(Location)
+        cookieService = TestBed.inject(CookieService)
     })
 
     beforeEach(() => {
-        localStorage.removeItem('email')
+        cookieService.remove('email')
         sessionStorage.removeItem('bid')
         fixture = TestBed.createComponent(LoginComponent)
         component = fixture.componentInstance
@@ -126,13 +128,13 @@ describe('LoginComponent', () => {
         expect(component.passwordControl.valid).toBe(true)
     })
 
-    it('should have remember-me checked if email token is present as in localStorage', () => {
-        localStorage.setItem('email', 'a@a')
+    it('should have remember-me checked if email token is present in cookie', () => {
+        cookieService.put('email', 'a@a')
         component.ngOnInit()
         expect(component.rememberMe.value).toBe(true)
     })
 
-    it('should have remember-me unchecked if email token is not present in localStorage', () => {
+    it('should have remember-me unchecked if email token is not present in cookie', () => {
         component.ngOnInit()
         expect(component.rememberMe.value).toBeFalsy()
     })
@@ -187,7 +189,7 @@ describe('LoginComponent', () => {
         component.emailControl.setValue('horst@juice-sh.op')
         component.rememberMe.setValue(true)
         component.login()
-        expect(localStorage.getItem('email')).toBe('horst@juice-sh.op')
+        expect(cookieService.get('email')).toBe('horst@juice-sh.op')
     })
 
     it('puts current email into "email" cookie on failed login with remember-me checkbox ticked', () => {
@@ -195,7 +197,7 @@ describe('LoginComponent', () => {
         component.emailControl.setValue('horst@juice-sh.op')
         component.rememberMe.setValue(true)
         component.login()
-        expect(localStorage.getItem('email')).toBe('horst@juice-sh.op')
+        expect(cookieService.get('email')).toBe('horst@juice-sh.op')
     })
 
     describe('template rendering', () => {
@@ -323,9 +325,9 @@ describe('LoginComponent', () => {
             }))
             component.login()
             await fixture.whenStable()
-            expect(localStorage.getItem('totp_tmp_token')).toBe('tmp')
+            expect(cookieService.get('totp_tmp_token')).toBe('tmp')
             expect(navSpy).toHaveBeenCalledWith(['/2fa/enter'])
-            localStorage.removeItem('totp_tmp_token')
+            cookieService.remove('totp_tmp_token')
         })
 
         it('should redirect via window.location.replace on googleLogin', () => {

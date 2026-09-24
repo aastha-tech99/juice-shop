@@ -64,7 +64,7 @@ export class LoginComponent implements OnInit {
   public isLoggingIn = false
 
   ngOnInit (): void {
-    const email = localStorage.getItem('email')
+    const email = this.cookieService.get('email')
     if (email) {
       this.user = {}
       this.user.email = email
@@ -121,7 +121,7 @@ export class LoginComponent implements OnInit {
       error: ({ error }) => {
         this.isLoggingIn = false
         if (error.status && error.data && error.status === 'totp_token_required') {
-          localStorage.setItem('totp_tmp_token', error.data.tmpToken)
+          this.cookieService.put('totp_tmp_token', error.data.tmpToken)
           this.ngZone.run(async () => await this.router.navigate(['/2fa/enter']))
           return
         }
@@ -135,9 +135,9 @@ export class LoginComponent implements OnInit {
     })
 
     if (this.rememberMe.value) {
-      localStorage.setItem('email', this.user.email)
+      this.cookieService.put('email', this.user.email)
     } else {
-      localStorage.removeItem('email')
+      this.cookieService.remove('email')
     }
   }
 

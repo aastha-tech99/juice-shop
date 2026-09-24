@@ -5,6 +5,7 @@
 
 import { Injectable, inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
+import { CookieService } from 'ngy-cookie'
 import { catchError, map } from 'rxjs/operators'
 import { environment } from '../../environments/environment'
 import { type Observable } from 'rxjs'
@@ -31,11 +32,12 @@ export interface TwoFactorAuthStatusPayload {
 })
 export class TwoFactorAuthService {
   private readonly http = inject(HttpClient)
+  private readonly cookieService = inject(CookieService)
 
 
   verify (totpToken: string): Observable<AuthenticationPayload> {
     return this.http.post<TwoFactorVerifyResponse>(`${environment.hostServer}/rest/2fa/verify`, {
-      tmpToken: localStorage.getItem('totp_tmp_token'),
+      tmpToken: this.cookieService.get('totp_tmp_token'),
       totpToken
     }).pipe(map((response: TwoFactorVerifyResponse) => response.authentication), catchError((error) => { throw error }))
   }

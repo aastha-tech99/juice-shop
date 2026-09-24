@@ -8,11 +8,12 @@ import { TestBed } from '@angular/core/testing'
 
 import { TwoFactorAuthService } from './two-factor-auth-service'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
+import { CookieModule, CookieService } from 'ngy-cookie'
 
 describe('TwoFactorAuthServiceService', () => {
     beforeEach(() => TestBed.configureTestingModule({
-        imports: [],
-        providers: [TwoFactorAuthService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+        imports: [CookieModule.forRoot()],
+        providers: [TwoFactorAuthService, CookieService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
     }))
 
     it('should be created', () => {
@@ -24,8 +25,9 @@ describe('TwoFactorAuthServiceService', () => {
     it('should verify TOTP token directly via the rest api', () => {
         const service = TestBed.inject(TwoFactorAuthService)
         const httpMock = TestBed.inject(HttpTestingController)
+        const cookies = TestBed.inject(CookieService)
 
-        localStorage.setItem('totp_tmp_token', '000000')
+        cookies.put('totp_tmp_token', '000000')
         let res: any
         service.verify('123456').subscribe((data) => (res = data))
 
@@ -89,8 +91,9 @@ describe('TwoFactorAuthServiceService', () => {
     it('should handle error when verifying TOTP token', () => {
         const service = TestBed.inject(TwoFactorAuthService)
         const httpMock = TestBed.inject(HttpTestingController)
+        const cookies = TestBed.inject(CookieService)
 
-        localStorage.setItem('totp_tmp_token', '000000')
+        cookies.put('totp_tmp_token', '000000')
         let capturedError: any
         service.verify('654321').subscribe({ next: () => { throw new Error('expected error') }, error: (e) => { capturedError = e } })
         const req = httpMock.expectOne('http://localhost:3000/rest/2fa/verify')
