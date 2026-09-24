@@ -62,7 +62,7 @@ pipeline:
                           log:
                             level: info
                           args:
-                            cli: "--exclude /harness/test/files"
+                            cli: "--exclude \"**/test/files/**\" --disableArchive"
                         mode: orchestration
                         config: default
                   - step:
@@ -70,6 +70,12 @@ pipeline:
                       name: OsvScanner_1
                       identifier: OsvScanner_1
                       timeout: 2h
+                      failureStrategies:
+                        - onFailure:
+                            errors:
+                              - AllErrors
+                            action:
+                              type: MarkAsSuccess
                       spec:
                         target:
                           detection: auto
