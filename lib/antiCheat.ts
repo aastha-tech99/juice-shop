@@ -38,18 +38,18 @@ const trivialChallenges = ['errorHandlingChallenge', 'privacyPolicyChallenge', '
 
 const solves: Array<{ challenge: any, phase: string, timestamp: Date, cheatScore: number }> = [{ challenge: {}, phase: 'server start', timestamp: new Date(), cheatScore: 0 }] // seed with server start timestamp
 
-const preSolveInteractions: Array<{ challengeKey: ChallengeKey, urlFragments: string[], interactions: boolean[] }> = [
-  { challengeKey: 'missingEncodingChallenge', urlFragments: ['/assets/public/images/uploads/%F0%9F%98%BC-'], interactions: [false] },
-  { challengeKey: 'directoryListingChallenge', urlFragments: ['/ftp'], interactions: [false] },
-  { challengeKey: 'easterEggLevelOneChallenge', urlFragments: ['/ftp', '/ftp/eastere.gg'], interactions: [false, false] },
-  { challengeKey: 'easterEggLevelTwoChallenge', urlFragments: ['/ftp', '/gur/qrif/ner/fb/shaal/gurl/uvq/na/rnfgre/rtt/jvguva/gur/rnfgre/rtt'], interactions: [false, false] },
-  { challengeKey: 'forgottenDevBackupChallenge', urlFragments: ['/ftp', '/ftp/package.json.bak'], interactions: [false, false] },
-  { challengeKey: 'forgottenBackupChallenge', urlFragments: ['/ftp', '/ftp/coupons_2013.md.bak'], interactions: [false, false] },
-  { challengeKey: 'loginSupportChallenge', urlFragments: ['/ftp', '/ftp/incident-support.kdbx'], interactions: [false, false] },
-  { challengeKey: 'misplacedSignatureFileChallenge', urlFragments: ['/ftp', '/ftp/suspicious_errors.yml'], interactions: [false, false] },
-  { challengeKey: 'misplacedIacFiles', urlFragments: ['/infrastructure'], interactions: [false] },
-  { challengeKey: 'rceChallenge', urlFragments: ['/api-docs', '/b2b/v2/orders'], interactions: [false, false] },
-  { challengeKey: 'rceOccupyChallenge', urlFragments: ['/api-docs', '/b2b/v2/orders'], interactions: [false, false] }
+const preSolveInteractions: Array<{ challengeId: ChallengeKey, urlFragments: string[], interactions: boolean[] }> = [
+  { challengeId: 'missingEncodingChallenge', urlFragments: ['/assets/public/images/uploads/%F0%9F%98%BC-'], interactions: [false] },
+  { challengeId: 'directoryListingChallenge', urlFragments: ['/ftp'], interactions: [false] },
+  { challengeId: 'easterEggLevelOneChallenge', urlFragments: ['/ftp', '/ftp/eastere.gg'], interactions: [false, false] },
+  { challengeId: 'easterEggLevelTwoChallenge', urlFragments: ['/ftp', '/gur/qrif/ner/fb/shaal/gurl/uvq/na/rnfgre/rtt/jvguva/gur/rnfgre/rtt'], interactions: [false, false] },
+  { challengeId: 'forgottenDevBackupChallenge', urlFragments: ['/ftp', '/ftp/package.json.bak'], interactions: [false, false] },
+  { challengeId: 'forgottenBackupChallenge', urlFragments: ['/ftp', '/ftp/coupons_2013.md.bak'], interactions: [false, false] },
+  { challengeId: 'loginSupportChallenge', urlFragments: ['/ftp', '/ftp/incident-support.kdbx'], interactions: [false, false] },
+  { challengeId: 'misplacedSignatureFileChallenge', urlFragments: ['/ftp', '/ftp/suspicious_errors.yml'], interactions: [false, false] },
+  { challengeId: 'misplacedIacFiles', urlFragments: ['/infrastructure'], interactions: [false] },
+  { challengeId: 'rceChallenge', urlFragments: ['/api-docs', '/b2b/v2/orders'], interactions: [false, false] },
+  { challengeId: 'rceOccupyChallenge', urlFragments: ['/api-docs', '/b2b/v2/orders'], interactions: [false, false] }
 ]
 
 const challengeSourceFiles: Record<string, string[]> = {
@@ -92,7 +92,7 @@ export const calculateCheatScore = (challenge: Challenge, isCheating = false) =>
       cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
     }
 
-    const preSolveInteraction = preSolveInteractions.find((preSolveInteraction) => preSolveInteraction.challengeKey === challenge.key)
+    const preSolveInteraction = preSolveInteractions.find((preSolveInteraction) => preSolveInteraction.challengeId === challenge.key)
     let percentPrecedingInteraction = -1
     if (preSolveInteraction) {
       percentPrecedingInteraction = preSolveInteraction.interactions.filter(Boolean).length / (preSolveInteraction.interactions.length)
@@ -209,8 +209,8 @@ function loadSourceFile (relativePath: string): string {
   }
 }
 
-export function checkForSourceFileOverlap (challengeKey: string, submission: string): boolean {
-  const sourceFiles = challengeSourceFiles[challengeKey]
+export function checkForSourceFileOverlap (challengeId: string, submission: string): boolean {
+  const sourceFiles = challengeSourceFiles[challengeId]
   if (!sourceFiles || submission.length < 100) {
     return false
   }
@@ -222,7 +222,7 @@ export function checkForSourceFileOverlap (challengeKey: string, submission: str
     const overlapScore = utils.diceCoefficient(submission.toLowerCase().trim(), fileContent.toLowerCase().trim())
 
     if (overlapScore >= 0.75) {
-      logger.warn(`Detected source file overlap for ${colors.cyan(challengeKey)}: ${Math.round(overlapScore * 100)}% similarity with ${filePath}`)
+      logger.warn(`Detected source file overlap for ${colors.cyan(challengeId)}: ${Math.round(overlapScore * 100)}% similarity with ${filePath}`)
       return true
     }
   }
@@ -241,8 +241,8 @@ export const checkForIdenticalSolvedChallenge = async (challenge: Challenge): Pr
   }
   const snippetToCompareTo = codingChallengesToCompareTo.snippet
 
-  for (const [challengeKey, { snippet }] of codingChallenges.entries()) {
-    if (challengeKey === challenge.key) {
+  for (const [challengeId, { snippet }] of codingChallenges.entries()) {
+    if (challengeId === challenge.key) {
       // don't compare to itself
       continue
     }
