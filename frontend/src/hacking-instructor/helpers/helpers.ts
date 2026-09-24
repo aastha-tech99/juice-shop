@@ -6,6 +6,27 @@
 import { jwtDecode } from 'jwt-decode'
 import { roles } from '../../app/roles'
 
+/**
+ * Constant-time string comparison to prevent timing side-channel attacks (CWE-208).
+ * Always compares every character regardless of where a mismatch occurs.
+ */
+function constantTimeEqual (a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    // Compare against `b` padded/truncated to avoid leaking length via timing,
+    // but the result is always false when lengths differ.
+    let mismatch = 1
+    for (let i = 0; i < a.length; i++) {
+      mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i % (b.length || 1))
+    }
+    return false
+  }
+  let mismatch = 0
+  for (let i = 0; i < a.length; i++) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  }
+  return mismatch === 0
+}
+
 function getCookieToken (): string | null {
   const match = document.cookie.match(/(?:^|; )token=([^;]*)/)
   return match ? decodeURIComponent(match[1]) : null
@@ -269,7 +290,7 @@ export function waitForRightUriQueryParamPair (key: string, value: string) {
       const encodedKey: string = encodeURIComponent(key).replace(/%3A/g, ':')
       const expectedHash = `#/track-result/new?${encodedKey}=${encodedValue}`
 
-      if (window.location.hash === expectedHash) {
+      if (constantTimeEqual(window.location.hash, expectedHash)) {
         break
       }
       await sleep(100)
