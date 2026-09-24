@@ -4,6 +4,7 @@
  */
 
 import { jwtDecode } from 'jwt-decode'
+import { roles } from '../../app/roles'
 
 function getCookieToken (): string | null {
   const match = document.cookie.match(/(?:^|; )token=([^;]*)/)
@@ -195,7 +196,7 @@ export function waitForAdminLogIn () {
       } catch {
         console.log('Role from token could not be accessed.')
       }
-      if (role === 'admin') {
+      if (role === roles.admin) {
         break
       }
       await sleep(100)

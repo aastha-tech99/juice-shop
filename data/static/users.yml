@@ -88,7 +88,7 @@
   password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
   customDomain: true
   key: bjoernGoogle
-  role: 'admin'
+  role: 'customer'
   address:
     - fullName: 'Bjoern Kimminich'
       mobileNum: 4917000001
@@ -114,7 +114,7 @@
   email: support
   password: 'J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P'
   key: support
-  role: 'admin'
+  role: 'customer'
   securityQuestion:
     id: 10
     answer: 'SC OLEA SRL' # http://www.olea.com.ro/
@@ -140,7 +140,7 @@
   email: J12934
   password: '0Y8rMnww$*9VFYE§59-!Fg1L6t&6lB'
   key: jannik
-  role: 'admin'
+  role: 'customer'
   securityQuestion:
     id: 1
     answer: 'azjTLprq2im6p86RbFrA41L'
@@ -150,7 +150,7 @@
   password: 'EinBelegtesBrotMitSchinkenSCHINKEN!'
   totpSecret: IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH
   key: timo
-  role: 'admin'
+  role: 'customer'
   securityQuestion:
     id: 1
     answer: 'NZMJLjEinU7TFElDIYW8'
@@ -168,8 +168,7 @@
   password: 'monkey summer birthday are all bad passwords but work just fine in a long passphrase'
   key: bjoern
   profileImage: '12.png'
-  role: 'admin'
-  isAdmin: true
+  role: 'customer'
   securityQuestion:
     id: 9
     answer: 'West-2082' # http://www.alte-postleitzahlen.de/uetersen
@@ -271,12 +270,12 @@
   email: testing
   password: 'IamUsedForTesting'
   key: LetUsTest
-  role: 'admin'
+  role: 'customer'
 -
   email: cloud-admin
   password: 'DVKH3gn7G$2Rk!f5Tz@9Lm&Qp4Wx#Yj8Bc0Ns6Ue1Io7Ah2Sd4Fg6Hj8Kl0Zx3Cv5Bn7Mq9Wr1Et3Yu5Ip'
   key: cloudAdmin
-  role: 'admin'
+  role: 'customer'
   profileImage: 'default.svg'
   securityQuestion:
     id: 10

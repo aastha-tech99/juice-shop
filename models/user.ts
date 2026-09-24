@@ -80,17 +80,6 @@ const UserModelInit = (sequelize: Sequelize) => { // vuln-code-snippet start wea
           isIn: [['customer', 'deluxe', 'accounting', 'admin']]
         },
         set (role: string) {
-          const profileImage = this.getDataValue('profileImage')
-          if (
-            role === security.roles.admin &&
-          (!profileImage ||
-            profileImage === '/assets/public/images/uploads/default.svg')
-          ) {
-            this.setDataValue(
-              'profileImage',
-              '/assets/public/images/uploads/defaultAdmin.png'
-            )
-          }
           this.setDataValue('role', role)
         }
       },

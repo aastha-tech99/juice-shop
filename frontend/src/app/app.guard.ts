@@ -53,7 +53,7 @@ export class AdminGuard implements CanActivate {
 
   canActivate () {
     const payload = this.loginGuard.tokenDecode()
-    if (payload?.data && payload.data.role === roles.admin) {
+    if (payload?.data?.id && payload.data.role === roles.admin) {
       return true
     } else {
       this.loginGuard.forbidRoute()

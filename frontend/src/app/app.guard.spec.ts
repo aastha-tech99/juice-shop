@@ -107,8 +107,16 @@ describe('AdminGuard', () => {
     it('should open for admins', () => {
         const guard = TestBed.inject(AdminGuard)
 
-        loginGuard.tokenDecode.mockReturnValue({ data: { role: 'admin' } })
+        loginGuard.tokenDecode.mockReturnValue({ data: { id: 1, role: 'admin' } })
         expect(guard.canActivate()).toBe(true)
+    })
+
+    it('should close for admin role without valid user id', () => {
+        const guard = TestBed.inject(AdminGuard)
+
+        loginGuard.tokenDecode.mockReturnValue({ data: { role: 'admin' } })
+        expect(guard.canActivate()).toBe(false)
+        expect(loginGuard.forbidRoute).toHaveBeenCalled()
     })
 
     it('should close for regular customers', () => {
