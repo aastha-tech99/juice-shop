@@ -17,6 +17,10 @@ import * as utils from '../lib/utils'
 // vuln-code-snippet start loginAdminChallenge loginBenderChallenge loginJimChallenge
 export function login () {
   function afterLogin (user: User, res: Response, next: NextFunction) {
+    const previousToken = security.authenticatedUsers.tokenOf(user)
+    if (previousToken) {
+      security.revokeToken(previousToken)
+    }
     verifyPostLoginChallenges(user) // vuln-code-snippet hide-line
     BasketModel.findOrCreate({ where: { UserId: user.id } })
       .then(([basket]: [BasketModel, boolean]) => {
