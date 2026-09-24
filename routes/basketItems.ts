@@ -34,11 +34,11 @@ export function addBasketItem () {
       const quantities = []
 
       for (let i = 0; i < result.length; i++) {
-        if (result[i].key === 'ProductId') {
+        if (security.safeCompare(result[i].key, 'ProductId')) {
           productIds.push(result[i].value)
-        } else if (result[i].key === 'BasketId') {
+        } else if (security.safeCompare(result[i].key, 'BasketId')) {
           basketIds.push(result[i].value)
-        } else if (result[i].key === 'quantity') {
+        } else if (security.safeCompare(result[i].key, 'quantity')) {
           quantities.push(result[i].value)
         }
       }

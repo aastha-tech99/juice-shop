@@ -46,6 +46,17 @@ interface IAuthenticatedUsers {
 export const hash = (data: string) => crypto.createHash('sha256').update(data).digest('hex')
 export const hmac = (data: string) => crypto.createHmac('sha256', 'pa4qacea4VK9t9nGv7yZtwmj').update(data).digest('hex')
 
+export const safeCompare = (a: unknown, b: unknown): boolean => {
+  if (typeof a !== 'string' || typeof b !== 'string') return false
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) {
+    crypto.timingSafeEqual(bufA, bufA)
+    return false
+  }
+  return crypto.timingSafeEqual(bufA, bufB)
+}
+
 export const cutOffPoisonNullByte = (str: string) => {
   const nullByte = '%00'
   if (str.includes(nullByte)) {
@@ -177,7 +188,7 @@ export const deluxeToken = (email: string) => {
 export const isAccounting = () => {
   return (req: Request, res: Response, next: NextFunction) => {
     const decodedToken = verify(utils.jwtFrom(req)) && decode(utils.jwtFrom(req))
-    if (decodedToken?.data?.role === roles.accounting) {
+    if (safeCompare(decodedToken?.data?.role, roles.accounting)) {
       next()
     } else {
       res.status(403).json({ error: 'Malicious activity detected' })
@@ -187,7 +198,7 @@ export const isAccounting = () => {
 
 export const isDeluxe = (req: Request) => {
   const decodedToken = verify(utils.jwtFrom(req)) && decode(utils.jwtFrom(req))
-  return decodedToken?.data?.role === roles.deluxe && decodedToken?.data?.deluxeToken && decodedToken?.data?.deluxeToken === deluxeToken(decodedToken?.data?.email)
+  return safeCompare(decodedToken?.data?.role, roles.deluxe) && decodedToken?.data?.deluxeToken && safeCompare(decodedToken.data.deluxeToken, deluxeToken(decodedToken?.data?.email))
 }
 
 export const isCustomer = (req: Request) => {

@@ -21,7 +21,7 @@ import { buildSystemPrompt } from './chat'
 
 export const emptyUserRegistration = () => (req: Request, res: Response, next: NextFunction) => {
   challengeUtils.solveIf(challenges.emptyUserRegistration, () => {
-    return req.body && req.body.email === '' && req.body.password === ''
+    return req.body && security.safeCompare(req.body.email, '') && security.safeCompare(req.body.password, '')
   })
   next()
 }
@@ -99,7 +99,7 @@ export const jwtChallenges = () => (req: Request, res: Response, next: NextFunct
 }
 
 export const serverSideChallenges = () => (req: Request, res: Response, next: NextFunction) => {
-  if (req.query.key === 'tRy_H4rd3r_n0thIng_iS_Imp0ssibl3') {
+  if (security.safeCompare(req.query.key as string, 'tRy_H4rd3r_n0thIng_iS_Imp0ssibl3')) {
     if (challengeUtils.notSolved(challenges.sstiChallenge) && req.app.locals.abused_ssti_bug === true) {
       challengeUtils.solve(challenges.sstiChallenge)
       res.status(204).send()

@@ -225,6 +225,31 @@ void describe('insecurity', () => {
     })
   })
 
+  void describe('safeCompare', () => {
+    void it('returns true for identical strings', () => {
+      assert.equal(security.safeCompare('abc', 'abc'), true)
+      assert.equal(security.safeCompare('', ''), true)
+    })
+
+    void it('returns false for different strings', () => {
+      assert.equal(security.safeCompare('abc', 'def'), false)
+      assert.equal(security.safeCompare('abc', 'ab'), false)
+    })
+
+    void it('returns false for non-string inputs', () => {
+      assert.equal(security.safeCompare(undefined, 'abc'), false)
+      assert.equal(security.safeCompare('abc', undefined), false)
+      assert.equal(security.safeCompare(null, null), false)
+      assert.equal(security.safeCompare(123, 123), false)
+    })
+
+    void it('performs constant-time comparison for security-sensitive values', () => {
+      const token = security.deluxeToken('test@juice-sh.op')
+      assert.equal(security.safeCompare(token, token), true)
+      assert.equal(security.safeCompare(token, 'wrong-token'), false)
+    })
+  })
+
   void describe('hash', () => {
     void it('returns SHA-256 hash for any input string', () => {
       assert.equal(security.hash('admin123'), '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9')
