@@ -117,7 +117,7 @@ export const serverSideChallenges = () => (req: Request, res: Response, next: Ne
 
 function jwtChallenge (challenge: Challenge, req: Request, algorithm: string, email: string | RegExp) {
   const token = utils.jwtFrom(req)
-  if (token) {
+  if (token && !security.isTokenRevoked(token)) {
     jwt.verify(token, security.publicKey, (err: jwt.VerifyErrors | null, decoded: any) => {
       if (err === null && decoded != null && typeof decoded !== 'string') {
         challengeUtils.solveIf(challenge, () => {

@@ -343,5 +343,68 @@ void describe('insecurity', () => {
     void it('denyAll returns a middleware', () => {
       assert.equal(typeof security.denyAll(), 'function')
     })
+
+    void it('updateAuthenticatedUsers should skip revoked tokens', () => {
+      const user = { data: { role: 'customer' } }
+      const token = security.authorize(user)
+      security.revokeToken(token)
+      const req = { cookies: { token }, headers: {} } as any
+      let cookieSet = false
+      const res = { cookie: () => { cookieSet = true } } as any
+      let nextCalled = false
+      const next = () => { nextCalled = true }
+      security.updateAuthenticatedUsers()(req, res, next)
+      assert.ok(nextCalled)
+      assert.equal(cookieSet, false)
+    })
+  })
+
+  void describe('tokenRevocation', () => {
+    void it('isTokenRevoked returns false for non-revoked token', () => {
+      assert.equal(security.isTokenRevoked('fresh-token-abc'), false)
+    })
+
+    void it('revokeToken adds token to blacklist', () => {
+      const token = 'revoke-me-token'
+      security.revokeToken(token)
+      assert.equal(security.isTokenRevoked(token), true)
+    })
+
+    void it('verify returns false for revoked token', () => {
+      const user = { data: { role: 'customer' } }
+      const token = security.authorize(user)
+      assert.equal(security.verify(token), true)
+      security.revokeToken(token)
+      assert.equal(security.verify(token), false)
+    })
+
+    void it('isCustomer returns false for revoked token', () => {
+      const user = { data: { role: 'customer' } }
+      const token = security.authorize(user)
+      assert.equal(security.isCustomer({ headers: { authorization: `Bearer ${token}` } } as unknown as Request), true)
+      security.revokeToken(token)
+      assert.equal(security.isCustomer({ headers: { authorization: `Bearer ${token}` } } as unknown as Request), false)
+    })
+
+    void it('logoutHandler revokes token and clears cookie', () => {
+      const user = { data: { id: 99 } } as any
+      const token = security.authorize(user)
+      security.authenticatedUsers.put(token, user)
+      let clearedCookie = ''
+      let statusCode = 0
+      let jsonBody: any = null
+      const req = { cookies: { token }, headers: {} } as any
+      const res = {
+        clearCookie: (name: string) => { clearedCookie = name },
+        status: (code: number) => { statusCode = code; return res },
+        json: (body: any) => { jsonBody = body }
+      } as any
+      security.logoutHandler()(req, res)
+      assert.equal(security.isTokenRevoked(token), true)
+      assert.equal(security.authenticatedUsers.get(token), undefined)
+      assert.equal(clearedCookie, 'token')
+      assert.equal(statusCode, 200)
+      assert.equal(jsonBody.message, 'Logged out successfully')
+    })
   })
 })
