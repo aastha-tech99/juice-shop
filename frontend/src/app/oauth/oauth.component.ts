@@ -28,12 +28,13 @@ export class OAuthComponent implements OnInit {
   ngOnInit (): void {
     this.userService.oauthLogin(this.parseRedirectUrlParams().access_token).subscribe({
       next: (profile: any) => {
-        const password = btoa(profile.email.split('').reverse().join(''))
-        this.userService.save({ email: profile.email, password, passwordRepeat: password }).subscribe({
-          next: () => {
-            this.login(profile)
-          },
-          error: () => { this.login(profile) }
+        this.derivePassword(profile.email).then((password) => {
+          this.userService.save({ email: profile.email, password, passwordRepeat: password }).subscribe({
+            next: () => {
+              this.login(profile)
+            },
+            error: () => { this.login(profile) }
+          })
         })
       },
       error: (error) => {
@@ -44,20 +45,29 @@ export class OAuthComponent implements OnInit {
   }
 
   login (profile: any) {
-    this.userService.login({ email: profile.email, password: btoa(profile.email.split('').reverse().join('')), oauth: true }).subscribe({
-      next: (authentication) => {
-        const expires = new Date()
-        expires.setHours(expires.getHours() + 8)
-        this.cookieService.put('token', authentication.token, { expires })
-        sessionStorage.setItem('bid', authentication.bid)
-        this.userService.isLoggedIn.next(true)
-        this.ngZone.run(async () => await this.router.navigate(['/']))
-      },
-      error: (error) => {
-        this.invalidateSession(error)
-        this.ngZone.run(async () => await this.router.navigate(['/login']))
-      }
+    this.derivePassword(profile.email).then((password) => {
+      this.userService.login({ email: profile.email, password, oauth: true }).subscribe({
+        next: (authentication) => {
+          const expires = new Date()
+          expires.setHours(expires.getHours() + 8)
+          this.cookieService.put('token', authentication.token, { expires })
+          sessionStorage.setItem('bid', authentication.bid)
+          this.userService.isLoggedIn.next(true)
+          this.ngZone.run(async () => await this.router.navigate(['/']))
+        },
+        error: (error) => {
+          this.invalidateSession(error)
+          this.ngZone.run(async () => await this.router.navigate(['/login']))
+        }
+      })
     })
+  }
+
+  private async derivePassword (email: string): Promise<string> {
+    const data = new TextEncoder().encode(email)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
   }
 
   invalidateSession (error: Error) {

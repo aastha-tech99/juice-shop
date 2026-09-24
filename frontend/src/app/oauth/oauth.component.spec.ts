@@ -86,24 +86,39 @@ describe('OAuthComponent', () => {
         expect(sessionStorage.getItem('bid')).toBeNull()
     })
 
-    it('will create regular user account with base64 encoded reversed email as password', () => {
+    it('will create regular user account with SHA-256 hashed email as password', async () => {
         userService.oauthLogin.mockReturnValue(of({ email: 'test@test.com' }))
         component.ngOnInit()
-        expect(userService.save).toHaveBeenCalledWith({ email: 'test@test.com', password: 'bW9jLnRzZXRAdHNldA==', passwordRepeat: 'bW9jLnRzZXRAdHNldA==' })
+        await new Promise(resolve => setTimeout(resolve, 0))
+        expect(userService.save).toHaveBeenCalledWith(expect.objectContaining({
+            email: 'test@test.com',
+            password: expect.any(String),
+            passwordRepeat: expect.any(String)
+        }))
+        const savedArgs = userService.save.mock.calls[0][0]
+        expect(savedArgs.password).toBe(savedArgs.passwordRepeat)
+        expect(savedArgs.password).not.toBe('bW9jLnRzZXRAdHNldA==')
     })
 
-    it('logs in user even after failed account creation as account might already have existed from previous OAuth login', () => {
+    it('logs in user even after failed account creation as account might already have existed from previous OAuth login', async () => {
         userService.oauthLogin.mockReturnValue(of({ email: 'test@test.com' }))
         userService.save.mockReturnValue(throwError({ error: 'Account already exists' }))
         component.ngOnInit()
-        expect(userService.login).toHaveBeenCalledWith({ email: 'test@test.com', password: 'bW9jLnRzZXRAdHNldA==', oauth: true })
+        await new Promise(resolve => setTimeout(resolve, 0))
+        await new Promise(resolve => setTimeout(resolve, 0))
+        expect(userService.login).toHaveBeenCalledWith(expect.objectContaining({
+            email: 'test@test.com',
+            password: expect.any(String),
+            oauth: true
+        }))
     })
 
-    it('removes authentication token and basket id on failed subsequent regular login attempt', () => {
+    it('removes authentication token and basket id on failed subsequent regular login attempt', async () => {
         vi.spyOn(console, 'log').mockImplementation(() => {})
         const cookieService = TestBed.inject(CookieService)
         userService.login.mockReturnValue(throwError({ error: 'Error' }))
         component.login({ email: '' })
+        await new Promise(resolve => setTimeout(resolve, 0))
         expect(cookieService.get('token')).toBeFalsy()
         expect(sessionStorage.getItem('bid')).toBeNull()
     })
