@@ -53,8 +53,8 @@ export const registerAdminChallenge = () => (req: Request, res: Response, next: 
   challengeUtils.solveIf(challenges.registerAdminChallenge, () => {
     return req.body && req.body.role === security.roles.admin
   })
-  if (req.body && req.body.role === security.roles.admin) {
-    req.body.role = security.roles.customer
+  if (req.body) {
+    delete req.body.role // Prevent users from setting their own role; the default role is assigned by the model
   }
   next()
 }

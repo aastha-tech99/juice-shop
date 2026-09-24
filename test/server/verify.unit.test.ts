@@ -78,6 +78,67 @@ void describe('verify', () => {
     })
   })
 
+  void describe('"registerAdminChallenge"', () => {
+    beforeEach(() => {
+      challenges.registerAdminChallenge = { solved: false, save } as unknown as Challenge
+    })
+
+    void it('is solved when admin role is sent in registration request', () => {
+      req.body.role = 'admin'
+
+      verify.registerAdminChallenge()(req, res, next)
+
+      assert.equal(challenges.registerAdminChallenge.solved, true)
+    })
+
+    void it('is not solved when non-admin role is sent in registration request', () => {
+      req.body.role = 'deluxe'
+
+      verify.registerAdminChallenge()(req, res, next)
+
+      assert.equal(challenges.registerAdminChallenge.solved, false)
+    })
+
+    void it('strips admin role from request body to prevent privilege escalation', () => {
+      req.body.role = 'admin'
+
+      verify.registerAdminChallenge()(req, res, next)
+
+      assert.equal(req.body.role, undefined)
+    })
+
+    void it('strips deluxe role from request body to prevent privilege escalation', () => {
+      req.body.role = 'deluxe'
+
+      verify.registerAdminChallenge()(req, res, next)
+
+      assert.equal(req.body.role, undefined)
+    })
+
+    void it('strips accounting role from request body to prevent privilege escalation', () => {
+      req.body.role = 'accounting'
+
+      verify.registerAdminChallenge()(req, res, next)
+
+      assert.equal(req.body.role, undefined)
+    })
+
+    void it('strips any arbitrary role from request body to prevent privilege escalation', () => {
+      req.body.role = 'superuser'
+
+      verify.registerAdminChallenge()(req, res, next)
+
+      assert.equal(req.body.role, undefined)
+    })
+
+    void it('does not fail when request body has no role property', () => {
+      verify.registerAdminChallenge()(req, res, next)
+
+      assert.equal(req.body.role, undefined)
+      assert.equal(next.mock.calls.length, 1)
+    })
+  })
+
   void describe('accessControlChallenges', () => {
     void it('"scoreBoardChallenge" is solved when the 1px.png transpixel is requested', () => {
       challenges.scoreBoardChallenge = { solved: false, save } as unknown as Challenge
