@@ -55,6 +55,12 @@ export const cutOffPoisonNullByte = (str: string) => {
 }
 
 export const JWT_AUDIENCE = 'juice-shop'
+// Essential authentication cookie options - consent not required for session/auth cookies (ePrivacy Directive)
+export const essentialCookieOptions = {
+  httpOnly: true,
+  sameSite: 'strict' as const,
+  secure: process.env.NODE_ENV === 'production'
+}
 export const isAuthorized = () => expressJwt(({ secret: publicKey }) as any)
 export const denyAll = () => expressJwt({ secret: '' + Math.random() } as any)
 export const authorize = (user = {}) => jwt.sign(user, privateKey, { expiresIn: '6h', algorithm: 'RS256', audience: JWT_AUDIENCE })
@@ -195,7 +201,7 @@ export const updateAuthenticatedUsers = () => (req: Request, res: Response, next
     jwt.verify(token, publicKey, { audience: JWT_AUDIENCE }, (err: Error | null, decoded: any) => {
       if (err === null && decoded?.data !== undefined) {
         authenticatedUsers.put(token, decoded)
-        res.cookie('token', token)
+        res.cookie('token', token, essentialCookieOptions)
       }
     })
   }

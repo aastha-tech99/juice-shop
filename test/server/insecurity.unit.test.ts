@@ -111,6 +111,20 @@ void describe('insecurity', () => {
     })
   })
 
+  void describe('essentialCookieOptions', () => {
+    void it('marks authentication cookies as httpOnly', () => {
+      assert.equal(security.essentialCookieOptions.httpOnly, true)
+    })
+
+    void it('sets sameSite to strict', () => {
+      assert.equal(security.essentialCookieOptions.sameSite, 'strict')
+    })
+
+    void it('sets secure based on NODE_ENV', () => {
+      assert.equal(typeof security.essentialCookieOptions.secure, 'boolean')
+    })
+  })
+
   void describe('sanitizeHtml', () => {
     void it('handles empty inputs by returning their string representation', () => {
       assert.equal(security.sanitizeHtml(''), '')
