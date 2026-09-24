@@ -30,9 +30,15 @@ const client = createClient({
 })
 const { ethereum } = window
 
-const nftAddress = '0x41427790c94E7a592B17ad694eD9c06A02bb9C39'
-const BeeTokenAddress = '0x36435796Ca9be2bf150CE0dECc2D8Fab5C4d6E13'
-const BeeFaucetAddress = '0x860e3616aD0E0dEDc23352891f3E10C4131EA5BC'
+const sepoliaContracts = {
+  nft: '0x41427790c94E7a592B17ad694eD9c06A02bb9C39',
+  bee: '0x36435796Ca9be2bf150CE0dECc2D8Fab5C4d6E13',
+  faucet: '0x860e3616aD0E0dEDc23352891f3E10C4131EA5BC'
+}
+
+const nftAddress = sepoliaContracts.nft
+const BeeTokenAddress = sepoliaContracts.bee
+const BeeFaucetAddress = sepoliaContracts.faucet
 
 @Component({
   changeDetection: ChangeDetectionStrategy.Eager,

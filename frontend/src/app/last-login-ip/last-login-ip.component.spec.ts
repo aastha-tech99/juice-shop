@@ -11,6 +11,8 @@ import { LastLoginIpComponent } from './last-login-ip.component'
 import { MatCardModule } from '@angular/material/card'
 import { DomSanitizer } from '@angular/platform-browser'
 
+const EMPTY_DATA_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fX0.bVBhvll6IaeR3aUdoOeyR8YZe2S2DfhGAxTGfd9enLw'
+
 describe('LastLoginIpComponent', () => {
     let component: LastLoginIpComponent
     let fixture: ComponentFixture<LastLoginIpComponent>
@@ -75,7 +77,7 @@ describe('LastLoginIpComponent', () => {
     })
 
     it('should not set Last-Login IP if none is present in JWT', () => {
-        localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7fX0.bVBhvll6IaeR3aUdoOeyR8YZe2S2DfhGAxTGfd9enLw')
+        localStorage.setItem('token', EMPTY_DATA_JWT)
         component.ngOnInit()
         expect(sanitizer.bypassSecurityTrustHtml).not.toHaveBeenCalled()
     })

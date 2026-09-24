@@ -57,7 +57,7 @@ export const ExposedCredentialsInstruction: ChallengeInstruction = {
       text: 'Now write the password in the **password field**.',
       fixture: '#password',
       unskippable: true,
-      resolved: waitForInputToHaveValue('#password', 'IamUsedForTesting')
+      resolved: waitForInputToHaveValue('#password', 'testing-pw')
     },
     {
       text: 'Press the _Log in_ button.',

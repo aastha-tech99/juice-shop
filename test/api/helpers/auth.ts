@@ -10,6 +10,8 @@ import * as security from '../../../lib/insecurity'
 
 const jsonHeader = { 'content-type': 'application/json' }
 
+export const bjoernOauthPassword = Buffer.from('bjoern.kimminich@gmail.com'.split('').reverse().join('')).toString('base64')
+
 export async function login (app: Express, { email, password, totpSecret }: { email: string, password: string, totpSecret?: string }) {
   const loginRes = await request(app)
     .post('/rest/user/login')

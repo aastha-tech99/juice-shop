@@ -123,7 +123,7 @@ describe('/#/login', () => {
         }
       )
 
-      cy.task<string>('GenerateAuthenticator', 'IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH').then(
+      cy.task<string>('GenerateAuthenticator', 'AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHH').then(
         (totpToken: string) => {
           void cy.get('#totpToken').type(totpToken)
           void cy.get('#totpSubmitButton').click()
@@ -136,7 +136,7 @@ describe('/#/login', () => {
   describe('challenge "oauthUserPasswordChallenge"', () => {
     it('should be able to log in as bjoern.kimminich@gmail.com with base64-encoded email as password', () => {
       cy.get('#email').type('bjoern.kimminich@gmail.com')
-      cy.get('#password').type('bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=')
+      cy.get('#password').type(btoa('bjoern.kimminich@gmail.com'.split('').reverse().join('')))
       cy.get('#loginButton').click()
 
       cy.expectChallengeSolved({ challenge: 'Login Bjoern' })
@@ -179,7 +179,7 @@ describe('/#/login', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`testing@${appDomain}`)
-          cy.get('#password').type('IamUsedForTesting')
+          cy.get('#password').type('testing-pw')
           cy.get('#loginButton').click()
         }
       )

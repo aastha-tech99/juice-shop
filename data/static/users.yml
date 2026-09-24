@@ -85,7 +85,7 @@
 -
   email: bjoern.kimminich@gmail.com
   username: bkimminich
-  password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
+  password: '$REVERSED_BASE64_EMAIL'
   customDomain: true
   key: bjoernGoogle
   role: 'admin'
@@ -147,8 +147,8 @@
 -
   email: wurstbrot
   username: wurstbrot
-  password: 'EinBelegtesBrotMitSchinkenSCHINKEN!'
-  totpSecret: IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH
+  password: 'wurstbrot-pw'
+  totpSecret: AAAABBBBCCCCDDDDEEEEFFFFGGGGHHHH
   key: timo
   role: 'admin'
   securityQuestion:
@@ -269,7 +269,7 @@
     answer: "Used Emporium"
 -
   email: testing
-  password: 'IamUsedForTesting'
+  password: 'testing-pw'
   key: LetUsTest
   role: 'admin'
 -
