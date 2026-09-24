@@ -9,6 +9,7 @@ import request from 'supertest'
 import type { Express } from 'express'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 let app: Express
 let authHeader: { Authorization: string, 'content-type': string }
@@ -17,7 +18,7 @@ let cardId: number
 before(async () => {
   const result = await createTestApp()
   app = result.app
-  const { token } = await login(app, { email: 'jim@juice-sh.op', password: 'ncc-1701' })
+  const { token } = await login(app, { email: 'jim@juice-sh.op', password: passwords.jim })
   authHeader = { Authorization: 'Bearer ' + token, 'content-type': 'application/json' }
 }, { timeout: 60000 })
 

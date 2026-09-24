@@ -10,6 +10,7 @@ import type { Express } from 'express'
 import config from 'config'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 let app: Express
 
@@ -41,7 +42,7 @@ void describe('/rest/user/change-password', () => {
   void it('GET password change with passing wrong current password', async () => {
     const { token } = await login(app, {
       email: 'bjoern@' + config.get<string>('application.domain'),
-      password: 'monkey summer birthday are all bad passwords but work just fine in a long passphrase'
+      password: passwords.bjoern
     })
 
     const res = await request(app)
@@ -92,7 +93,7 @@ void describe('/rest/user/change-password', () => {
   void it('GET password change for Bender without current password using GET request', async () => {
     const { token } = await login(app, {
       email: 'bender@' + config.get<string>('application.domain'),
-      password: 'OhG0dPlease1nsertLiquor!'
+      password: passwords.bender
     })
 
     const res = await request(app)
@@ -111,8 +112,8 @@ void describe('/rest/user/reset-password', () => {
       .send({
         email: 'jim@' + config.get<string>('application.domain'),
         answer: 'Samuel',
-        new: 'ncc-1701',
-        repeat: 'ncc-1701'
+        new: passwords.jim,
+        repeat: passwords.jim
       })
 
     assert.equal(res.status, 200)
@@ -125,8 +126,8 @@ void describe('/rest/user/reset-password', () => {
       .send({
         email: 'bender@' + config.get<string>('application.domain'),
         answer: 'Stop\'n\'Drop',
-        new: 'OhG0dPlease1nsertLiquor!',
-        repeat: 'OhG0dPlease1nsertLiquor!'
+        new: passwords.bender,
+        repeat: passwords.bender
       })
 
     assert.equal(res.status, 200)
@@ -139,8 +140,8 @@ void describe('/rest/user/reset-password', () => {
       .send({
         email: 'bjoern@' + config.get<string>('application.domain'),
         answer: 'West-2082',
-        new: 'monkey summer birthday are all bad passwords but work just fine in a long passphrase',
-        repeat: 'monkey summer birthday are all bad passwords but work just fine in a long passphrase'
+        new: passwords.bjoern,
+        repeat: passwords.bjoern
       })
 
     assert.equal(res.status, 200)
@@ -153,8 +154,8 @@ void describe('/rest/user/reset-password', () => {
       .send({
         email: 'bjoern@owasp.org',
         answer: 'Zaya',
-        new: 'kitten lesser pooch karate buffoon indoors',
-        repeat: 'kitten lesser pooch karate buffoon indoors'
+        new: passwords.bjoernOwasp,
+        repeat: passwords.bjoernOwasp
       })
 
     assert.equal(res.status, 200)

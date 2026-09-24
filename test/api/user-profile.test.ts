@@ -10,6 +10,7 @@ import type { Express } from 'express'
 import config from 'config'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 import * as datacache from '../../data/datacache'
 
 let app: Express
@@ -18,7 +19,7 @@ let authHeader: { Cookie: string }
 before(async () => {
   const result = await createTestApp()
   app = result.app
-  const { token } = await login(app, { email: 'jim@juice-sh.op', password: 'ncc-1701' })
+  const { token } = await login(app, { email: 'jim@juice-sh.op', password: passwords.jim })
   authHeader = { Cookie: `token=${token}` }
 }, { timeout: 60000 })
 
@@ -55,7 +56,7 @@ void describe('/profile', () => {
   })
 
   void it('GET user profile contains role but NO deluxe membership link if user is already deluxe', async () => {
-    const { token } = await login(app, { email: 'ciso@juice-sh.op', password: 'mDLx?94T~1CfVfZMzw@sJ9f?s3L6lbMqE70FfI8^54jbNikY5fymx7c!YbJb' })
+    const { token } = await login(app, { email: 'ciso@juice-sh.op', password: passwords.ciso })
     const res = await request(app)
       .get('/profile')
       .set('Cookie', `token=${token}`)

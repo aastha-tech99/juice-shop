@@ -10,6 +10,7 @@ import type { Express } from 'express'
 import config from 'config'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 let app: Express
 
@@ -22,7 +23,7 @@ void describe('/api/Quantitys', () => {
   void it('GET quantity of all items for customers', async () => {
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .get('/api/Quantitys')
@@ -34,7 +35,7 @@ void describe('/api/Quantitys', () => {
   void it('GET quantity of all items for admin', async () => {
     const { token } = await login(app, {
       email: `admin@${config.get<string>('application.domain')}`,
-      password: 'admin123'
+      password: passwords.admin
     })
     const res = await request(app)
       .get('/api/Quantitys')
@@ -46,7 +47,7 @@ void describe('/api/Quantitys', () => {
   void it('GET quantity of all items for accounting users', async () => {
     const { token } = await login(app, {
       email: `accountant@${config.get<string>('application.domain')}`,
-      password: 'i am an awesome accountant'
+      password: passwords.accountant
     })
     const res = await request(app)
       .get('/api/Quantitys')
@@ -58,7 +59,7 @@ void describe('/api/Quantitys', () => {
   void it('POST quantity is forbidden for customers', async () => {
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .post('/api/Quantitys')
@@ -71,7 +72,7 @@ void describe('/api/Quantitys', () => {
   void it('POST quantity forbidden for admin', async () => {
     const { token } = await login(app, {
       email: `admin@${config.get<string>('application.domain')}`,
-      password: 'admin123'
+      password: passwords.admin
     })
     const res = await request(app)
       .post('/api/Quantitys')
@@ -84,7 +85,7 @@ void describe('/api/Quantitys', () => {
   void it('POST quantity is forbidden for accounting users', async () => {
     const { token } = await login(app, {
       email: `accountant@${config.get<string>('application.domain')}`,
-      password: 'i am an awesome accountant'
+      password: passwords.accountant
     })
     const res = await request(app)
       .post('/api/Quantitys')
@@ -99,7 +100,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it('GET quantity of all items is forbidden for customers', async () => {
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .get('/api/Quantitys/1')
@@ -112,7 +113,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it('GET quantity of all items is forbidden for admin', async () => {
     const { token } = await login(app, {
       email: `admin@${config.get<string>('application.domain')}`,
-      password: 'admin123'
+      password: passwords.admin
     })
     const res = await request(app)
       .get('/api/Quantitys/1')
@@ -125,7 +126,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it('GET quantity of all items for accounting users blocked by IP filter', async () => {
     const { token } = await login(app, {
       email: `accountant@${config.get<string>('application.domain')}`,
-      password: 'i am an awesome accountant'
+      password: passwords.accountant
     })
     const res = await request(app)
       .get('/api/Quantitys/1')
@@ -137,7 +138,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it.skip('GET quantity of all items for accounting users from IP 123.456.789', async () => {
     const { token } = await login(app, {
       email: `accountant@${config.get<string>('application.domain')}`,
-      password: 'i am an awesome accountant'
+      password: passwords.accountant
     })
     const res = await request(app)
       .get('/api/Quantitys/1')
@@ -149,7 +150,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it('PUT quantity is forbidden for customers', async () => {
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .put('/api/Quantitys/1')
@@ -163,7 +164,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it('PUT quantity is forbidden for admin', async () => {
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .put('/api/Quantitys/1')
@@ -177,7 +178,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it('PUT quantity as accounting user blocked by IP filter', async () => {
     const { token } = await login(app, {
       email: `accountant@${config.get<string>('application.domain')}`,
-      password: 'i am an awesome accountant'
+      password: passwords.accountant
     })
     const res = await request(app)
       .put('/api/Quantitys/1')
@@ -190,7 +191,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it.skip('PUT quantity as accounting user from IP 123.456.789', async () => {
     const { token } = await login(app, {
       email: `accountant@${config.get<string>('application.domain')}`,
-      password: 'i am an awesome accountant'
+      password: passwords.accountant
     })
     const res = await request(app)
       .put('/api/Quantitys/1')
@@ -204,7 +205,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it('DELETE quantity is forbidden for accountant', async () => {
     const { token } = await login(app, {
       email: `accountant@${config.get<string>('application.domain')}`,
-      password: 'i am an awesome accountant'
+      password: passwords.accountant
     })
     const res = await request(app)
       .delete('/api/Quantitys/1')
@@ -216,7 +217,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it('DELETE quantity is forbidden for admin', async () => {
     const { token } = await login(app, {
       email: `admin@${config.get<string>('application.domain')}`,
-      password: 'admin123'
+      password: passwords.admin
     })
     const res = await request(app)
       .delete('/api/Quantitys/1')
@@ -228,7 +229,7 @@ void describe('/api/Quantitys/:ids', () => {
   void it('DELETE quantity is forbidden for users', async () => {
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .delete('/api/Quantitys/1')

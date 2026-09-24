@@ -11,6 +11,7 @@ import * as security from '../../lib/insecurity'
 import config from 'config'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 let app: Express
 const authHeader = { Authorization: `Bearer ${security.authorize({ data: { email: 'admin@juice-sh.op' } })}`, 'content-type': 'application/json' }
@@ -34,7 +35,7 @@ void describe('/rest/user/authentication-details', () => {
   void it('GET returns lastLoginTime for users with active sessions', async () => {
     await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
 
     const res = await request(app)

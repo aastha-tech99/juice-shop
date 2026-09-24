@@ -1,6 +1,6 @@
 -
   email: admin
-  password: 'admin123'
+  password: 'CHANGE_ME'
   key: admin
   role: 'admin'
   securityQuestion:
@@ -28,7 +28,7 @@
       expYear: 2086
 -
   email: jim
-  password: 'ncc-1701'
+  password: 'CHANGE_ME'
   key: jim
   role: 'customer'
   walletBalance: 100
@@ -60,7 +60,7 @@
       expYear: 2099
 -
   email: bender
-  password: 'OhG0dPlease1nsertLiquor!'
+  password: 'CHANGE_ME'
   key: bender
   role: 'customer'
   securityQuestion:
@@ -85,7 +85,7 @@
 -
   email: bjoern.kimminich@gmail.com
   username: bkimminich
-  password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
+  password: 'CHANGE_ME'
   customDomain: true
   key: bjoernGoogle
   role: 'customer'
@@ -104,7 +104,7 @@
       expYear: 2092
 -
   email: ciso
-  password: 'mDLx?94T~1CfVfZMzw@sJ9f?s3L6lbMqE70FfI8^54jbNikY5fymx7c!YbJb'
+  password: 'CHANGE_ME'
   key: ciso
   role: 'deluxe'
   securityQuestion:
@@ -112,7 +112,7 @@
     answer: 'Brd?j8sEMziOvvBf§Be?jFZ77H?hgm'
 -
   email: support
-  password: 'J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P'
+  password: 'CHANGE_ME'
   key: support
   role: 'customer'
   securityQuestion:
@@ -120,7 +120,7 @@
     answer: 'SC OLEA SRL' # http://www.olea.com.ro/
 -
   email: morty
-  password: 'focusOnScienceMorty!focusOnScience'
+  password: 'CHANGE_ME'
   key: morty
   role: 'customer'
   walletBalance: 100
@@ -129,7 +129,7 @@
     answer: '5N0wb41L' # http://rickandmorty.wikia.com/wiki/Snuffles
 -
   email: mc.safesearch
-  password: 'Mr. N00dles'
+  password: 'CHANGE_ME'
   key: rapper
   role: 'customer'
   walletBalance: 13337
@@ -138,7 +138,7 @@
     answer: 'I even shared my pizza bagels with you!'
 -
   email: J12934
-  password: '0Y8rMnww$*9VFYE§59-!Fg1L6t&6lB'
+  password: 'CHANGE_ME'
   key: jannik
   role: 'customer'
   securityQuestion:
@@ -147,7 +147,7 @@
 -
   email: wurstbrot
   username: wurstbrot
-  password: 'EinBelegtesBrotMitSchinkenSCHINKEN!'
+  password: 'CHANGE_ME'
   totpSecret: IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH
   key: timo
   role: 'customer'
@@ -156,7 +156,7 @@
     answer: 'NZMJLjEinU7TFElDIYW8'
 -
   email: amy
-  password: 'K1f.....................'
+  password: 'CHANGE_ME'
   key: amy
   role: 'customer'
   walletBalance: 48
@@ -165,7 +165,7 @@
     answer: 'Dr. Dr. Dr. Dr. Zoidberg'
 -
   email: bjoern
-  password: 'monkey summer birthday are all bad passwords but work just fine in a long passphrase'
+  password: 'CHANGE_ME'
   key: bjoern
   profileImage: '12.png'
   role: 'customer'
@@ -174,7 +174,7 @@
     answer: 'West-2082' # http://www.alte-postleitzahlen.de/uetersen
 -
   email: bjoern@owasp.org
-  password: 'kitten lesser pooch karate buffoon indoors'
+  password: 'CHANGE_ME'
   customDomain: true
   key: bjoernOwasp
   role: 'deluxe'
@@ -184,7 +184,7 @@
     answer: 'Zaya' # https://www.youtube.com/watch?v=Lu0-kDdtVf4
 -
   email: chris.pike
-  password: 'uss enterprise'
+  password: 'CHANGE_ME'
   key: chris
   role: 'customer'
   deletedFlag: true
@@ -193,7 +193,7 @@
     answer: 'greenwood'
 -
   email: accountant
-  password: 'i am an awesome accountant'
+  password: 'CHANGE_ME'
   key: accountant
   role: 'accounting'
   lastLoginIp: '123.456.789'
@@ -202,7 +202,7 @@
     answer: 'sdAffsdfrefrbgreq3423'
 -
   email: uvogin
-  password: 'muda-muda > ora-ora' # https://www.youtube.com/watch?v=vnJv8IoLMwc
+  password: 'CHANGE_ME'
   key: uvogin
   role: 'customer'
   walletBalance: 100
@@ -211,7 +211,7 @@
     answer: 'Silence of the Lambs' # https://www.imdb.com/title/tt0102926/
 -
   email: demo
-  password: 'demo'
+  password: 'CHANGE_ME'
   customDomain: true
   key: test
   role: 'customer'
@@ -235,19 +235,19 @@
 -
   email: john
   username: j0hNny
-  password: 'y&x5Z#f6W532Z4445#Ae2HkwZVyDb7&oCUaDzFU'
+  password: 'CHANGE_ME'
   key: john
   role: 'customer'
 -
   email: emma
   username: E=ma²
-  password: 'y&x5Z#f6W532ZUf$q3DsdgfgfgxxUsvoCUaDzFU'
+  password: 'CHANGE_ME'
   key: emma
   role: 'customer'
 -
   email: stan
   username: SmilinStan
-  password: 'ship coffin krypt cross estate supply insurance asbestos souvenir'
+  password: 'CHANGE_ME'
   key: stan
   profileImage: '20.jpg'
   role: 'deluxe'
@@ -257,7 +257,7 @@
 -
   email: ethereum
   username: evmrox
-  password: 'private'
+  password: 'CHANGE_ME'
   key: evm
   role: 'deluxe'
   feedback:
@@ -268,12 +268,12 @@
     answer: "Used Emporium"
 -
   email: testing
-  password: 'IamUsedForTesting'
+  password: 'CHANGE_ME'
   key: LetUsTest
   role: 'customer'
 -
   email: cloud-admin
-  password: 'DVKH3gn7G$2Rk!f5Tz@9Lm&Qp4Wx#Yj8Bc0Ns6Ue1Io7Ah2Sd4Fg6Hj8Kl0Zx3Cv5Bn7Mq9Wr1Et3Yu5Ip'
+  password: 'CHANGE_ME'
   key: cloudAdmin
   role: 'customer'
   profileImage: 'default.svg'
@@ -282,7 +282,7 @@
     answer: 'xK9#mP2$vL5nQ8wR3jF6hT0yB7cA4dG1eU'
 -
   email: basil
-  password: 'my little nest of vipers'
+  password: 'CHANGE_ME'
   key: basil
   role: 'customer'
   walletBalance: 2

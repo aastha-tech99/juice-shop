@@ -10,6 +10,7 @@ import type { Express } from 'express'
 import config from 'config'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 let app: Express
 
@@ -22,7 +23,7 @@ void describe('/rest/order-history', () => {
   void it('GET own previous orders', async () => {
     const { token } = await login(app, {
       email: 'admin@' + config.get<string>('application.domain'),
-      password: 'admin123'
+      password: passwords.admin
     })
 
     const res = await request(app)
@@ -53,7 +54,7 @@ void describe('/rest/order-history/orders', () => {
   void it('GET all orders is forbidden for customers', async () => {
     const { token } = await login(app, {
       email: 'jim@' + config.get<string>('application.domain'),
-      password: 'ncc-1701'
+      password: passwords.jim
     })
 
     const res = await request(app)
@@ -66,7 +67,7 @@ void describe('/rest/order-history/orders', () => {
   void it('GET all orders is forbidden for admin', async () => {
     const { token } = await login(app, {
       email: 'admin@' + config.get<string>('application.domain'),
-      password: 'admin123'
+      password: passwords.admin
     })
 
     const res = await request(app)
@@ -79,7 +80,7 @@ void describe('/rest/order-history/orders', () => {
   void it('GET all orders for accountant', async () => {
     const { token } = await login(app, {
       email: 'accountant@' + config.get<string>('application.domain'),
-      password: 'i am an awesome accountant'
+      password: passwords.accountant
     })
 
     const res = await request(app)
@@ -94,7 +95,7 @@ void describe('/rest/order-history/:id/delivery-status', () => {
   void it('PUT delivery status is forbidden for admin', async () => {
     const { token } = await login(app, {
       email: 'admin@' + config.get<string>('application.domain'),
-      password: 'admin123'
+      password: passwords.admin
     })
 
     const res = await request(app)
@@ -108,7 +109,7 @@ void describe('/rest/order-history/:id/delivery-status', () => {
   void it('PUT delivery status is forbidden for customer', async () => {
     const { token } = await login(app, {
       email: 'jim@' + config.get<string>('application.domain'),
-      password: 'ncc-1701'
+      password: passwords.jim
     })
 
     const res = await request(app)
@@ -122,7 +123,7 @@ void describe('/rest/order-history/:id/delivery-status', () => {
   void it('PUT delivery status is allowed for accountant', async () => {
     const { token } = await login(app, {
       email: 'accountant@' + config.get<string>('application.domain'),
-      password: 'i am an awesome accountant'
+      password: passwords.accountant
     })
 
     const res = await request(app)

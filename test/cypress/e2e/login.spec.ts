@@ -1,3 +1,5 @@
+import { passwords } from '../support/testCredentials'
+
 describe('/#/login', () => {
   beforeEach(() => {
     cy.visit('/#/login')
@@ -53,7 +55,7 @@ describe('/#/login', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`admin@${appDomain}`)
-          cy.get('#password').type('admin123')
+          cy.get('#password').type(passwords.admin)
           cy.get('#loginButton').click()
         }
       )
@@ -66,7 +68,7 @@ describe('/#/login', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`support@${appDomain}`)
-          cy.get('#password').type('J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P')
+          cy.get('#password').type(passwords.support)
           cy.get('#loginButton').click()
         }
       )
@@ -79,7 +81,7 @@ describe('/#/login', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`mc.safesearch@${appDomain}`)
-          cy.get('#password').type('Mr. N00dles')
+          cy.get('#password').type(passwords.rapper)
           cy.get('#loginButton').click()
         }
       )
@@ -92,7 +94,7 @@ describe('/#/login', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`amy@${appDomain}`)
-          cy.get('#password').type('K1f.....................')
+          cy.get('#password').type(passwords.amy)
           cy.get('#loginButton').click()
         }
       )
@@ -105,7 +107,7 @@ describe('/#/login', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`J12934@${appDomain}`)
-          cy.get('#password').type('0Y8rMnww$*9VFYE§59-!Fg1L6t&6lB')
+          cy.get('#password').type(passwords.jannik)
           cy.get('#loginButton').click()
         }
       )
@@ -136,7 +138,7 @@ describe('/#/login', () => {
   describe('challenge "oauthUserPasswordChallenge"', () => {
     it('should be able to log in as bjoern.kimminich@gmail.com with base64-encoded email as password', () => {
       cy.get('#email').type('bjoern.kimminich@gmail.com')
-      cy.get('#password').type('bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=')
+      cy.get('#password').type(passwords.bjoernGoogle)
       cy.get('#loginButton').click()
 
       cy.expectChallengeSolved({ challenge: 'Login Bjoern' })
@@ -179,7 +181,7 @@ describe('/#/login', () => {
       cy.task<string>('GetFromConfig', 'application.domain').then(
         (appDomain: string) => {
           cy.get('#email').type(`testing@${appDomain}`)
-          cy.get('#password').type('IamUsedForTesting')
+          cy.get('#password').type(passwords.testing)
           cy.get('#loginButton').click()
         }
       )

@@ -1,9 +1,11 @@
+import { passwords } from '../support/testCredentials'
+
 describe('/#/basket', () => {
   describe('as wurstbrot', () => {
     beforeEach(() => {
       cy.login({
         email: 'wurstbrot',
-        password: 'EinBelegtesBrotMitSchinkenSCHINKEN!',
+        password: passwords.wurstbrot,
         totpSecret: 'IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH'
       })
     })
@@ -17,7 +19,7 @@ describe('/#/basket', () => {
     beforeEach(() => {
       cy.login({
         email: 'amy',
-        password: 'K1f.....................'
+        password: passwords.amy
       })
     })
 
@@ -28,13 +30,13 @@ describe('/#/basket', () => {
         .should('have.attr', 'data-test-totp-secret')
         .then(($val) => {
           // console.log($val);
-          cy.get('#currentPasswordSetup').type('K1f.....................')
+          cy.get('#currentPasswordSetup').type(passwords.amy)
 
           cy.task<string>('GenerateAuthenticator', $val).then((secret: string) => {
             cy.get('#initialToken').type(secret)
             cy.get('#setupTwoFactorAuth').click()
 
-            cy.get('#currentPasswordDisable').type('K1f.....................')
+            cy.get('#currentPasswordDisable').type(passwords.amy)
             cy.get('#disableTwoFactorAuth').click()
           })
         })

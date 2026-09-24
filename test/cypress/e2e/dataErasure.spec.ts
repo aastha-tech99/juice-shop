@@ -1,6 +1,8 @@
+import { passwords } from '../support/testCredentials'
+
 describe('/dataerasure', () => {
   beforeEach(() => {
-    cy.login({ email: 'admin', password: 'admin123' })
+    cy.login({ email: 'admin', password: passwords.admin })
   })
 
   describe('challenge "lfrChallenge"', () => {

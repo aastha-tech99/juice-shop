@@ -11,6 +11,7 @@ import config from 'config'
 import path from 'node:path'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 let app: Express
 
@@ -29,7 +30,7 @@ void describe('/rest/memories', () => {
   void it('GET memories via a valid authorization token', async () => {
     const { token } = await login(app, {
       email: 'jim@' + config.get<string>('application.domain'),
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .get('/rest/memories')
@@ -50,7 +51,7 @@ void describe('/rest/memories', () => {
     const file = path.resolve(__dirname, '../files/invalidProfileImageType.docx')
     const { token } = await login(app, {
       email: 'jim@' + config.get<string>('application.domain'),
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .post('/rest/memories')
@@ -63,7 +64,7 @@ void describe('/rest/memories', () => {
   void it('POST new memory image file is not passed - 1', async () => {
     const { token } = await login(app, {
       email: 'jim@' + config.get<string>('application.domain'),
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .post('/rest/memories')
@@ -75,7 +76,7 @@ void describe('/rest/memories', () => {
   void it('POST new memory image file is not passed - 2', async () => {
     const { token } = await login(app, {
       email: 'jim@' + config.get<string>('application.domain'),
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .post('/rest/memories')
@@ -90,7 +91,7 @@ void describe('/rest/memories', () => {
     const file = path.resolve(__dirname, '../files/validProfileImage.jpg')
     const { token } = await login(app, {
       email: 'jim@' + config.get<string>('application.domain'),
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     const res = await request(app)
       .post('/rest/memories')

@@ -1,7 +1,9 @@
+import { passwords } from '../support/testCredentials'
+
 describe('/api', () => {
   describe('challenge "restfulXssChallenge"', () => {
     beforeEach(() => {
-      cy.login({ email: 'admin', password: 'admin123' })
+      cy.login({ email: 'admin', password: passwords.admin })
     })
 
     // Cypress alert bug
@@ -79,7 +81,7 @@ describe('/rest/saveLoginIp', () => {
     beforeEach(() => {
       cy.login({
         email: 'admin',
-        password: 'admin123'
+        password: passwords.admin
       })
     })
 

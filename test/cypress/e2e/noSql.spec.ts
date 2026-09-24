@@ -1,3 +1,5 @@
+import { passwords } from '../support/testCredentials'
+
 describe('/rest/products/reviews', () => {
   beforeEach(() => {
     cy.visit('/#/search')
@@ -5,7 +7,7 @@ describe('/rest/products/reviews', () => {
 
   describe('challenge "noSqlCommandChallenge"', () => {
     beforeEach(() => {
-      cy.login({ email: 'admin', password: 'admin123' })
+      cy.login({ email: 'admin', password: passwords.admin })
     })
     it('should be possible to inject a command into the get route', () => {
       cy.task('isDocker').then((isDocker) => {
@@ -50,7 +52,7 @@ describe('/rest/products/reviews', () => {
 
   describe('challenge "noSqlReviewsChallenge"', () => {
     beforeEach(() => {
-      cy.login({ email: 'admin', password: 'admin123' })
+      cy.login({ email: 'admin', password: passwords.admin })
     })
 
     it('should be possible to inject a selector into the update route', () => {
@@ -73,7 +75,7 @@ describe('/rest/products/reviews', () => {
 
   describe('challenge "forgedReviewChallenge"', () => {
     beforeEach(() => {
-      cy.login({ email: 'mc.safesearch', password: 'Mr. N00dles' })
+      cy.login({ email: 'mc.safesearch', password: passwords.rapper })
     })
 
     it('should be possible to edit any existing review', () => {
@@ -117,7 +119,7 @@ describe('/rest/products/reviews', () => {
 
   describe('challenge "timingAttackChallenge"', () => {
     beforeEach(() => {
-      cy.login({ email: 'mc.safesearch', password: 'Mr. N00dles' })
+      cy.login({ email: 'mc.safesearch', password: passwords.rapper })
     })
 
     it('should be possible to like reviews multiple times', () => {

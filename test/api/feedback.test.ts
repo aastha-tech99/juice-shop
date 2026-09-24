@@ -9,6 +9,7 @@ import request from 'supertest'
 import type { Express } from 'express'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 import { challenges } from '../../data/datacache'
 import * as security from '../../lib/insecurity'
 import * as utils from '../../lib/utils'
@@ -114,7 +115,7 @@ void describe('/api/Feedbacks', () => {
   void it('POST feedback is associated with current user', async () => {
     const { token } = await login(app, {
       email: 'bjoern.kimminich@gmail.com',
-      password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
+      password: passwords.bjoernGoogle
     })
 
     const captchaRes = await request(app)
@@ -140,7 +141,7 @@ void describe('/api/Feedbacks', () => {
   void it('POST feedback is associated with any passed user ID', async () => {
     const { token } = await login(app, {
       email: 'bjoern.kimminich@gmail.com',
-      password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
+      password: passwords.bjoernGoogle
     })
 
     const captchaRes = await request(app)

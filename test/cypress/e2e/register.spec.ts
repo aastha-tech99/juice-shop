@@ -1,3 +1,5 @@
+import { passwords } from '../support/testCredentials'
+
 describe('/#/register', () => {
   beforeEach(() => {
     cy.visit('/#/register')
@@ -7,7 +9,7 @@ describe('/#/register', () => {
     beforeEach(() => {
       cy.login({
         email: 'admin',
-        password: 'admin123'
+        password: passwords.admin
       })
     })
 

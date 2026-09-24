@@ -10,6 +10,7 @@ import type { Express } from 'express'
 import { createTestApp } from './helpers/setup'
 import { WalletModel } from '../../models/wallet'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 let app: Express
 let authHeader: { Authorization: string, 'content-type': string }
@@ -17,7 +18,7 @@ let authHeader: { Authorization: string, 'content-type': string }
 before(async () => {
   const result = await createTestApp()
   app = result.app
-  const { token } = await login(app, { email: 'demo', password: 'demo' })
+  const { token } = await login(app, { email: 'demo', password: passwords.demo })
   authHeader = { Authorization: `Bearer ${token}`, 'content-type': 'application/json' }
 }, { timeout: 60000 })
 

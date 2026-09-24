@@ -53,7 +53,11 @@ export interface StaticUserCard {
   expYear: number
 }
 export async function loadStaticUserData (): Promise<StaticUser[]> {
-  return await loadStaticData('users') as StaticUser[]
+  const users = await loadStaticData('users') as StaticUser[]
+  return users.map(user => ({
+    ...user,
+    password: process.env[`JUICE_SHOP_${user.key.toUpperCase()}_PASSWORD`] || user.password
+  }))
 }
 
 export interface StaticChallenge {

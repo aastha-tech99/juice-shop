@@ -1,6 +1,8 @@
+import { passwords } from '../support/testCredentials'
+
 describe('/profile', () => {
   beforeEach(() => {
-    cy.login({ email: 'admin', password: 'admin123' })
+    cy.login({ email: 'admin', password: passwords.admin })
   })
   describe('challenge "ssrfChallenge"', () => {
     it('should be possible to request internal resources using image upload URL', () => {

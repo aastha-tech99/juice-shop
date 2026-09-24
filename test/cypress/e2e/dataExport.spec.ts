@@ -1,3 +1,5 @@
+import { passwords } from '../support/testCredentials'
+
 describe('/#/privacy-security/data-export', () => {
   describe('challenge "dataExportChallenge"', () => {
     beforeEach(() => {

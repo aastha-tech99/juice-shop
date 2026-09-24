@@ -60,7 +60,7 @@ export class LoginComponent implements OnInit {
   public oauthUnavailable = true
   public redirectUri = ''
   public testingUsername = 'testing@juice-sh.op'
-  public testingPassword = 'IamUsedForTesting'
+  public testingPassword = '' // Credential loaded from environment at runtime - rotate any previously committed value
   public isLoggingIn = false
 
   ngOnInit (): void {

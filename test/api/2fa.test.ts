@@ -13,6 +13,7 @@ import type { Express } from 'express'
 import * as security from '../../lib/insecurity'
 import { createTestApp } from './helpers/setup'
 import { login, register } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 const jsonHeader = { 'content-type': 'application/json' }
 
@@ -138,7 +139,7 @@ void describe('/rest/2fa/status', () => {
   void it('GET should indicate 2fa is setup for 2fa enabled users', async () => {
     const { token } = await login(app, {
       email: `wurstbrot@${config.get<string>('application.domain')}`,
-      password: 'EinBelegtesBrotMitSchinkenSCHINKEN!',
+      password: passwords.wurstbrot,
       totpSecret: 'IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH'
     })
 
@@ -153,7 +154,7 @@ void describe('/rest/2fa/status', () => {
   void it('GET should indicate 2fa is not setup for users with 2fa disabled', async () => {
     const { token } = await login(app, {
       email: `J12934@${config.get<string>('application.domain')}`,
-      password: '0Y8rMnww$*9VFYE§59-!Fg1L6t&6lB'
+      password: passwords.jannik
     })
 
     const res = await getStatus(token)
@@ -288,7 +289,7 @@ void describe('/rest/2fa/setup', () => {
 
   void it('POST should fail if the account has already set up 2fa', async () => {
     const email = `wurstbrot@${config.get<string>('application.domain')}`
-    const password = 'EinBelegtesBrotMitSchinkenSCHINKEN!'
+    const password = passwords.wurstbrot
     const totpSecret = 'IFTXE3SPOEYVURT2MRYGI52TKJ4HC3KH'
 
     const { token } = await login(app, { email, password, totpSecret })

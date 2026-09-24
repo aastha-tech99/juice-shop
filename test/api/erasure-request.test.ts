@@ -9,6 +9,7 @@ import request from 'supertest'
 import type { Express } from 'express'
 import { createTestApp } from './helpers/setup'
 import { login, register } from './helpers/auth'
+import { passwords } from '../testCredentials'
 import { challenges } from '../../data/datacache'
 import * as utils from '../../lib/utils'
 
@@ -21,7 +22,7 @@ before(async () => {
 
 void describe('/dataerasure', () => {
   void it('GET erasure form for logged-in users includes their email and security question', async () => {
-    const { token } = await login(app, { email: 'bjoern@owasp.org', password: 'kitten lesser pooch karate buffoon indoors' })
+    const { token } = await login(app, { email: 'bjoern@owasp.org', password: passwords.bjoernOwasp })
 
     const res = await request(app)
       .get('/dataerasure/')
@@ -33,7 +34,7 @@ void describe('/dataerasure', () => {
   })
 
   void it('GET erasure form rendering fails for users without assigned security answer', async () => {
-    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: passwords.bjoernGoogle })
 
     const res = await request(app)
       .get('/dataerasure/')

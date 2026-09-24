@@ -9,6 +9,7 @@ import request from 'supertest'
 import type { Express } from 'express'
 import config from 'config'
 import { createTestApp } from './helpers/setup'
+import { passwords } from '../testCredentials'
 
 let app: Express
 
@@ -73,7 +74,7 @@ void describe('/rest/user/login', () => {
       .set({ 'content-type': 'application/json' })
       .send({
         email: 'admin@' + config.get<string>('application.domain'),
-        password: 'admin123'
+        password: passwords.admin
       })
 
     assert.equal(res.status, 200)
@@ -87,7 +88,7 @@ void describe('/rest/user/login', () => {
       .set({ 'content-type': 'application/json' })
       .send({
         email: 'support@' + config.get<string>('application.domain'),
-        password: 'J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P'
+        password: passwords.support
       })
 
     assert.equal(res.status, 200)
@@ -101,7 +102,7 @@ void describe('/rest/user/login', () => {
       .set({ 'content-type': 'application/json' })
       .send({
         email: 'mc.safesearch@' + config.get<string>('application.domain'),
-        password: 'Mr. N00dles'
+        password: passwords.rapper
       })
 
     assert.equal(res.status, 200)
@@ -115,7 +116,7 @@ void describe('/rest/user/login', () => {
       .set({ 'content-type': 'application/json' })
       .send({
         email: 'amy@' + config.get<string>('application.domain'),
-        password: 'K1f.....................'
+        password: passwords.amy
       })
 
     assert.equal(res.status, 200)
@@ -129,7 +130,7 @@ void describe('/rest/user/login', () => {
       .set({ 'content-type': 'application/json' })
       .send({
         email: 'wurstbrot@' + config.get<string>('application.domain'),
-        password: 'EinBelegtesBrotMitSchinkenSCHINKEN!'
+        password: passwords.wurstbrot
       })
 
     assert.equal(res.status, 401)
@@ -144,7 +145,7 @@ void describe('/rest/user/login', () => {
       .set({ 'content-type': 'application/json' })
       .send({
         email: 'bjoern.kimminich@gmail.com',
-        password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
+        password: passwords.bjoernGoogle
       })
 
     assert.equal(res.status, 200)
@@ -242,7 +243,7 @@ void describe('/rest/saveLoginIp', () => {
       .set({ 'content-type': 'application/json' })
       .send({
         email: 'bjoern.kimminich@gmail.com',
-        password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
+        password: passwords.bjoernGoogle
       })
 
     assert.equal(loginRes.status, 200)
@@ -264,7 +265,7 @@ void describe('/rest/saveLoginIp', () => {
       .set({ 'content-type': 'application/json' })
       .send({
         email: 'bjoern.kimminich@gmail.com',
-        password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI='
+        password: passwords.bjoernGoogle
       })
 
     assert.equal(loginRes.status, 200)

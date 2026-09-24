@@ -10,6 +10,7 @@ import type { Express } from 'express'
 import config from 'config'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 let app: Express
 
@@ -25,7 +26,7 @@ void describe('/api/Deliverys', () => {
     before(async () => {
       const { token } = await login(app, {
         email: 'jim@' + config.get<string>('application.domain'),
-        password: 'ncc-1701'
+        password: passwords.jim
       })
       authHeader = { Authorization: 'Bearer ' + token, 'content-type': 'application/json' }
     })
@@ -51,7 +52,7 @@ void describe('/api/Deliverys', () => {
     before(async () => {
       const { token } = await login(app, {
         email: 'ciso@' + config.get<string>('application.domain'),
-        password: 'mDLx?94T~1CfVfZMzw@sJ9f?s3L6lbMqE70FfI8^54jbNikY5fymx7c!YbJb'
+        password: passwords.ciso
       })
       authHeader = { Authorization: 'Bearer ' + token, 'content-type': 'application/json' }
     })
@@ -79,7 +80,7 @@ void describe('/api/Deliverys/:id', () => {
     before(async () => {
       const { token } = await login(app, {
         email: 'jim@' + config.get<string>('application.domain'),
-        password: 'ncc-1701'
+        password: passwords.jim
       })
       authHeader = { Authorization: 'Bearer ' + token, 'content-type': 'application/json' }
     })
@@ -112,7 +113,7 @@ void describe('/api/Deliverys/:id', () => {
     before(async () => {
       const { token } = await login(app, {
         email: 'ciso@' + config.get<string>('application.domain'),
-        password: 'mDLx?94T~1CfVfZMzw@sJ9f?s3L6lbMqE70FfI8^54jbNikY5fymx7c!YbJb'
+        password: passwords.ciso
       })
       authHeader = { Authorization: 'Bearer ' + token, 'content-type': 'application/json' }
     })

@@ -1,8 +1,10 @@
+import { passwords } from '../support/testCredentials'
+
 describe('/#/administration', () => {
   beforeEach(() => {
     cy.login({
       email: 'admin',
-      password: 'admin123'
+      password: passwords.admin
     })
   })
   describe('challenge "adminSectionChallenge"', () => {

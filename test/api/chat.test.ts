@@ -10,6 +10,7 @@ import type { Express } from 'express'
 import * as http from 'http'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 const MOCK_LLM_PORT = 43210
 
@@ -258,7 +259,7 @@ void describe('/rest/chat', { timeout: 120000 }, () => {
   })
 
   void it('POST includes authenticated user name in system prompt', { timeout: 15000 }, async () => {
-    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+    const { token } = await login(app, { email: 'bjoern.kimminich@gmail.com', password: passwords.bjoernGoogle })
     let parsedBody: any
     onLlmRequest = (_req, body, res) => {
       parsedBody = JSON.parse(body)
@@ -327,7 +328,7 @@ void describe('/rest/chat', { timeout: 120000 }, () => {
   })
 
   void it('POST handles getOrderById tool call by reporting order not found for authenticated customer', { timeout: 15000 }, async () => {
-    const { token } = await login(app, { email: 'jim@juice-sh.op', password: 'ncc-1701' })
+    const { token } = await login(app, { email: 'jim@juice-sh.op', password: passwords.jim })
     let toolResult: string | undefined
     let callCount = 0
     onLlmRequest = (_req, body, res) => {

@@ -1,4 +1,5 @@
 import { type Product } from '../../../data/types'
+import { passwords } from '../support/testCredentials'
 
 describe('/#/search', () => {
   beforeEach(() => {
@@ -53,7 +54,7 @@ describe('/rest/products/search', () => {
     beforeEach(() => {
       cy.login({
         email: 'admin',
-        password: 'admin123'
+        password: passwords.admin
       })
     })
 
@@ -80,7 +81,7 @@ describe('/rest/products/search', () => {
     beforeEach(() => {
       cy.login({
         email: 'admin',
-        password: 'admin123'
+        password: passwords.admin
       })
     })
 

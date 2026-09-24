@@ -14,6 +14,7 @@ import fs from 'node:fs'
 import { type AddressInfo } from 'node:net'
 import { createTestApp } from './helpers/setup'
 import { login } from './helpers/auth'
+import { passwords } from '../testCredentials'
 
 let app: Express
 
@@ -28,7 +29,7 @@ void describe('/profile/image/file', () => {
 
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
 
     const res = await request(app)
@@ -45,7 +46,7 @@ void describe('/profile/image/file', () => {
 
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
 
     const res = await request(app)
@@ -74,7 +75,7 @@ void describe('/profile/image/file', () => {
   void it('POST profile image file rejected for unrecognizable file content', async () => {
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
 
     const res = await request(app)
@@ -92,7 +93,7 @@ void describe('/profile/image/url', () => {
   void it('POST profile image URL valid for image available online', async () => {
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
 
     const res = await request(app)
@@ -107,7 +108,7 @@ void describe('/profile/image/url', () => {
   void it('POST profile image URL redirects even for invalid image URL', async () => {
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
 
     const res = await request(app)
@@ -134,7 +135,7 @@ void describe('/profile/image/url', () => {
 
     const { token } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
 
     const res = await request(app)
@@ -158,7 +159,7 @@ void describe('/profile/image/url (with local mock server)', () => {
   before(async () => {
     const { token: userToken } = await login(app, {
       email: `jim@${config.get<string>('application.domain')}`,
-      password: 'ncc-1701'
+      password: passwords.jim
     })
     token = userToken
     userId = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()).data.id

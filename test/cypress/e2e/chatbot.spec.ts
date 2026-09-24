@@ -1,3 +1,4 @@
+import { passwords } from '../support/testCredentials'
 /*
  * Copyright (c) 2014-2026 Bjoern Kimminich & the OWASP Juice Shop contributors.
  * SPDX-License-Identifier: MIT
@@ -5,7 +6,7 @@
 
 describe('challenge "systemPromptExtractionChallenge"', () => {
   beforeEach(() => {
-    cy.login({ email: 'admin', password: 'admin123' })
+    cy.login({ email: 'admin', password: passwords.admin })
   })
 
   it('should solve the challenge when extracted system prompt is submitted via complaint form', () => {
