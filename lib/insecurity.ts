@@ -55,6 +55,7 @@ export const cutOffPoisonNullByte = (str: string) => {
 }
 
 export const JWT_AUDIENCE = 'juice-shop'
+export const JWT_ISSUER = 'juice-shop'
 // Essential authentication cookie options - consent not required for session/auth cookies (ePrivacy Directive)
 export const essentialCookieOptions = {
   httpOnly: true,
@@ -63,7 +64,7 @@ export const essentialCookieOptions = {
 }
 export const isAuthorized = () => expressJwt(({ secret: publicKey }) as any)
 export const denyAll = () => expressJwt({ secret: '' + Math.random() } as any)
-export const authorize = (user = {}) => jwt.sign(user, privateKey, { expiresIn: '6h', algorithm: 'RS256', audience: JWT_AUDIENCE })
+export const authorize = (user = {}) => jwt.sign(user, privateKey, { expiresIn: '6h', algorithm: 'RS256', audience: JWT_AUDIENCE, issuer: JWT_ISSUER })
 export const verify = (token: string) => token ? !isTokenRevoked(token) && (jws.verify as ((token: string, secret: string) => boolean))(token, publicKey) : false
 export const decode = (token: string) => { return jws.decode(token)?.payload }
 
@@ -198,7 +199,7 @@ export const appendUserId = () => {
 export const updateAuthenticatedUsers = () => (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies.token || utils.jwtFrom(req)
   if (token && !isTokenRevoked(token) && authenticatedUsers.get(token) === undefined) {
-    jwt.verify(token, publicKey, { audience: JWT_AUDIENCE }, (err: Error | null, decoded: any) => {
+    jwt.verify(token, publicKey, { audience: JWT_AUDIENCE, issuer: JWT_ISSUER }, (err: Error | null, decoded: any) => {
       if (err === null && decoded?.data !== undefined) {
         authenticatedUsers.put(token, decoded)
         res.cookie('token', token, essentialCookieOptions)
