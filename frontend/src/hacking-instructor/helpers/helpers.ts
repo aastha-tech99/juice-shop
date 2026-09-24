@@ -60,178 +60,233 @@ export async function sleep (timeInMs: number): Promise<void> {
 
 export function waitForInputToHaveValue (inputSelector: string, value: string, options: any = { ignoreCase: true, replacement: [] }) {
   return async () => {
-    const inputElement: HTMLInputElement = document.querySelector(
-      inputSelector
-    )
+    try {
+      const inputElement: HTMLInputElement = document.querySelector(
+        inputSelector
+      )
 
-    if (options.replacement?.length === 2) {
-      if (!config) {
-        const res = await fetch('/rest/admin/application-configuration')
-        const json = await res.json()
-        config = json.config
+      if (options.replacement?.length === 2) {
+        if (!config) {
+          const res = await fetch('/rest/admin/application-configuration')
+          const json = await res.json()
+          config = json.config
+        }
+        const propertyChain = options.replacement[1].split('.')
+        let replacementValue = config
+        for (const property of propertyChain) {
+          replacementValue = replacementValue[property]
+        }
+        value = value.replace(options.replacement[0], replacementValue)
       }
-      const propertyChain = options.replacement[1].split('.')
-      let replacementValue = config
-      for (const property of propertyChain) {
-        replacementValue = replacementValue[property]
-      }
-      value = value.replace(options.replacement[0], replacementValue)
-    }
 
-    while (true) {
-      if (options.ignoreCase && inputElement.value.toLowerCase() === value.toLowerCase()) {
-        break
-      } else if (!options.ignoreCase && inputElement.value === value) {
-        break
+      while (true) {
+        if (options.ignoreCase && inputElement.value.toLowerCase() === value.toLowerCase()) {
+          break
+        } else if (!options.ignoreCase && inputElement.value === value) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForInputToNotHaveValue (inputSelector: string, value: string, options = { ignoreCase: true }) {
   return async () => {
-    const inputElement: HTMLInputElement = document.querySelector(
-      inputSelector
-    )
+    try {
+      const inputElement: HTMLInputElement = document.querySelector(
+        inputSelector
+      )
 
-    while (true) {
-      if (options.ignoreCase && inputElement.value.toLowerCase() !== value.toLowerCase()) {
-        break
-      } else if (!options.ignoreCase && inputElement.value !== value) {
-        break
+      while (true) {
+        if (options.ignoreCase && inputElement.value.toLowerCase() !== value.toLowerCase()) {
+          break
+        } else if (!options.ignoreCase && inputElement.value !== value) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForInputToNotHaveValueAndNotBeEmpty (inputSelector: string, value: string, options = { ignoreCase: true }) {
   return async () => {
-    const inputElement: HTMLInputElement = document.querySelector(
-      inputSelector
-    )
+    try {
+      const inputElement: HTMLInputElement = document.querySelector(
+        inputSelector
+      )
 
-    while (true) {
-      if (inputElement.value !== '') {
-        if (options.ignoreCase && inputElement.value.toLowerCase() !== value.toLowerCase()) {
-          break
-        } else if (!options.ignoreCase && inputElement.value !== value) {
-          break
+      while (true) {
+        if (inputElement.value !== '') {
+          if (options.ignoreCase && inputElement.value.toLowerCase() !== value.toLowerCase()) {
+            break
+          } else if (!options.ignoreCase && inputElement.value !== value) {
+            break
+          }
         }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForInputToNotBeEmpty (inputSelector: string) {
   return async () => {
-    const inputElement: HTMLInputElement = document.querySelector(
-      inputSelector
-    )
+    try {
+      const inputElement: HTMLInputElement = document.querySelector(
+        inputSelector
+      )
 
-    while (true) {
-      if (inputElement.value && inputElement.value !== '') {
-        break
+      while (true) {
+        if (inputElement.value && inputElement.value !== '') {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForElementToGetClicked (elementSelector: string) {
   return async () => {
-    const element = document.querySelector(
-      elementSelector
-    )
-    if (!element) {
-      console.warn(`Could not find Element with selector "${elementSelector}"`)
-    }
+    try {
+      const element = document.querySelector(
+        elementSelector
+      )
+      if (!element) {
+        console.warn(`Could not find Element with selector "${elementSelector}"`)
+      }
 
-    await new Promise<void>((resolve) => {
-      element.addEventListener('click', () => { resolve() })
-    })
+      await new Promise<void>((resolve) => {
+        element.addEventListener('click', () => { resolve() })
+      })
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
+    }
   }
 }
 
 export function waitForElementsInnerHtmlToBe (elementSelector: string, value: string) {
   return async () => {
-    while (true) {
-      const element = document.querySelector(
-        elementSelector
-      )
+    try {
+      while (true) {
+        const element = document.querySelector(
+          elementSelector
+        )
 
-      if (element && element.innerHTML === value) {
-        break
+        if (element && element.innerHTML === value) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitInMs (timeInMs: number) {
   return async () => {
-    if (!config) {
-      const res = await fetch('/rest/admin/application-configuration')
-      const json = await res.json()
-      config = json.config
+    try {
+      if (!config) {
+        const res = await fetch('/rest/admin/application-configuration')
+        const json = await res.json()
+        config = json.config
+      }
+      let delay = playbackDelays[config.hackingInstructor.hintPlaybackSpeed]
+      delay ??= 1.0
+      await sleep(timeInMs * delay)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
-    let delay = playbackDelays[config.hackingInstructor.hintPlaybackSpeed]
-    delay ??= 1.0
-    await sleep(timeInMs * delay)
   }
 }
 
 export function waitForAngularRouteToBeVisited (route: string) {
   return async () => {
-    while (true) {
-      if (window.location.hash.startsWith(`#/${route}`)) {
-        break
+    try {
+      while (true) {
+        if (window.location.hash.startsWith(`#/${route}`)) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForLogIn () {
   return async () => {
-    while (true) {
-      if (getCookieToken() !== null) {
-        break
+    try {
+      while (true) {
+        if (getCookieToken() !== null) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForAdminLogIn () {
   return async () => {
-    while (true) {
-      let role = ''
-      try {
-        const token: string = getCookieToken()
-        const decodedToken = jwtDecode(token)
-        const payload = decodedToken as any
-        role = payload.data.role
-      } catch {
-        console.log('Role from token could not be accessed.')
+    try {
+      while (true) {
+        let role = ''
+        try {
+          const token: string = getCookieToken()
+          const decodedToken = jwtDecode(token)
+          const payload = decodedToken as any
+          role = payload.data.role
+        } catch {
+          console.log('Role from token could not be accessed.')
+        }
+        if (role === roles.admin) {
+          break
+        }
+        await sleep(100)
       }
-      if (role === roles.admin) {
-        break
-      }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForLogOut () {
   return async () => {
-    while (true) {
-      if (getCookieToken() === null) {
-        break
+    try {
+      while (true) {
+        if (getCookieToken() === null) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
@@ -244,56 +299,76 @@ export function waitForDevTools () {
   const initialInnerHeight = window.innerHeight
   const initialInnerWidth = window.innerWidth
   return async () => {
-    while (true) {
-      if (window.innerHeight !== initialInnerHeight || window.innerWidth !== initialInnerWidth) {
-        break
+    try {
+      while (true) {
+        if (window.innerHeight !== initialInnerHeight || window.innerWidth !== initialInnerWidth) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForSelectToHaveValue (selectSelector: string, value: string) {
   return async () => {
-    const selectElement: HTMLSelectElement = document.querySelector(
-      selectSelector
-    )
+    try {
+      const selectElement: HTMLSelectElement = document.querySelector(
+        selectSelector
+      )
 
-    while (true) {
-      if (selectElement.options[selectElement.selectedIndex].value === value) {
-        break
+      while (true) {
+        if (selectElement.options[selectElement.selectedIndex].value === value) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForSelectToNotHaveValue (selectSelector: string, value: string) {
   return async () => {
-    const selectElement: HTMLSelectElement = document.querySelector(
-      selectSelector
-    )
+    try {
+      const selectElement: HTMLSelectElement = document.querySelector(
+        selectSelector
+      )
 
-    while (true) {
-      if (selectElement.options[selectElement.selectedIndex].value !== value) {
-        break
+      while (true) {
+        if (selectElement.options[selectElement.selectedIndex].value !== value) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }
 
 export function waitForRightUriQueryParamPair (key: string, value: string) {
   return async () => {
-    while (true) {
-      const encodedValue: string = encodeURIComponent(value).replace(/%3A/g, ':')
-      const encodedKey: string = encodeURIComponent(key).replace(/%3A/g, ':')
-      const expectedHash = `#/track-result/new?${encodedKey}=${encodedValue}`
+    try {
+      while (true) {
+        const encodedValue: string = encodeURIComponent(value).replace(/%3A/g, ':')
+        const encodedKey: string = encodeURIComponent(key).replace(/%3A/g, ':')
+        const expectedHash = `#/track-result/new?${encodedKey}=${encodedValue}`
 
-      if (constantTimeEqual(window.location.hash, expectedHash)) {
-        break
+        if (constantTimeEqual(window.location.hash, expectedHash)) {
+          break
+        }
+        await sleep(100)
       }
-      await sleep(100)
+    } catch (error: unknown) {
+      console.error('Hacking instructor helper failed:', error)
+      throw error
     }
   }
 }

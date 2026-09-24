@@ -30,7 +30,7 @@ const entities = new Entities()
 const router = express.Router()
 
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
-  void (async () => {
+  (async () => {
     const loggedInUser = security.authenticatedUsers.get(req.cookies.token)
     if (!loggedInUser) {
       next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
@@ -70,7 +70,9 @@ router.get('/', (req: Request, res: Response, next: NextFunction) => {
     } catch (error) {
       next(error)
     }
-  })()
+  })().catch((error: unknown) => {
+    next(error)
+  })
 })
 
 interface DataErasureRequestParams {
@@ -80,7 +82,7 @@ interface DataErasureRequestParams {
 }
 
 router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>, DataErasureRequestParams>, res: Response, next: NextFunction): void => {
-  void (async () => {
+  (async () => {
     const loggedInUser = security.authenticatedUsers.get(req.cookies.token)
     if (!loggedInUser) {
       next(new Error('Blocked illegal activity by ' + req.socket.remoteAddress))
@@ -173,7 +175,9 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
     } catch (error) {
       next(error)
     }
-  })()
+  })().catch((error: unknown) => {
+    next(error)
+  })
 })
 
 export default router

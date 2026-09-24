@@ -9,8 +9,9 @@ import { CouponUsageModel } from '../models/couponUsage'
 import * as security from '../lib/insecurity'
 
 export function applyCoupon () {
-  return async ({ params }: Request, res: Response, next: NextFunction) => {
-    try {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const { params } = req
+    void (async () => {
       const id = params.id
       let coupon: string | undefined | null = params.coupon ? decodeURIComponent(params.coupon) : undefined
       const discount = security.discountFromCoupon(coupon)
@@ -28,18 +29,19 @@ export function applyCoupon () {
           where: { UserId: basket.UserId, coupon }
         })
         if (usageCount >= security.MAX_COUPON_USES_PER_USER) {
-          return res.status(403).json({ error: 'Coupon has already been used.' })
+          res.status(403).json({ error: 'Coupon has already been used.' })
+          return
         }
       }
 
       await basket.update({ coupon: coupon?.toString() })
       if (discount) {
-        return res.json({ discount })
+        res.json({ discount })
       } else {
-        return res.status(404).send('Invalid coupon.')
+        res.status(404).send('Invalid coupon.')
       }
-    } catch (error) {
+    })().catch((error: unknown) => {
       next(error)
-    }
+    })
   }
 }

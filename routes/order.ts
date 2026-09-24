@@ -36,6 +36,7 @@ export function placeOrder () {
     const id = req.params.id
     BasketModel.findOne({ where: { id }, include: [{ model: ProductModel, paranoid: false, as: 'Products' }] })
       .then(async (basket: BasketModel | null) => {
+        try {
         if (basket != null) {
           const customer = security.authenticatedUsers.from(req)
           const email = customer ? customer.data ? customer.data.email : '' : ''
@@ -48,7 +49,7 @@ export function placeOrder () {
           const fileWriter = doc.pipe(fs.createWriteStream(path.join('ftp/', pdfFile)))
 
           fileWriter.on('finish', () => {
-            void (async () => {
+            (async () => {
               try {
                 // Record coupon usage to enforce per-user usage limit (CWE-799)
                 const couponToRecord = usedCoupon || appliedCouponCode
@@ -63,7 +64,9 @@ export function placeOrder () {
               } catch (error: unknown) {
                 next(error)
               }
-            })()
+            })().catch((error: unknown) => {
+              next(error)
+            })
           })
 
           doc.font('Times-Roman').fontSize(40).text(config.get<string>('application.name'), { align: 'center' })
@@ -216,6 +219,9 @@ export function placeOrder () {
           })
         } else {
           next(new Error(`Basket with id=${id} does not exist.`))
+        }
+        } catch (error: unknown) {
+          next(error)
         }
       }).catch((error: unknown) => {
         next(error)

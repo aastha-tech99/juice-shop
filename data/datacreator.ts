@@ -693,7 +693,9 @@ async function createSecurityQuestions () {
         logger.error(`Could not insert SecurityQuestion ${question}: ${utils.getErrorMessage(err)}`)
       }
     })
-  )
+  ).catch((err: unknown) => {
+    logger.error(`Failed during security question creation: ${utils.getErrorMessage(err)}`)
+  })
 }
 
 async function createSecurityAnswer (UserId: number, SecurityQuestionId: number, answer: string) {

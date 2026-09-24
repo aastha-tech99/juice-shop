@@ -27,43 +27,47 @@ async function rollbackInventoryTransaction (req: Request) {
 
 export function addBasketItem () {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const result = utils.parseJsonCustom((req as RequestWithRawBody).rawBody)
-    const productIds = []
-    const basketIds = []
-    const quantities = []
+    try {
+      const result = utils.parseJsonCustom((req as RequestWithRawBody).rawBody)
+      const productIds = []
+      const basketIds = []
+      const quantities = []
 
-    for (let i = 0; i < result.length; i++) {
-      if (result[i].key === 'ProductId') {
-        productIds.push(result[i].value)
-      } else if (result[i].key === 'BasketId') {
-        basketIds.push(result[i].value)
-      } else if (result[i].key === 'quantity') {
-        quantities.push(result[i].value)
+      for (let i = 0; i < result.length; i++) {
+        if (result[i].key === 'ProductId') {
+          productIds.push(result[i].value)
+        } else if (result[i].key === 'BasketId') {
+          basketIds.push(result[i].value)
+        } else if (result[i].key === 'quantity') {
+          quantities.push(result[i].value)
+        }
       }
-    }
 
-    const user = security.authenticatedUsers.from(req)
-    if (user && basketIds[0] && basketIds[0] !== 'undefined' && Number(user.bid) != Number(basketIds[0])) { // eslint-disable-line eqeqeq
-      await rollbackInventoryTransaction(req)
-      res.status(401).send('{\'error\' : \'Invalid BasketId\'}')
-    } else {
-      const basketItem = {
-        ProductId: productIds[productIds.length - 1],
-        BasketId: basketIds[basketIds.length - 1],
-        quantity: quantities[quantities.length - 1]
-      }
-      challengeUtils.solveIf(challenges.basketManipulateChallenge, () => { return user && basketItem.BasketId && basketItem.BasketId !== 'undefined' && user.bid != basketItem.BasketId }) // eslint-disable-line eqeqeq
-
-      const basketItemInstance = BasketItemModel.build(basketItem)
-      const t = (req as any).__inventoryTransaction as Transaction | undefined
-      try {
-        const addedBasketItem = await basketItemInstance.save(t ? { transaction: t } : undefined)
-        if (t) await t.commit()
-        res.json({ status: 'success', data: addedBasketItem })
-      } catch (error) {
+      const user = security.authenticatedUsers.from(req)
+      if (user && basketIds[0] && basketIds[0] !== 'undefined' && Number(user.bid) != Number(basketIds[0])) { // eslint-disable-line eqeqeq
         await rollbackInventoryTransaction(req)
-        next(error)
+        res.status(401).send('{\'error\' : \'Invalid BasketId\'}')
+      } else {
+        const basketItem = {
+          ProductId: productIds[productIds.length - 1],
+          BasketId: basketIds[basketIds.length - 1],
+          quantity: quantities[quantities.length - 1]
+        }
+        challengeUtils.solveIf(challenges.basketManipulateChallenge, () => { return user && basketItem.BasketId && basketItem.BasketId !== 'undefined' && user.bid != basketItem.BasketId }) // eslint-disable-line eqeqeq
+
+        const basketItemInstance = BasketItemModel.build(basketItem)
+        const t = (req as any).__inventoryTransaction as Transaction | undefined
+        try {
+          const addedBasketItem = await basketItemInstance.save(t ? { transaction: t } : undefined)
+          if (t) await t.commit()
+          res.json({ status: 'success', data: addedBasketItem })
+        } catch (error) {
+          await rollbackInventoryTransaction(req)
+          next(error)
+        }
       }
+    } catch (error: unknown) {
+      next(error)
     }
   }
 }
@@ -85,7 +89,9 @@ export function quantityCheckBeforeBasketItemUpdate () {
         if (item == null) {
           throw new Error('No such item found!')
         }
-        void quantityCheck(req, res, next, item.ProductId, req.body.quantity)
+        void quantityCheck(req, res, next, item.ProductId, req.body.quantity).catch((error: unknown) => {
+          next(error)
+        })
       } else {
         next()
       }
