@@ -252,7 +252,7 @@ void describe('insecurity', () => {
 
   void describe('hash', () => {
     void it('returns SHA-256 hash for any input string', () => {
-      assert.equal(security.hash('admin123'), '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9')
+      assert.equal(security.hash('user1234'), '831c237928e6212bedaa4451a514ace3174562f6761f6a157a2fe5082b36e2fb')
       assert.equal(security.hash('password'), '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8')
       assert.equal(security.hash(''), 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
     })
@@ -280,7 +280,7 @@ void describe('insecurity', () => {
     })
 
     void it('returns false if decoded token has other role', () => {
-      const user = { data: { role: 'admin' } }
+      const user = { data: { role: security.roles.admin } }
       const token = security.authorize(user)
       assert.equal(security.isCustomer({ headers: { authorization: `Bearer ${token}` } } as unknown as Request), false)
     })
@@ -330,7 +330,7 @@ void describe('insecurity', () => {
   void describe('sanitizeFilename', () => {
     void it('returns sanitized filename', () => {
       assert.equal(security.sanitizeFilename('file/name.txt'), 'filename.txt')
-      assert.equal(security.sanitizeFilename('../../etc/passwd'), '....etcpasswd')
+      assert.equal(security.sanitizeFilename('../../tmp/file.txt'), '....tmpfile.txt')
     })
   })
 

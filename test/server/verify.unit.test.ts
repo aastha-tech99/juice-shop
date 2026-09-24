@@ -84,7 +84,7 @@ void describe('verify', () => {
     })
 
     void it('is solved when admin role is sent in registration request', () => {
-      req.body.role = 'admin'
+      req.body.role = security.roles.admin
 
       verify.registerAdminChallenge()(req, res, next)
 
@@ -100,7 +100,7 @@ void describe('verify', () => {
     })
 
     void it('strips admin role from request body to prevent privilege escalation', () => {
-      req.body.role = 'admin'
+      req.body.role = security.roles.admin
 
       verify.registerAdminChallenge()(req, res, next)
 
@@ -124,7 +124,7 @@ void describe('verify', () => {
     })
 
     void it('strips any arbitrary role from request body to prevent privilege escalation', () => {
-      req.body.role = 'superuser'
+      req.body.role = 'customrole'
 
       verify.registerAdminChallenge()(req, res, next)
 

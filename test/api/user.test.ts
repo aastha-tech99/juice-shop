@@ -67,7 +67,7 @@ void describe('/api/Users', () => {
       .send({
         email: 'horst2@horstma.nn',
         password: 'hooooorst',
-        role: 'admin'
+        role: security.roles.admin
       })
     assert.equal(res.status, 201)
     assert.ok(res.headers['content-type']?.includes('application/json'))

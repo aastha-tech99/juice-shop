@@ -49,12 +49,13 @@ export const captchaBypassChallenge = () => (req: Request, res: Response, next: 
 }
 
 export const registerAdminChallenge = () => (req: Request, res: Response, next: NextFunction) => {
-  challengeUtils.solveIf(challenges.registerAdminChallenge, () => {
-    return req.body && req.body.role === security.roles.admin
-  })
+  const attemptedRole = req.body?.role
   if (req.body) {
-    delete req.body.role // Prevent users from setting their own role; the default role is assigned by the model
+    delete req.body.role // Strip user-supplied role immediately to enforce least privilege
   }
+  challengeUtils.solveIf(challenges.registerAdminChallenge, () => {
+    return attemptedRole === security.roles.admin
+  })
   next()
 }
 
