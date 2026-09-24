@@ -48,10 +48,10 @@ export class TrackResultComponent implements OnInit {
 
       this.results.orderNo = this.sanitizer.bypassSecurityTrustHtml(`<code>${results.data[0].orderId}</code>`)
       this.results.email = results.data[0].email
-      this.results.totalPrice = results.data[0].totalPrice
+      this.results.totalPrice = Math.max(0, results.data[0].totalPrice ?? 0)
       this.results.products = results.data[0].products
-      this.results.eta = results.data[0].eta !== undefined ? results.data[0].eta : '?'
-      this.results.bonus = results.data[0].bonus
+      this.results.eta = results.data[0].eta !== undefined ? Math.max(0, results.data[0].eta) : '?'
+      this.results.bonus = Math.max(0, results.data[0].bonus ?? 0)
       this.dataSource.data = this.results.products
       if (results.data[0].delivered) {
         this.status = Status.Delivered

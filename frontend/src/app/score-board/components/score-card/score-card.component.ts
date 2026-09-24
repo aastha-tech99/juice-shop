@@ -10,8 +10,8 @@ import { DecimalPipe } from '@angular/common'
 })
 export class ScoreCardComponent {
   readonly description = input.required<string>()
-  readonly total = input.required<number>()
-  readonly score = input.required<number>()
+  readonly total = input.required({ transform: (v: number): number => Math.max(1, v) })
+  readonly score = input.required({ transform: (v: number): number => Math.max(0, v) })
 
   readonly safeScore = computed(() => Math.max(0, this.score()))
   readonly safeTotal = computed(() => Math.max(1, this.total()))

@@ -31,6 +31,10 @@ interface Order {
   delivered: boolean
 }
 
+function sanitizeOrderPrice (price: number): number {
+  return Math.max(0, price ?? 0)
+}
+
 @Component({
   changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-accounting',
@@ -96,7 +100,7 @@ export class AccountingComponent implements AfterViewInit, OnDestroy {
           this.orderData.push({
             id: order._id,
             orderId: order.orderId,
-            totalPrice: Math.max(0, order.totalPrice),
+            totalPrice: sanitizeOrderPrice(order.totalPrice),
             delivered: order.delivered
           })
         }

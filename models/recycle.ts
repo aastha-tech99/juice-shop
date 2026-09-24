@@ -42,6 +42,9 @@ const RecycleModelInit = (sequelize: Sequelize) => {
         type: DataTypes.INTEGER,
         validate: {
           min: 1
+        },
+        set (value: number) {
+          this.setDataValue('quantity', Math.max(1, Math.floor(value)))
         }
       },
       isPickup: { type: DataTypes.BOOLEAN, defaultValue: false },

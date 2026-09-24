@@ -14,6 +14,7 @@ export interface DeliveryMethod {
 export function sanitizeDeliveryMethod (d: DeliveryMethod): DeliveryMethod {
   return {
     ...d,
-    price: Math.max(0, d.price)
+    price: Math.max(0, d.price),
+    eta: Math.max(0, d.eta)
   }
 }

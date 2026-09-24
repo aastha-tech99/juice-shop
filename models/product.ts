@@ -56,12 +56,18 @@ const ProductModelInit = (sequelize: Sequelize) => {
         type: DataTypes.DECIMAL,
         validate: {
           min: 0
+        },
+        set (value: number) {
+          this.setDataValue('price', Math.max(0, value))
         }
       },
       deluxePrice: {
         type: DataTypes.DECIMAL,
         validate: {
           min: 0
+        },
+        set (value: number) {
+          this.setDataValue('deluxePrice', Math.max(0, value))
         }
       },
       image: DataTypes.STRING

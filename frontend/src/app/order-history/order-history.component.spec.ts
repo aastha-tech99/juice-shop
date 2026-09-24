@@ -149,6 +149,21 @@ describe('AccountingComponent', () => {
         expect(component.orders[1].products.data).toEqual([{ id: 1, name: 'P1', price: 5, quantity: 2, total: 10 }])
     })
 
+    it('should clamp negative numeric values to zero in orders and products', () => {
+        orderHistoryService.get.mockReturnValue(of([
+            { orderId: 'neg', totalPrice: -5, bonus: -1, products: [{ id: 1, name: 'P', price: -2, quantity: -1, total: -3 }], delivered: true }
+        ]))
+        component.orders = []
+        component.ngOnInit()
+
+        expect(component.orders[0].totalPrice).toBe(0)
+        expect(component.orders[0].bonus).toBe(0)
+        const productData = component.orders[0].products.data[0]
+        expect(productData.price).toBe(0)
+        expect(productData.quantity).toBe(0)
+        expect(productData.total).toBe(0)
+    })
+
     it('should round points to nearest integer when opening product details', () => {
         productService.get.mockReturnValue(of({ id: 7, name: 'X', description: 'D', image: 'I', price: 19, deluxePrice: 15 } as Product))
         component.showDetail(7)

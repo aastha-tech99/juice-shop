@@ -37,15 +37,26 @@ const DeliveryModelInit = (sequelize: Sequelize) => {
         type: DataTypes.FLOAT,
         validate: {
           min: 0
+        },
+        set (value: number) {
+          this.setDataValue('price', Math.max(0, value))
         }
       },
       deluxePrice: {
         type: DataTypes.FLOAT,
         validate: {
           min: 0
+        },
+        set (value: number) {
+          this.setDataValue('deluxePrice', Math.max(0, value))
         }
       },
-      eta: DataTypes.FLOAT,
+      eta: {
+        type: DataTypes.FLOAT,
+        validate: {
+          min: 0
+        }
+      },
       icon: DataTypes.STRING
     },
     {

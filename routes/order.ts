@@ -109,13 +109,13 @@ export function placeOrder () {
               }
               const itemTotal = itemPrice * BasketItem.quantity
               const itemBonus = Math.round(itemPrice / 10) * BasketItem.quantity
-              const product = {
-                quantity: BasketItem.quantity,
+              const product: Product = {
+                quantity: Math.max(0, BasketItem.quantity),
                 id,
                 name: req.__(name),
-                price: itemPrice,
-                total: itemTotal,
-                bonus: itemBonus
+                price: Math.max(0, itemPrice),
+                total: Math.max(0, itemTotal),
+                bonus: Math.max(0, itemBonus)
               }
               basketProducts.push(product)
               doc.text(`${BasketItem.quantity}x ${req.__(name)} ${req.__('ea.')} ${itemPrice} = ${itemTotal}¤`)

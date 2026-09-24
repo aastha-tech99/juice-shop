@@ -68,7 +68,8 @@ export class WalletWeb3Component implements OnInit {
       const signer = provider.getSigner()
 
       const contract = new ethers.Contract(BankAddress, web3WalletABI, signer)
-      const depositAmount = this.inputAmount.toString()
+      const validatedAmount = Math.max(0, this.inputAmount)
+      const depositAmount = validatedAmount.toString()
       const transaction = await contract.ethdeposit(this.metamaskAddress, {
         value: ethers.utils.parseEther(depositAmount)
       })
@@ -90,7 +91,8 @@ export class WalletWeb3Component implements OnInit {
       const signer = provider.getSigner()
 
       const contract = new ethers.Contract(BankAddress, web3WalletABI, signer)
-      const withdrawalAmount = this.inputAmount.toString()
+      const validatedAmount = Math.max(0, this.inputAmount)
+      const withdrawalAmount = validatedAmount.toString()
       const transaction = await contract.withdraw(
         ethers.utils.parseEther(withdrawalAmount)
       )

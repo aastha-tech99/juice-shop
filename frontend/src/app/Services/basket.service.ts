@@ -46,6 +46,9 @@ export class BasketService {
   }
 
   put (id: number, params: any) {
+    if (params?.quantity != null) {
+      params = { ...params, quantity: Math.max(1, Math.floor(Number(params.quantity) || 1)) }
+    }
     return this.http.put(`${this.host}/${id}`, params).pipe(map((response: any) => response.data), catchError((error) => { throw error }))
   }
 
@@ -54,6 +57,9 @@ export class BasketService {
   }
 
   save (params?: any) {
+    if (params?.quantity != null) {
+      params = { ...params, quantity: Math.max(1, Math.floor(Number(params.quantity) || 1)) }
+    }
     return this.http.post(this.host + '/', params).pipe(map((response: any) => response.data), catchError((error) => { throw error }))
   }
 

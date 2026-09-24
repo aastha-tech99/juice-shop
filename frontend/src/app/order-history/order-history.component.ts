@@ -76,8 +76,8 @@ export class OrderHistoryComponent implements OnInit {
           }
           this.orders.push({
             orderId: order.orderId,
-            totalPrice: order.totalPrice,
-            bonus: order.bonus,
+            totalPrice: Math.max(0, order.totalPrice),
+            bonus: Math.max(0, order.bonus),
             products: new MatTableDataSource<StrippedProduct>(products),
             delivered: order.delivered
           })

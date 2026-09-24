@@ -229,6 +229,15 @@ describe('AccountingComponent', () => {
         expect(component.orderSource.paginator).toBe(component.paginatorOrderHistory)
     })
 
+    it('should clamp negative totalPrice values to zero when loading orders', () => {
+        orderHistoryService.getAll.mockReturnValue(of([
+            { _id: 'neg', orderId: 'N', totalPrice: -10, delivered: false }
+        ]))
+        component.loadOrders()
+
+        expect(component.orderData[0].totalPrice).toBe(0)
+    })
+
     it('should build the quantityMap keyed by ProductId with id and quantity from the stock response', () => {
         quantityService.getAll.mockReturnValue(of([
             { id: 11, ProductId: 1, quantity: 5 },

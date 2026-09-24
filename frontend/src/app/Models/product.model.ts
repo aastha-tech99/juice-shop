@@ -17,6 +17,7 @@ export function sanitizeProduct (p: Product): Product {
   return {
     ...p,
     price: Math.max(0, p.price),
+    points: p.points != null ? Math.max(0, p.points) : undefined,
     deluxePrice: Math.max(0, p.deluxePrice)
   }
 }

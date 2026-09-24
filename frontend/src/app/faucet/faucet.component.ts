@@ -237,7 +237,8 @@ export class FaucetComponent implements OnInit {
         BeeFaucetABI,
         signer
       )
-      const tx = await contract.withdraw(amount)
+      const validatedAmount = Math.max(0, amount)
+      const tx = await contract.withdraw(validatedAmount)
       await tx.wait()
 
       console.log('BEE tokens extracted successfully')

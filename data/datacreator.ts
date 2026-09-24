@@ -671,10 +671,11 @@ async function createRecycle (data: { UserId: number, quantity: number, AddressI
     logger.error('Recycling quantity must be a positive integer')
     return
   }
+  const validatedQuantity = Math.max(1, data.quantity)
   return await RecycleModel.create({
     UserId: data.UserId,
     AddressId: data.AddressId,
-    quantity: data.quantity,
+    quantity: validatedQuantity,
     isPickup: data.isPickup,
     date: data.date
   }).catch((err: unknown) => {

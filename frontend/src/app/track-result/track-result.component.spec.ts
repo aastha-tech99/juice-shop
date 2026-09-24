@@ -103,6 +103,14 @@ describe('TrackResultComponent', () => {
         expect(component.results.eta).toBe('?')
     })
 
+    it('should clamp negative totalPrice and bonus to zero', () => {
+        trackOrderService.find.mockReturnValue(of({ data: [{ totalPrice: -5, bonus: -2, eta: -1 }] }))
+        component.ngOnInit()
+        expect(component.results.totalPrice).toBe(0)
+        expect(component.results.bonus).toBe(0)
+        expect(component.results.eta).toBe(0)
+    })
+
     it('should publish the products onto the table data source', () => {
         const products = [{ name: 'Juice', price: 1.99, quantity: 2, total: 3.98 }]
         trackOrderService.find.mockReturnValue(of({ data: [{ products }] }))
