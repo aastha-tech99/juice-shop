@@ -6,6 +6,7 @@
 import { type Request, type Response, type NextFunction } from 'express'
 import { BasketItemModel } from '../models/basketitem'
 import { QuantityModel } from '../models/quantity'
+import { Transaction } from 'sequelize'
 import * as challengeUtils from '../lib/challengeUtils'
 
 import * as utils from '../lib/utils'
@@ -14,6 +15,14 @@ import * as security from '../lib/insecurity'
 
 interface RequestWithRawBody extends Request {
   rawBody: string
+}
+
+async function rollbackInventoryTransaction (req: Request) {
+  const t = (req as any).__inventoryTransaction as Transaction | undefined
+  if (t) {
+    delete (req as any).__inventoryTransaction
+    try { await t.rollback() } catch (_) { /* transaction may already be finished */ }
+  }
 }
 
 export function addBasketItem () {
@@ -35,6 +44,7 @@ export function addBasketItem () {
 
     const user = security.authenticatedUsers.from(req)
     if (user && basketIds[0] && basketIds[0] !== 'undefined' && Number(user.bid) != Number(basketIds[0])) { // eslint-disable-line eqeqeq
+      await rollbackInventoryTransaction(req)
       res.status(401).send('{\'error\' : \'Invalid BasketId\'}')
     } else {
       const basketItem = {
@@ -45,10 +55,13 @@ export function addBasketItem () {
       challengeUtils.solveIf(challenges.basketManipulateChallenge, () => { return user && basketItem.BasketId && basketItem.BasketId !== 'undefined' && user.bid != basketItem.BasketId }) // eslint-disable-line eqeqeq
 
       const basketItemInstance = BasketItemModel.build(basketItem)
+      const t = (req as any).__inventoryTransaction as Transaction | undefined
       try {
-        const addedBasketItem = await basketItemInstance.save()
+        const addedBasketItem = await basketItemInstance.save(t ? { transaction: t } : undefined)
+        if (t) await t.commit()
         res.json({ status: 'success', data: addedBasketItem })
       } catch (error) {
+        await rollbackInventoryTransaction(req)
         next(error)
       }
     }
@@ -57,7 +70,7 @@ export function addBasketItem () {
 
 export function quantityCheckBeforeBasketItemAddition () {
   return (req: Request, res: Response, next: NextFunction) => {
-    void quantityCheck(req, res, next, req.body.ProductId, req.body.quantity).catch((error: Error) => {
+    void quantityCheck(req, res, next, req.body.ProductId, req.body.quantity, true).catch((error: Error) => {
       next(error)
     })
   }
@@ -82,24 +95,40 @@ export function quantityCheckBeforeBasketItemUpdate () {
   }
 }
 
-async function quantityCheck (req: Request, res: Response, next: NextFunction, id: number, quantity: number) {
+async function quantityCheck (req: Request, res: Response, next: NextFunction, id: number, quantity: number, holdTransaction = false) {
   if (!Number.isInteger(quantity) || quantity <= 0) {
     res.status(400).json({ error: 'Quantity must be a positive integer.' })
     return
   }
-  const product = await QuantityModel.findOne({ where: { ProductId: id } })
-  if (product == null) {
-    throw new Error('No such product found!')
-  }
-
-  // is product limited per user and order, except if user is deluxe?
-  if (!product.limitPerUser || (product.limitPerUser && product.limitPerUser >= quantity) || security.isDeluxe(req)) {
-    if (product.quantity >= quantity) { // enough in stock?
-      next()
-    } else {
-      res.status(400).json({ error: res.__('We are out of stock! Sorry for the inconvenience.') })
+  const sequelize = QuantityModel.sequelize!
+  const t = await sequelize.transaction()
+  let transactionHandled = false
+  try {
+    const product = await QuantityModel.findOne({ where: { ProductId: id }, lock: Transaction.LOCK.UPDATE, transaction: t })
+    if (product == null) {
+      throw new Error('No such product found!')
     }
-  } else {
-    res.status(400).json({ error: res.__('You can order only up to {{quantity}} items of this product.', { quantity: product.limitPerUser.toString() }) })
+
+    // is product limited per user and order, except if user is deluxe?
+    if (!product.limitPerUser || (product.limitPerUser && product.limitPerUser >= quantity) || security.isDeluxe(req)) {
+      if (product.quantity >= quantity) { // enough in stock?
+        if (holdTransaction) {
+          (req as any).__inventoryTransaction = t
+          transactionHandled = true
+        } else {
+          await t.commit()
+          transactionHandled = true
+        }
+        next()
+      } else {
+        res.status(400).json({ error: res.__('We are out of stock! Sorry for the inconvenience.') })
+      }
+    } else {
+      res.status(400).json({ error: res.__('You can order only up to {{quantity}} items of this product.', { quantity: product.limitPerUser.toString() }) })
+    }
+  } finally {
+    if (!transactionHandled) {
+      try { await t.rollback() } catch (_) { /* transaction may already be finished */ }
+    }
   }
 }
