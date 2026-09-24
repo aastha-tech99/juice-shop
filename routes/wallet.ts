@@ -29,15 +29,11 @@ export function addWalletBalance () {
     try {
       // Transaction ensures card validation and wallet update are atomic (CWE-362)
       await WalletModel.sequelize!.transaction(async (t) => {
-        try {
-          const card = cardId ? await CardModel.findOne({ where: { id: cardId, UserId: req.body.UserId }, transaction: t }) : null
-          if (card == null) {
-            throw new Error('Payment not accepted.')
-          }
-          await WalletModel.increment({ balance }, { where: { UserId: req.body.UserId }, transaction: t })
-        } catch (error: unknown) {
-          throw error
+        const card = cardId ? await CardModel.findOne({ where: { id: cardId, UserId: req.body.UserId }, transaction: t }) : null
+        if (card == null) {
+          throw new Error('Payment not accepted.')
         }
+        await WalletModel.increment({ balance }, { where: { UserId: req.body.UserId }, transaction: t })
       })
       res.status(200).json({ status: 'success', data: balance })
     } catch (error: unknown) {

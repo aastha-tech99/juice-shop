@@ -14,10 +14,6 @@ function constantTimeEqual (a: string, b: string): boolean {
   if (a.length !== b.length) {
     // Compare against `b` padded/truncated to avoid leaking length via timing,
     // but the result is always false when lengths differ.
-    let mismatch = 1
-    for (let i = 0; i < a.length; i++) {
-      mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i % (b.length || 1))
-    }
     return false
   }
   let mismatch = 0
