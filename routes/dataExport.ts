@@ -81,7 +81,7 @@ export function dataExport () {
             eta: string
           }) => ({
             orderId: order.orderId,
-            totalPrice: order.totalPrice,
+            totalPrice: Math.max(0, order.totalPrice),
             products: [...order.products],
             bonus: order.bonus,
             eta: order.eta

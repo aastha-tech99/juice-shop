@@ -74,6 +74,25 @@ void describe('/api/Wallets', () => {
       .send({ balance: 10 })
     assert.equal(res.status, 402)
   })
+  void it('PUT charge wallet with negative balance is rejected', async () => {
+    const res = await request(app)
+      .put('/rest/wallet/balance')
+      .set(authHeader)
+      .send({ balance: -10, paymentId: 2 })
+    assert.equal(res.status, 400)
+    assert.equal(res.body.status, 'error')
+    assert.ok(res.body.message.includes('positive'))
+  })
+
+  void it('PUT charge wallet with zero balance is rejected', async () => {
+    const res = await request(app)
+      .put('/rest/wallet/balance')
+      .set(authHeader)
+      .send({ balance: 0, paymentId: 2 })
+    assert.equal(res.status, 400)
+    assert.equal(res.body.status, 'error')
+  })
+
   void it('GET wallet balance for user without a wallet returns 404', async () => {
     const email = `newuser${Date.now()}@juice-sh.op`
     const userRes = await request(app)

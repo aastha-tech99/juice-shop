@@ -13,4 +13,12 @@ export interface Product {
   deluxePrice: number
 }
 
+export function sanitizeProduct (p: Product): Product {
+  return {
+    ...p,
+    price: Math.max(0, p.price),
+    deluxePrice: Math.max(0, p.deluxePrice)
+  }
+}
+
 export type ProductTableEntry = Product & { quantity?: number }

@@ -111,6 +111,9 @@ export class BasketService {
   }
 
   addToGuestBasket (productId: number, quantity = 1): void {
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      return
+    }
     const guestBasketItems = this.getGuestBasketItems()
     const existingGuestItem = guestBasketItems.find(item => item.ProductId === productId)
 

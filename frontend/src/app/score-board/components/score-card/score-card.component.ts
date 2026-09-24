@@ -1,4 +1,4 @@
-import { Component, input, ChangeDetectionStrategy } from '@angular/core'
+import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core'
 import { DecimalPipe } from '@angular/common'
 
 @Component({
@@ -12,6 +12,9 @@ export class ScoreCardComponent {
   readonly description = input.required<string>()
   readonly total = input.required<number>()
   readonly score = input.required<number>()
+
+  readonly safeScore = computed(() => Math.max(0, this.score()))
+  readonly safeTotal = computed(() => Math.max(1, this.total()))
 
   readonly showAsPercentage = input<boolean>(true)
   readonly showProgressBar = input<boolean>(true)

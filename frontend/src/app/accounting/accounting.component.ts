@@ -96,7 +96,7 @@ export class AccountingComponent implements AfterViewInit, OnDestroy {
           this.orderData.push({
             id: order._id,
             orderId: order.orderId,
-            totalPrice: order.totalPrice,
+            totalPrice: Math.max(0, order.totalPrice),
             delivered: order.delivered
           })
         }

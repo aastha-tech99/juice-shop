@@ -214,6 +214,10 @@ export class FaucetComponent implements OnInit {
       this.snackBarHelperService.open('PLEASE_CONNECT_WEB3_WALLET', 'errorBar')
       return
     }
+    if (amount == null || amount <= 0) {
+      this.errorMessage = 'Withdraw amount must be a positive number.'
+      return
+    }
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()

@@ -129,7 +129,8 @@ export class PaymentComponent implements OnInit {
       next: (paramMap: ParamMap) => {
         this.mode = paramMap.get('entity')
         if (this.mode === 'wallet') {
-          this.totalPrice = parseFloat(sessionStorage.getItem('walletTotal'))
+          const walletTotal = parseFloat(sessionStorage.getItem('walletTotal'))
+          this.totalPrice = (!isNaN(walletTotal) && walletTotal > 0) ? walletTotal : 0
         } else if (this.mode === 'deluxe') {
           this.userService.deluxeStatus().subscribe({
             next: (res) => {

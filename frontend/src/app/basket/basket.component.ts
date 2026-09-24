@@ -44,11 +44,12 @@ export class BasketComponent {
   }
 
   getProductCount (total: number): void {
-    this.productCount = total
+    this.productCount = total >= 0 ? total : 0
   }
 
   getBonusPoints (total: [number, number]): void {
-    sessionStorage.setItem('itemTotal', total[0].toString())
-    this.bonus = total[1]
+    const itemTotal = total[0] >= 0 ? total[0] : 0
+    sessionStorage.setItem('itemTotal', itemTotal.toString())
+    this.bonus = total[1] >= 0 ? total[1] : 0
   }
 }

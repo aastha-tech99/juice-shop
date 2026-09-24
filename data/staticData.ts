@@ -84,7 +84,12 @@ export interface StaticDelivery {
   icon: string
 }
 export async function loadStaticDeliveryData (): Promise<StaticDelivery[]> {
-  return await loadStaticData('deliveries') as StaticDelivery[]
+  const data = await loadStaticData('deliveries') as StaticDelivery[]
+  return data.map(d => ({
+    ...d,
+    price: Math.max(0, d.price),
+    deluxePrice: Math.max(0, d.deluxePrice)
+  }))
 }
 
 export interface StaticSecurityQuestions {

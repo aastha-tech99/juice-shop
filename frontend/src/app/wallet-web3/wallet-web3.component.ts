@@ -59,6 +59,10 @@ export class WalletWeb3Component implements OnInit {
   }
 
   async depositETH () {
+    if (this.inputAmount == null || this.inputAmount <= 0) {
+      this.errorMessage = 'Deposit amount must be a positive number.'
+      return
+    }
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
@@ -77,6 +81,10 @@ export class WalletWeb3Component implements OnInit {
   }
 
   async withdrawETH () {
+    if (this.inputAmount == null || this.inputAmount <= 0) {
+      this.errorMessage = 'Withdrawal amount must be a positive number.'
+      return
+    }
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()

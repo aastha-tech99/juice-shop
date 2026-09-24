@@ -36,7 +36,8 @@ const QuantityModelInit = (sequelize: Sequelize) => {
       quantity: {
         type: DataTypes.INTEGER,
         validate: {
-          isInt: true
+          isInt: true,
+          min: 0
         }
       },
       limitPerUser: {

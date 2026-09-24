@@ -69,9 +69,9 @@ export class OrderHistoryComponent implements OnInit {
             products.push({
               id: product.id,
               name: product.name,
-              price: product.price,
-              quantity: product.quantity,
-              total: product.total
+              price: Math.max(0, product.price),
+              quantity: Math.max(0, product.quantity),
+              total: Math.max(0, product.total)
             })
           }
           this.orders.push({

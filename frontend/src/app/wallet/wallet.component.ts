@@ -33,7 +33,8 @@ export class WalletComponent implements OnInit {
   ngOnInit (): void {
     this.walletService.get().subscribe({
       next: (balance) => {
-        this.balance = parseFloat(balance).toFixed(2)
+        const parsed = parseFloat(balance)
+        this.balance = (!isNaN(parsed) && parsed >= 0) ? parsed.toFixed(2) : '0.00'
       },
       error: (err) => {
         console.log(err)

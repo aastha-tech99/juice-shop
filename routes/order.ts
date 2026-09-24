@@ -73,6 +73,10 @@ export function placeOrder () {
           let totalPoints = 0
           for (const { BasketItem, price, deluxePrice, name, id } of basket.Products ?? []) {
             if (BasketItem != null) {
+              if (BasketItem.quantity <= 0 || price < 0 || deluxePrice < 0) {
+                next(new Error('Invalid product quantity or price.'))
+                return
+              }
               challengeUtils.solveIf(challenges.christmasSpecialChallenge, () => { return BasketItem.ProductId === products.christmasSpecial.id })
               try {
                 const quantityRow = await QuantityModel.findOne({ where: { ProductId: BasketItem.ProductId } })
@@ -142,6 +146,11 @@ export function placeOrder () {
           doc.font('Times-Roman').fontSize(15).text(req.__('Thank you for your order!'))
 
           challengeUtils.solveIf(challenges.negativeOrderChallenge, () => { return totalPrice < 0 })
+
+          if (totalPrice < 0) {
+            next(new Error('Order total must not be negative.'))
+            return
+          }
 
           if (req.body.UserId) {
             if (req.body.orderDetails && req.body.orderDetails.paymentId === 'wallet') {

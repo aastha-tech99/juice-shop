@@ -662,6 +662,10 @@ async function createRecycleItem () {
 }
 
 async function createRecycle (data: { UserId: number, quantity: number, AddressId: number, date: string, isPickup: boolean }) {
+  if (!Number.isInteger(data.quantity) || data.quantity <= 0) {
+    logger.error('Recycling quantity must be a positive integer')
+    return
+  }
   return await RecycleModel.create({
     UserId: data.UserId,
     AddressId: data.AddressId,

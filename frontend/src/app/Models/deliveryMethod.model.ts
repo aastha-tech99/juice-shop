@@ -10,3 +10,10 @@ export interface DeliveryMethod {
   eta: number
   icon: string
 }
+
+export function sanitizeDeliveryMethod (d: DeliveryMethod): DeliveryMethod {
+  return {
+    ...d,
+    price: Math.max(0, d.price)
+  }
+}
