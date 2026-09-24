@@ -23,6 +23,7 @@ export class OAuthComponent implements OnInit {
   private readonly router = inject(Router)
   private readonly route = inject(ActivatedRoute)
   private readonly ngZone = inject(NgZone)
+  private isLoggingIn = false
 
 
   ngOnInit (): void {
@@ -45,6 +46,8 @@ export class OAuthComponent implements OnInit {
   }
 
   login (profile: any) {
+    if (this.isLoggingIn) return
+    this.isLoggingIn = true
     this.derivePassword(profile.email).then((password) => {
       this.userService.login({ email: profile.email, password, oauth: true }).subscribe({
         next: (authentication) => {
@@ -56,6 +59,7 @@ export class OAuthComponent implements OnInit {
           this.ngZone.run(async () => await this.router.navigate(['/']))
         },
         error: (error) => {
+          this.isLoggingIn = false
           this.invalidateSession(error)
           this.ngZone.run(async () => await this.router.navigate(['/login']))
         }

@@ -7,6 +7,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import config from 'config'
 import { type Request, type Response, type NextFunction } from 'express'
+import { literal, Op } from 'sequelize'
 
 import { challenges, products } from '../data/datacache'
 import * as challengeUtils from '../lib/challengeUtils'
@@ -154,10 +155,13 @@ export function placeOrder () {
 
           if (req.body.UserId) {
             if (req.body.orderDetails && req.body.orderDetails.paymentId === 'wallet') {
-              const wallet = await WalletModel.findOne({ where: { UserId: req.body.UserId } })
-              if ((wallet != null) && wallet.balance >= totalPrice) {
-                await WalletModel.decrement({ balance: totalPrice }, { where: { UserId: req.body.UserId } })
-              } else {
+              // Atomic balance check-and-decrement to prevent race conditions (CWE-362)
+              const [affectedRows] = await WalletModel.update(
+                // @ts-expect-error Sequelize literal for atomic balance update
+                { balance: literal(`balance - ${Number(totalPrice)}`) },
+                { where: { UserId: req.body.UserId, balance: { [Op.gte]: totalPrice } } }
+              )
+              if (affectedRows === 0) {
                 next(new Error('Insufficient wallet balance.'))
                 return
               }

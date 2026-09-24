@@ -94,19 +94,28 @@ export class BrokenBoundary extends Error {
 
 // dont use directly, use getCodeChallenges getter
 let _internalCodeChallenges: Map<string, CachedCodeChallenge> | null = null
+let _codeChallengesInitPromise: Promise<Map<string, CachedCodeChallenge>> | null = null
 export async function getCodeChallenges (): Promise<Map<string, CachedCodeChallenge>> {
-  if (_internalCodeChallenges === null) {
-    _internalCodeChallenges = new Map<string, CachedCodeChallenge>()
-    const filesWithCodeChallenges = await findFilesWithCodeChallenges(SNIPPET_PATHS)
-    for (const fileMatch of filesWithCodeChallenges) {
-      for (const codeChallenge of getCodeChallengesFromFile(fileMatch)) {
-        _internalCodeChallenges.set(codeChallenge.challengeKey, {
-          snippet: codeChallenge.snippet,
-          vulnLines: codeChallenge.vulnLines,
-          neutralLines: codeChallenge.neutralLines
-        })
-      }
-    }
+  if (_internalCodeChallenges !== null) {
+    return _internalCodeChallenges
   }
-  return _internalCodeChallenges
+  // Promise-based deduplication prevents concurrent callers from double-initializing the cache (CWE-362)
+  if (_codeChallengesInitPromise === null) {
+    _codeChallengesInitPromise = (async () => {
+      const challenges = new Map<string, CachedCodeChallenge>()
+      const filesWithCodeChallenges = await findFilesWithCodeChallenges(SNIPPET_PATHS)
+      for (const fileMatch of filesWithCodeChallenges) {
+        for (const codeChallenge of getCodeChallengesFromFile(fileMatch)) {
+          challenges.set(codeChallenge.challengeKey, {
+            snippet: codeChallenge.snippet,
+            vulnLines: codeChallenge.vulnLines,
+            neutralLines: codeChallenge.neutralLines
+          })
+        }
+      }
+      _internalCodeChallenges = challenges
+      return challenges
+    })()
+  }
+  return _codeChallengesInitPromise
 }

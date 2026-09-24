@@ -61,6 +61,7 @@ export class LoginComponent implements OnInit {
   public redirectUri = ''
   public testingUsername = 'testing@juice-sh.op'
   public testingPassword = 'IamUsedForTesting'
+  public isLoggingIn = false
 
   ngOnInit (): void {
     const email = localStorage.getItem('email')
@@ -93,6 +94,8 @@ export class LoginComponent implements OnInit {
   }
 
   login () {
+    if (this.isLoggingIn) return
+    this.isLoggingIn = true
     this.user = {}
     this.user.email = this.emailControl.value
     this.user.password = this.passwordControl.value
@@ -116,6 +119,7 @@ export class LoginComponent implements OnInit {
           })
       },
       error: ({ error }) => {
+        this.isLoggingIn = false
         if (error.status && error.data && error.status === 'totp_token_required') {
           localStorage.setItem('totp_tmp_token', error.data.tmpToken)
           this.ngZone.run(async () => await this.router.navigate(['/2fa/enter']))

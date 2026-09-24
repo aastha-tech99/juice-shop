@@ -95,7 +95,7 @@ void describe('order', () => {
     assert.equal(err, error)
   })
 
-  void it('should call next with error if WalletModel.decrement fails', async () => {
+  void it('should call next with error if atomic wallet balance update fails', async () => {
     const basket = {
       id: 1,
       Products: [{
@@ -113,9 +113,8 @@ void describe('order', () => {
     mock.method(QuantityModel, 'update', async () => [1])
     req.body.UserId = 1
     req.body.orderDetails = { paymentId: 'wallet' }
-    mock.method(WalletModel, 'findOne', async () => ({ balance: 1000 }))
-    const error = new Error('Wallet decrement error')
-    mock.method(WalletModel, 'decrement', async () => { throw error })
+    const error = new Error('Wallet update error')
+    mock.method(WalletModel, 'update', async () => { throw error })
 
     const p = new Promise((resolve) => {
       next = (err: any) => { resolve(err) }
@@ -271,7 +270,8 @@ void describe('order', () => {
     mock.method(QuantityModel, 'update', async () => [1])
     req.body.UserId = 1
     req.body.orderDetails = { paymentId: 'wallet' }
-    mock.method(WalletModel, 'findOne', async () => ({ balance: 10 }))
+    // Atomic update returns 0 affected rows when balance is insufficient
+    mock.method(WalletModel, 'update', async () => [0])
 
     const p = new Promise((resolve) => {
       next = (err: any) => { resolve(err) }

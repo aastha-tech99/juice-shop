@@ -50,6 +50,7 @@ export class RecycleComponent implements OnInit {
   public userEmail: any
   public confirmation: any
   public addressId: any = undefined
+  public isSaving = false
 
   ngOnInit (): void {
     this.configurationService.getApplicationConfiguration().subscribe({
@@ -81,6 +82,8 @@ export class RecycleComponent implements OnInit {
   }
 
   save () {
+    if (this.isSaving) return
+    this.isSaving = true
     this.recycle.AddressId = this.addressId
     this.recycle.quantity = this.recycleQuantityControl.value
     if (this.pickup.value) {
@@ -90,6 +93,7 @@ export class RecycleComponent implements OnInit {
 
     this.recycleService.save(this.recycle).subscribe({
       next: (savedRecycle: any) => {
+        this.isSaving = false
         if (savedRecycle.isPickup) {
           this.translate.get('CONFIRM_RECYCLING_PICKUP', { pickupdate: savedRecycle.pickupDate }).subscribe({
             next: (confirmRecyclingPickup) => {
@@ -114,6 +118,7 @@ export class RecycleComponent implements OnInit {
         this.resetForm()
       },
       error: (err) => {
+        this.isSaving = false
         this.snackBarHelperService.open(err.error?.error, 'errorBar')
         console.log(err)
       }

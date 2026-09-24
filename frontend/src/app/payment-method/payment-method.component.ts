@@ -52,6 +52,7 @@ export class PaymentMethodComponent implements OnInit {
   public readonly yearRange = Array.from(Array(20).keys()).map(i => i + 2080)
   public cardsExist = false
   public paymentId: any = undefined
+  public isSaving = false
 
   ngOnInit (): void {
     if (this.allowDelete) {
@@ -74,12 +75,15 @@ export class PaymentMethodComponent implements OnInit {
   }
 
   save () {
+    if (this.isSaving) return
+    this.isSaving = true
     this.card.fullName = this.nameControl.value
     this.card.cardNum = this.numberControl.value
     this.card.expMonth = this.monthControl.value
     this.card.expYear = this.yearControl.value
     this.paymentService.save(this.card).subscribe({
       next: (savedCards) => {
+        this.isSaving = false
         this.error = null
         this.translate.get('CREDIT_CARD_SAVED', { cardnumber: String(savedCards.cardNum).substring(String(savedCards.cardNum).length - 4) }).subscribe({
           next: (creditCardSaved) => {
@@ -93,6 +97,7 @@ export class PaymentMethodComponent implements OnInit {
         this.resetForm()
       },
       error: (err) => {
+        this.isSaving = false
         this.snackBarHelperService.open(err.error?.error, 'errorBar')
         this.resetForm()
       }

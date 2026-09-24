@@ -49,6 +49,7 @@ export class PhotoWallComponent implements OnInit {
   public twitterHandle = null
   public blueSkyHandle = null
   public mastodonHandle = null
+  public isSaving = false
 
   ngOnInit (): void {
     this.slideshowDataSource = []
@@ -112,13 +113,17 @@ export class PhotoWallComponent implements OnInit {
   }
 
   save () {
+    if (this.isSaving) return
+    this.isSaving = true
     this.photoWallService.addMemory(this.form.value.caption, this.form.value.image).subscribe({
       next: () => {
+        this.isSaving = false
         this.resetForm()
         this.ngOnInit()
         this.snackBarHelperService.open('IMAGE_UPLOAD_SUCCESS', 'confirmBar')
       },
       error: (err) => {
+        this.isSaving = false
         this.snackBarHelperService.open(err.error?.error, 'errorBar')
         console.log(err)
       }

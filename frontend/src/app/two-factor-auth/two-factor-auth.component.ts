@@ -54,6 +54,7 @@ export class TwoFactorAuthComponent implements OnInit {
 
   public setupStatus: boolean | null = null
   public errored: boolean | null = null
+  public isSubmitting = false
 
   public totpUrl?: string
   public totpSecret?: string
@@ -88,16 +89,20 @@ export class TwoFactorAuthComponent implements OnInit {
   }
 
   setup () {
+    if (this.isSubmitting) return
+    this.isSubmitting = true
     this.twoFactorAuthService.setup(
       this.twoFactorSetupForm.get('passwordControl')?.value,
       this.twoFactorSetupForm.get('initialTokenControl')?.value,
       this.setupToken
     ).subscribe({
       next: () => {
+        this.isSubmitting = false
         this.setupStatus = true
         this.snackBarHelperService.open('CONFIRM_2FA_SETUP')
       },
       error: () => {
+        this.isSubmitting = false
         this.twoFactorSetupForm.get('passwordControl')?.markAsPristine()
         this.twoFactorSetupForm.get('initialTokenControl')?.markAsPristine()
         this.errored = true
@@ -106,10 +111,13 @@ export class TwoFactorAuthComponent implements OnInit {
   }
 
   disable () {
+    if (this.isSubmitting) return
+    this.isSubmitting = true
     this.twoFactorAuthService.disable(
       this.twoFactorDisableForm.get('passwordControl')?.value
     ).subscribe({
       next: () => {
+        this.isSubmitting = false
         this.updateStatus().subscribe(
           () => {
             this.setupStatus = false
@@ -118,6 +126,7 @@ export class TwoFactorAuthComponent implements OnInit {
         this.snackBarHelperService.open('CONFIRM_2FA_DISABLE')
       },
       error: () => {
+        this.isSubmitting = false
         this.twoFactorDisableForm.get('passwordControl')?.markAsPristine()
         this.errored = true
       }
