@@ -13,7 +13,7 @@ export async function loadStaticData (file: string) {
 
 export interface StaticUser {
   email: string
-  password: string
+  password?: string
   key: string
   role: 'admin' | 'customer' | 'deluxe' | 'accounting'
 
@@ -56,7 +56,7 @@ export async function loadStaticUserData (): Promise<StaticUser[]> {
   const users = await loadStaticData('users') as StaticUser[]
   return users.map(user => ({
     ...user,
-    password: process.env[`JUICE_SHOP_${user.key.toUpperCase()}_PASSWORD`] || user.password
+    password: process.env[`JUICE_SHOP_${user.key.toUpperCase()}_PASSWORD`] || user.password || `${user.key}-default-pw`
   }))
 }
 
