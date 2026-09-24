@@ -64,6 +64,12 @@ variable "container_tag" {
   default     = "latest"
 }
 
+variable "tls_private_key" {
+  description = "TLS private key for the server certificate (provide via secrets manager or TF_VAR_tls_private_key)"
+  type        = string
+  sensitive   = true
+}
+
 variable "efs_encrypted" {
   description = "Enable encryption at rest for EFS"
   type        = bool
