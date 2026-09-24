@@ -7,7 +7,6 @@ import { type NextFunction, type Request, type Response } from 'express'
 import { Op } from 'sequelize'
 import jwt from 'jsonwebtoken'
 import config from 'config'
-import jws from 'jws'
 
 import { challenges, products, retrieveBlueprintChallengeFile } from '../data/datacache'
 import type { Product as ProductConfig } from '../lib/config.schema'
@@ -119,14 +118,8 @@ export const serverSideChallenges = () => (req: Request, res: Response, next: Ne
 function jwtChallenge (challenge: Challenge, req: Request, algorithm: string, email: string | RegExp) {
   const token = utils.jwtFrom(req)
   if (token) {
-    const decoded = jws.decode(token) ? jwt.decode(token) : null
-
-    if (decoded === null || typeof decoded === 'string') {
-      return
-    }
-
-    jwt.verify(token, security.publicKey, (err: jwt.VerifyErrors | null) => {
-      if (err === null) {
+    jwt.verify(token, security.publicKey, (err: jwt.VerifyErrors | null, decoded: any) => {
+      if (err === null && decoded != null && typeof decoded !== 'string') {
         challengeUtils.solveIf(challenge, () => {
           return hasAlgorithm(token, algorithm) && hasEmail(decoded as { data: { email: string } }, email)
         })
