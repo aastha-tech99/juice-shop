@@ -44,6 +44,12 @@ export function upgradeToDeluxe () {
         challengeUtils.solveIf(challenges.freeDeluxeChallenge, () => {
           return security.verify(utils.jwtFrom(req)) && req.body.paymentMode !== 'wallet' && req.body.paymentMode !== 'card'
         })
+        // Revoke old token before issuing new one with elevated privileges (CWE-384)
+        const oldToken = utils.jwtFrom(req)
+        if (oldToken) {
+          security.revokeToken(oldToken)
+          delete security.authenticatedUsers.tokenMap[oldToken]
+        }
         const userWithStatus = utils.queryResultToJson(updatedUser)
         const updatedToken = security.authorize(userWithStatus)
         security.authenticatedUsers.put(updatedToken, userWithStatus)

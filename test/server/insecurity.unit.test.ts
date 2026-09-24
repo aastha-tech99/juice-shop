@@ -109,6 +109,29 @@ void describe('insecurity', () => {
       assert.equal(security.authenticatedUsers.from({ headers: {} } as unknown as Request), undefined)
       assert.equal(security.authenticatedUsers.from({} as unknown as Request), undefined)
     })
+
+    void it('revokes previous token when a new token is put for the same user (CWE-384 session rotation)', () => {
+      const oldToken = 'old-token-for-rotation'
+      const newToken = 'new-token-for-rotation'
+      const user = { data: { id: 777 } as unknown as UserModel }
+      security.authenticatedUsers.put(oldToken, user)
+      assert.deepEqual(security.authenticatedUsers.get(oldToken), user)
+      assert.equal(security.isTokenRevoked(oldToken), false)
+
+      security.authenticatedUsers.put(newToken, user)
+      assert.equal(security.isTokenRevoked(oldToken), true)
+      assert.equal(security.authenticatedUsers.get(oldToken), undefined)
+      assert.deepEqual(security.authenticatedUsers.get(newToken), user)
+    })
+
+    void it('does not revoke token when the same token is re-put for the same user', () => {
+      const token = 'same-token-reput'
+      const user = { data: { id: 778 } as unknown as UserModel }
+      security.authenticatedUsers.put(token, user)
+      security.authenticatedUsers.put(token, user)
+      assert.equal(security.isTokenRevoked(token), false)
+      assert.deepEqual(security.authenticatedUsers.get(token), user)
+    })
   })
 
   void describe('essentialCookieOptions', () => {
@@ -385,7 +408,7 @@ void describe('insecurity', () => {
     })
 
     void it('verify returns false for revoked token', () => {
-      const user = { data: { role: 'customer' } }
+      const user = { data: { role: 'customer', id: 901 } }
       const token = security.authorize(user)
       assert.equal(security.verify(token), true)
       security.revokeToken(token)
@@ -393,7 +416,7 @@ void describe('insecurity', () => {
     })
 
     void it('isCustomer returns false for revoked token', () => {
-      const user = { data: { role: 'customer' } }
+      const user = { data: { role: 'customer', id: 902 } }
       const token = security.authorize(user)
       assert.equal(security.isCustomer({ headers: { authorization: `Bearer ${token}` } } as unknown as Request), true)
       security.revokeToken(token)

@@ -84,6 +84,12 @@ export const authenticatedUsers: IAuthenticatedUsers = {
   tokenMap: {},
   idMap: {},
   put: function (token: string, user: ResponseWithUser) {
+    // Revoke previous token for this user to ensure session rotation on privilege change (CWE-384)
+    const oldToken = this.idMap[user.data.id]
+    if (oldToken && oldToken !== token) {
+      revokeToken(oldToken)
+      delete this.tokenMap[oldToken]
+    }
     this.tokenMap[token] = user
     this.idMap[user.data.id] = token
   },
