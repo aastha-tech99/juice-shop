@@ -8,10 +8,9 @@
   app.use('/api/Feedbacks/:id', security.isAuthorized())
   /* Users: Only POST is allowed in order to register a new user */
   app.get('/api/Users', security.isAuthorized())
-  app.route('/api/Users/:id')
-    .get(security.isAuthorized())
-    .put(security.denyAll())
-    .delete(security.denyAll())
+  app.get('/api/Users/:id', security.isAuthorized())
+  app.put('/api/Users/:id', security.denyAll())
+  app.delete('/api/Users/:id', security.denyAll())
   /* Products: Only GET is allowed in order to view products */
   app.post('/api/Products', security.denyAll())
   app.put('/api/Products/:id', security.denyAll())

@@ -11,7 +11,9 @@ export async function start (readyCallback?: () => void) {
   await datacreator()
   datacreatorEnd()
   const port = process.env.PORT ?? config.get('server.port')
-  process.env.BASE_PATH = process.env.BASE_PATH ?? config.get('server.basePath')
+  if (process.env.BASE_PATH === undefined) {
+    process.env.BASE_PATH = config.get('server.basePath')
+  }
 
   metricsUpdateLoop = Metrics.updateLoop()
 

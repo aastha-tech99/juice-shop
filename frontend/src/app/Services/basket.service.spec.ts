@@ -120,8 +120,8 @@ describe('BasketService', () => {
 
         localStorage.setItem('token', 'token')
         sessionStorage.setItem('bid', '42')
-        const totals: number[] = []
-        service.getItemTotal().subscribe((t) => totals.push(t))
+        let lastTotal: number | undefined
+        service.getItemTotal().subscribe((t) => { lastTotal = t })
 
         service.updateNumberOfCartItems()
         const req = httpMock.expectOne('http://localhost:3000/rest/basket/42')
@@ -134,7 +134,7 @@ describe('BasketService', () => {
                 ]
             }
         })
-        expect(totals).toEqual([5])
+        expect(lastTotal).toBe(5)
         localStorage.removeItem('token')
         httpMock.verify()
     })

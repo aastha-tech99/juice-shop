@@ -188,16 +188,15 @@ export function chat () {
     } // vuln-code-snippet end chatbotGreedyInjectionChallenge chatbotPromptInjectionChallenge
 
     const model = config.get<string>('application.chatBot.model')
-    const messages = req.body?.messages ?? []
-    const userName = await getUserNameFromToken(req)
+    // Capture request data as immutable snapshot to prevent concurrent modification
+    const messages = Object.freeze([...(req.body?.messages ?? [])])
+    const systemPrompt = buildSystemPrompt(await getUserNameFromToken(req))
 
     res.setHeader('Content-Type', 'text/event-stream')
     res.setHeader('Cache-Control', 'no-cache, no-transform')
     res.setHeader('Connection', 'keep-alive')
     res.setHeader('Content-Encoding', 'identity')
     res.flushHeaders()
-
-    const systemPrompt = buildSystemPrompt(userName)
 
     try {
       const result = streamText({

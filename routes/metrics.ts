@@ -167,22 +167,16 @@ export function observeMetrics () {
         const { major, minor, patch } = version.match(/(?<major>\d+).(?<minor>\d+).(?<patch>\d+)/).groups
         versionMetrics.set({ version, major, minor, patch }, 1)
 
-        const challengeStatuses = new Map()
-        const challengeCount = new Map()
+        // Compute challenge metrics directly from filtered groups to avoid non-atomic read-modify-write on Maps
+        const challengeEntries = Object.values<ChallengeModel>(challenges)
+        const challengeKeys = [...new Set(challengeEntries.map(({ difficulty, category }) => `${difficulty}:${category}`))]
 
-        for (const { difficulty, category, solved } of Object.values<ChallengeModel>(challenges)) {
-          const key = `${difficulty}:${category}`
-
-          // Increment by one if solved, when not solved increment by 0. This ensures that even unsolved challenges are set to , instead of not being set at all
-          challengeStatuses.set(key, (challengeStatuses.get(key) || 0) + (solved ? 1 : 0))
-          challengeCount.set(key, (challengeCount.get(key) || 0) + 1)
-        }
-
-        for (const key of challengeStatuses.keys()) {
+        for (const key of challengeKeys) {
           const [difficulty, category] = key.split(':', 2)
+          const group = challengeEntries.filter(c => `${c.difficulty}:${c.category}` === key)
 
-          challengeSolvedMetrics.set({ difficulty, category }, challengeStatuses.get(key))
-          challengeTotalMetrics.set({ difficulty, category }, challengeCount.get(key))
+          challengeSolvedMetrics.set({ difficulty, category }, group.filter(c => c.solved).length)
+          challengeTotalMetrics.set({ difficulty, category }, group.length)
         }
 
         const [codingChallenges, findItCount, fixItCount, solvedCount, orderCount, reviewCount, customerCount, deluxeCount, totalUserCount, totalBalance, feedbackCount, complaintCount] = await Promise.all([

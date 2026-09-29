@@ -44,7 +44,7 @@ export default defineConfig({
           }
         },
         GetFromConfig (variable: string) {
-          return config.get(variable)
+          return JSON.parse(JSON.stringify(config.get(variable)))
         },
         GetOverwriteUrl () {
           return config.get('challenges.overwriteUrlForProductTamperingChallenge')
