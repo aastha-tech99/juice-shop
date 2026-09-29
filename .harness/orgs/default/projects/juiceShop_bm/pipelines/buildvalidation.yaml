@@ -101,6 +101,23 @@ pipeline:
                       cd "$WORKSPACE"
                       export NODE_OPTIONS="--max_old_space_size=4096"
 
+                      # @angular/build 22.2 writes the esbuild metafile as
+                      # dist/frontend/browser-stats.json. The frontend build
+                      # script still passes stats.json to cyclonedx-esbuild, so
+                      # postinstall exits 254 after a successful ng build.
+                      echo "==> Point frontend SBOM at browser-stats.json"
+                      node -e '
+                        const fs = require("fs");
+                        const p = "frontend/package.json";
+                        const pkg = JSON.parse(fs.readFileSync(p, "utf8"));
+                        const from = "dist/frontend/stats.json";
+                        const to = "dist/frontend/browser-stats.json";
+                        if (pkg.scripts && pkg.scripts.sbom && pkg.scripts.sbom.includes(from)) {
+                          pkg.scripts.sbom = pkg.scripts.sbom.split(from).join(to);
+                          fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + "\n");
+                        }
+                      '
+
                       echo "==> Install application"
                       npm install
 
@@ -220,6 +237,20 @@ pipeline:
 
                       cd "$WORKSPACE"
                       export NODE_OPTIONS="--max_old_space_size=4096"
+
+                      # Same Angular 22.2 metafile rename as Build_and_E2E.
+                      echo "==> Point frontend SBOM at browser-stats.json"
+                      node -e '
+                        const fs = require("fs");
+                        const p = "frontend/package.json";
+                        const pkg = JSON.parse(fs.readFileSync(p, "utf8"));
+                        const from = "dist/frontend/stats.json";
+                        const to = "dist/frontend/browser-stats.json";
+                        if (pkg.scripts && pkg.scripts.sbom && pkg.scripts.sbom.includes(from)) {
+                          pkg.scripts.sbom = pkg.scripts.sbom.split(from).join(to);
+                          fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + "\n");
+                        }
+                      '
 
                       echo "==> Install application"
                       npm install
