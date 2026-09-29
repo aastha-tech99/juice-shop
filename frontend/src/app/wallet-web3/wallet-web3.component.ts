@@ -49,6 +49,7 @@ export class WalletWeb3Component implements OnInit {
   challengeSolved = false
   errorMessage = ''
   metamaskAddress = ''
+  isProcessing = false
   ngOnInit (): void {
     this.handleAuth()
     window.ethereum.on('chainChanged', this.handleChainChanged.bind(this))
@@ -77,6 +78,10 @@ export class WalletWeb3Component implements OnInit {
   }
 
   async withdrawETH () {
+    if (this.isProcessing) {
+      return
+    }
+    this.isProcessing = true
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
@@ -91,6 +96,8 @@ export class WalletWeb3Component implements OnInit {
       this.getUserEthBalance()
     } catch (error) {
       this.errorMessage = error.message
+    } finally {
+      this.isProcessing = false
     }
   }
 
