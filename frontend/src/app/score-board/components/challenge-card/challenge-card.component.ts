@@ -33,13 +33,13 @@ export class ChallengeCardComponent {
   private previousHintsUnlocked?: number
 
   hasInstructions: (challengeName: string) => boolean = () => false
-  startHackingInstructorFor: (challengeName: string) => Promise<void> = async () => {}
+  startHackingInstructorFor: (challengeName: string) => Promise<void> = async () => { /* no-op default */ }
 
   constructor () {
     void import('../../../../hacking-instructor').then(({ hasInstructions, startHackingInstructorFor }) => {
       this.hasInstructions = hasInstructions
       this.startHackingInstructorFor = startHackingInstructorFor
-    })
+    }).catch(() => { /* hacking instructor not available */ })
 
     effect(() => {
       const challenge = this.challenge()

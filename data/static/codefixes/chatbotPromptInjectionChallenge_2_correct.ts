@@ -5,10 +5,14 @@
           orderId: z.string().describe('The order ID of the damaged order (format: xxxx-xxxxxxxxxxxxxxxx)')
         }),
         execute: async ({ discount, orderId, authenticatedUser }) => {
-          const order = await db.ordersCollection.findOne({ orderId, email: authenticatedUser?.email, status: OrderStatus.DAMAGED })
-          if (!order) return { error: 'No verified damaged order found for this order ID.' }
-          const couponCode = security.generateCoupon(discount)
-          return { couponCode, discount }
+          try {
+            const order = await db.ordersCollection.findOne({ orderId, email: authenticatedUser?.email, status: OrderStatus.DAMAGED })
+            if (!order) return { error: 'No verified damaged order found for this order ID.' }
+            const couponCode = security.generateCoupon(discount)
+            return { couponCode, discount }
+          } catch (error) {
+            return { error: 'Failed to generate coupon' }
+          }
         }
       }),
 
@@ -18,18 +22,22 @@
           orderId: z.string().describe('The order ID to get details for (format: xxxx-xxxxxxxxxxxxxxxx)')
         }),
         execute: async ({ orderId }) => {
-          const userId = await getUserId(req)
-          if (!userId) return { error: 'Customer not authenticated' }
+          try {
+            const userId = await getUserId(req)
+            if (!userId) return { error: 'Customer not authenticated' }
 
-          const user = await UserModel.findByPk(userId, { attributes: ['email'] })
-          if (!user) return { error: 'Customer not found' }
+            const user = await UserModel.findByPk(userId, { attributes: ['email'] })
+            if (!user) return { error: 'Customer not found' }
 
-          const order = await db.ordersCollection.findOne({ orderId })
+            const order = await db.ordersCollection.findOne({ orderId })
 
-          if (!order) return { error: 'Order not found' }
-          if (order.email !== user.email) return { error: 'Order does not belong to the current customer' }
+            if (!order) return { error: 'Order not found' }
+            if (order.email !== user.email) return { error: 'Order does not belong to the current customer' }
 
-          return order
+            return order
+          } catch (error) {
+            return { error: 'Failed to retrieve order' }
+          }
         }
       })
     }

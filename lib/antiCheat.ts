@@ -110,43 +110,53 @@ export const calculateCheatScore = (challenge: Challenge, isCheating = false) =>
 }
 
 export const calculateFindItCheatScore = async (challenge: Challenge) => {
-  const timestamp = new Date()
-  let timeFactor = 0.001
-  timeFactor *= (safeEqual(challenge.key, 'scoreBoardChallenge') && config.get('hackingInstructor.isEnabled') ? 0.5 : 1)
-  let cheatScore = 0
+  try {
+    const timestamp = new Date()
+    let timeFactor = 0.001
+    timeFactor *= (safeEqual(challenge.key, 'scoreBoardChallenge') && config.get('hackingInstructor.isEnabled') ? 0.5 : 1)
+    let cheatScore = 0
 
-  const codeSnippet = await retrieveCodeSnippet(challenge.key)
-  if (codeSnippet == null) {
+    const codeSnippet = await retrieveCodeSnippet(challenge.key)
+    if (codeSnippet == null) {
+      return 0
+    }
+    const { snippet, vulnLines } = codeSnippet
+    timeFactor *= vulnLines.length
+    const identicalSolved = await checkForIdenticalSolvedChallenge(challenge)
+    if (identicalSolved) {
+      timeFactor = 0.8 * timeFactor
+    }
+    const minutesExpectedToSolve = Math.ceil(snippet.length * timeFactor)
+    const minutesSincePreviousSolve = (timestamp.getTime() - previous().timestamp.getTime()) / 60000
+    cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
+
+    logger.info(`Cheat score for "Find it" phase of ${safeEqual(challenge.key, 'scoreBoardChallenge') && config.get('hackingInstructor.isEnabled') ? 'tutorial ' : ''}${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
+    solves.push({ challenge, phase: 'find it', timestamp, cheatScore })
+
+    return cheatScore
+  } catch (error) {
+    logger.warn('Error calculating FindIt cheat score: ' + utils.getErrorMessage(error))
     return 0
   }
-  const { snippet, vulnLines } = codeSnippet
-  timeFactor *= vulnLines.length
-  const identicalSolved = await checkForIdenticalSolvedChallenge(challenge)
-  if (identicalSolved) {
-    timeFactor = 0.8 * timeFactor
-  }
-  const minutesExpectedToSolve = Math.ceil(snippet.length * timeFactor)
-  const minutesSincePreviousSolve = (timestamp.getTime() - previous().timestamp.getTime()) / 60000
-  cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
-
-  logger.info(`Cheat score for "Find it" phase of ${safeEqual(challenge.key, 'scoreBoardChallenge') && config.get('hackingInstructor.isEnabled') ? 'tutorial ' : ''}${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
-  solves.push({ challenge, phase: 'find it', timestamp, cheatScore })
-
-  return cheatScore
 }
 
 export const calculateFixItCheatScore = async (challenge: Challenge) => {
-  const timestamp = new Date()
-  let cheatScore = 0
+  try {
+    const timestamp = new Date()
+    let cheatScore = 0
 
-  const { fixes } = readFixes(challenge.key)
-  const minutesExpectedToSolve = Math.floor(fixes.length / 2)
-  const minutesSincePreviousSolve = (timestamp.getTime() - previous().timestamp.getTime()) / 60000
-  cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
+    const { fixes } = readFixes(challenge.key)
+    const minutesExpectedToSolve = Math.floor(fixes.length / 2)
+    const minutesSincePreviousSolve = (timestamp.getTime() - previous().timestamp.getTime()) / 60000
+    cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
 
-  logger.info(`Cheat score for "Fix it" phase of ${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
-  solves.push({ challenge, phase: 'fix it', timestamp, cheatScore })
-  return cheatScore
+    logger.info(`Cheat score for "Fix it" phase of ${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
+    solves.push({ challenge, phase: 'fix it', timestamp, cheatScore })
+    return cheatScore
+  } catch (error) {
+    logger.warn('Error calculating FixIt cheat score: ' + utils.getErrorMessage(error))
+    return 0
+  }
 }
 
 export const totalCheatScore = () => {

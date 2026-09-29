@@ -24,10 +24,11 @@ const specialMemories = [
 ] as const
 
 const validateConfig = async ({ products, memories, exitOnFailure = true }: { products?: ProductConfig[], memories?: MemoryConfig[], exitOnFailure: boolean }) => {
-  products = products ?? config.get('products') ?? []
-  memories = memories ?? config.get('memories') ?? []
+  try {
+    products = products ?? config.get('products') ?? []
+    memories = memories ?? config.get('memories') ?? []
 
-  let success = true
+    let success = true
   success = checkConfigSchema() && success
   success = checkMinimumRequiredNumberOfProducts(products) && success
   success = checkUnambiguousMandatorySpecialProducts(products) && success
@@ -47,8 +48,14 @@ const validateConfig = async ({ products, memories, exitOnFailure = true }: { pr
       logger.error(colors.red('Exiting due to configuration errors!'))
       process.exit(1)
     }
+    return success
+  } catch (err) {
+    logger.error('Error during configuration validation: ' + (err instanceof Error ? err.message : String(err)))
+    if (exitOnFailure) {
+      process.exit(1)
+    }
+    return false
   }
-  return success
 }
 
 export const checkConfigSchema = (configuration = config.util.toObject()): boolean => {

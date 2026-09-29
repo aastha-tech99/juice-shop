@@ -10,75 +10,108 @@ import * as utils from '../utils'
 import replace from 'replace'
 
 const customizeApplication = async () => {
-  if (config.get<string>('application.name')) {
-    customizeTitle()
-    customizeTerraformFiles()
-  }
-  if (config.get('application.logo')) {
-    void customizeLogo()
-  }
-  if (config.get('application.favicon')) {
-    void customizeFavicon()
-  }
-  if (config.get('application.theme')) {
-    customizeTheme()
-  }
-  if (config.get('application.cookieConsent')) {
-    customizeCookieConsentBanner()
-  }
-  if (config.get('application.promotion')) {
-    void customizePromotionVideo()
-    void customizePromotionSubtitles()
-  }
-  if (config.get('hackingInstructor')) {
-    void customizeHackingInstructorAvatar()
-  }
-  if (config.get('application.chatBot')) {
-    void customizeChatbotAvatar()
+  try {
+    if (config.get<string>('application.name')) {
+      customizeTitle()
+      customizeTerraformFiles()
+    }
+    if (config.get('application.logo')) {
+      void customizeLogo()
+    }
+    if (config.get('application.favicon')) {
+      void customizeFavicon()
+    }
+    if (config.get('application.theme')) {
+      customizeTheme()
+    }
+    if (config.get('application.cookieConsent')) {
+      customizeCookieConsentBanner()
+    }
+    if (config.get('application.promotion')) {
+      void customizePromotionVideo()
+      void customizePromotionSubtitles()
+    }
+    if (config.get('hackingInstructor')) {
+      void customizeHackingInstructorAvatar()
+    }
+    if (config.get('application.chatBot')) {
+      void customizeChatbotAvatar()
+    }
+  } catch (err) {
+    console.error('Error during application customization: ' + utils.getErrorMessage(err))
   }
 }
 
 const customizeLogo = async () => {
-  await retrieveCustomFile('application.logo', 'frontend/dist/frontend/assets/public/images')
+  try {
+    await retrieveCustomFile('application.logo', 'frontend/dist/frontend/assets/public/images')
+  } catch (err) {
+    console.error('Error customizing logo: ' + utils.getErrorMessage(err))
+  }
 }
 
 const customizeChatbotAvatar = async () => {
-  const avatarImage = await retrieveCustomFile('application.chatBot.avatar', 'frontend/dist/frontend/assets/public/images')
-  fs.copyFileSync('frontend/dist/frontend/assets/public/images/' + avatarImage, 'frontend/dist/frontend/assets/public/images/ChatbotAvatar.png')
+  try {
+    const avatarImage = await retrieveCustomFile('application.chatBot.avatar', 'frontend/dist/frontend/assets/public/images')
+    fs.copyFileSync('frontend/dist/frontend/assets/public/images/' + avatarImage, 'frontend/dist/frontend/assets/public/images/ChatbotAvatar.png')
+  } catch (err) {
+    console.error('Error customizing chatbot avatar: ' + utils.getErrorMessage(err))
+  }
 }
 
 const customizeHackingInstructorAvatar = async () => {
-  const avatarImage = await retrieveCustomFile('hackingInstructor.avatarImage', 'frontend/dist/frontend/assets/public/images')
-  fs.copyFileSync('frontend/dist/frontend/assets/public/images/' + avatarImage, 'frontend/dist/frontend/assets/public/images/hackingInstructor.png')
+  try {
+    const avatarImage = await retrieveCustomFile('hackingInstructor.avatarImage', 'frontend/dist/frontend/assets/public/images')
+    fs.copyFileSync('frontend/dist/frontend/assets/public/images/' + avatarImage, 'frontend/dist/frontend/assets/public/images/hackingInstructor.png')
+  } catch (err) {
+    console.error('Error customizing hacking instructor avatar: ' + utils.getErrorMessage(err))
+  }
 }
 
 const customizeFavicon = async () => {
-  const favicon = await retrieveCustomFile('application.favicon', 'frontend/dist/frontend/assets/public')
-  replace({
-    regex: /type="image\/x-icon" href="assets\/public\/.*"/,
-    replacement: `type="image/x-icon" href="assets/public/${favicon}"`,
-    paths: ['frontend/dist/frontend/index.html'],
-    recursive: false,
-    silent: true
-  })
+  try {
+    const favicon = await retrieveCustomFile('application.favicon', 'frontend/dist/frontend/assets/public')
+    replace({
+      regex: /type="image\/x-icon" href="assets\/public\/.*"/,
+      replacement: `type="image/x-icon" href="assets/public/${favicon}"`,
+      paths: ['frontend/dist/frontend/index.html'],
+      recursive: false,
+      silent: true
+    })
+  } catch (err) {
+    console.error('Error customizing favicon: ' + utils.getErrorMessage(err))
+  }
 }
 
 const customizePromotionVideo = async () => {
-  await retrieveCustomFile('application.promotion.video', 'frontend/dist/frontend/assets/public/videos')
+  try {
+    await retrieveCustomFile('application.promotion.video', 'frontend/dist/frontend/assets/public/videos')
+  } catch (err) {
+    console.error('Error customizing promotion video: ' + utils.getErrorMessage(err))
+  }
 }
 
 const customizePromotionSubtitles = async () => {
-  await retrieveCustomFile('application.promotion.subtitles', 'frontend/dist/frontend/assets/public/videos')
+  try {
+    await retrieveCustomFile('application.promotion.subtitles', 'frontend/dist/frontend/assets/public/videos')
+  } catch (err) {
+    console.error('Error customizing promotion subtitles: ' + utils.getErrorMessage(err))
+  }
 }
 
 const retrieveCustomFile = async (sourceProperty: string, destinationFolder: string) => {
-  let file = config.get<string>(sourceProperty)
-  if (utils.isUrl(file)) {
-    const filePath = file
-    file = utils.extractFilename(file)
-    await utils.downloadToFile(filePath, destinationFolder + '/' + file)
+  try {
+    let file = config.get<string>(sourceProperty)
+    if (utils.isUrl(file)) {
+      const filePath = file
+      file = utils.extractFilename(file)
+      await utils.downloadToFile(filePath, destinationFolder + '/' + file)
+    }
+    return file
+  } catch (err) {
+    console.error('Error retrieving custom file for ' + sourceProperty + ': ' + utils.getErrorMessage(err))
+    return config.get<string>(sourceProperty)
   }
-  return file
 }
 
 const customizeTitle = () => {

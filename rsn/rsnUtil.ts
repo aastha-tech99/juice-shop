@@ -50,17 +50,18 @@ function filterString (text: string) {
 }
 
 const computeDiffs = async (keys: string[]) => {
-  const data: CacheData = keys.reduce<CacheData>((prev, curr) => {
-    return {
-      ...prev,
-      [curr]: {
-        added: [],
-        removed: []
+  try {
+    const data: CacheData = keys.reduce<CacheData>((prev, curr) => {
+      return {
+        ...prev,
+        [curr]: {
+          added: [],
+          removed: []
+        }
       }
-    }
-  }, {})
-  for (const val of keys) {
-    try {
+    }, {})
+    for (const val of keys) {
+      try {
       const snippet = await retrieveCodeSnippet(val.split('_')[0])
       if (snippet == null) continue
       const fileData = fs.readFileSync(fixesPath + '/' + val).toString()
@@ -101,8 +102,12 @@ const computeDiffs = async (keys: string[]) => {
     } catch (err) {
       console.error(err)
     }
+    }
+    return data
+  } catch (err) {
+    console.error('Error computing diffs:', err)
+    return {}
   }
-  return data
 }
 
 function findChangedFiles (current: CacheData, cached: CacheData): string[] {

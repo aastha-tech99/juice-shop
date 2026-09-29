@@ -10,21 +10,26 @@ import logger from '../logger'
 import dependencyChecker from 'check-dependencies'
 
 const validateDependencies = async ({ packageDir = '.' } = {}) => {
-  let dependencies: any = {}
   try {
-    dependencies = await dependencyChecker({ packageDir, scopeList: ['dependencies'] })
-  } catch (err) {
-    logger.warn(`Dependencies in ${colors.bold(packageDir + '/package.json')} could not be checked due to "${utils.getErrorMessage(err)}" error (${colors.red('ERROR')})`)
-  }
-
-  if (dependencies.depsWereOk === true) {
-    logger.info(`All dependencies in ${colors.bold(packageDir + '/package.json')} are satisfied (${colors.green('SUCCESS')})`)
-    return true
-  } else {
-    logger.warn(`Dependencies in ${colors.bold(packageDir + '/package.json')} are not rightly satisfied (${colors.red('ERROR')})`)
-    for (const err of dependencies.error) {
-      logger.warn(err)
+    let dependencies: any = {}
+    try {
+      dependencies = await dependencyChecker({ packageDir, scopeList: ['dependencies'] })
+    } catch (err) {
+      logger.warn(`Dependencies in ${colors.bold(packageDir + '/package.json')} could not be checked due to "${utils.getErrorMessage(err)}" error (${colors.red('ERROR')})`)
     }
+
+    if (dependencies.depsWereOk === true) {
+      logger.info(`All dependencies in ${colors.bold(packageDir + '/package.json')} are satisfied (${colors.green('SUCCESS')})`)
+      return true
+    } else {
+      logger.warn(`Dependencies in ${colors.bold(packageDir + '/package.json')} are not rightly satisfied (${colors.red('ERROR')})`)
+      for (const err of dependencies.error) {
+        logger.warn(err)
+      }
+      return false
+    }
+  } catch (err) {
+    logger.warn(`Unexpected error validating dependencies: ${utils.getErrorMessage(err)}`)
     return false
   }
 }

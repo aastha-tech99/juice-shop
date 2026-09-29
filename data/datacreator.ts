@@ -41,27 +41,31 @@ import replace from 'replace'
 const entities = new Entities()
 
 export default async () => {
-  const creators = [
-    createSecurityQuestions,
-    createUsers,
-    createChallenges,
-    createRandomFakeUsers,
-    createProducts,
-    createBaskets,
-    createBasketItems,
-    createAnonymousFeedback,
-    createComplaints,
-    createRecycleItem,
-    createOrders,
-    createQuantity,
-    createWallet,
-    createDeliveryMethods,
-    createMemories,
-    prepareFilesystem
-  ]
+  try {
+    const creators = [
+      createSecurityQuestions,
+      createUsers,
+      createChallenges,
+      createRandomFakeUsers,
+      createProducts,
+      createBaskets,
+      createBasketItems,
+      createAnonymousFeedback,
+      createComplaints,
+      createRecycleItem,
+      createOrders,
+      createQuantity,
+      createWallet,
+      createDeliveryMethods,
+      createMemories,
+      prepareFilesystem
+    ]
 
-  for (const creator of creators) {
-    await creator()
+    for (const creator of creators) {
+      await creator()
+    }
+  } catch (err) {
+    logger.error(`Error during data creation: ${utils.getErrorMessage(err)}`)
   }
 }
 
@@ -308,10 +312,17 @@ async function createRandomFakeUsers () {
   }
 
   return await Promise.all(new Array(config.get('application.numberOfRandomFakeUsers')).fill(0).map(
-    async () => await UserModel.create({
-      email: getGeneratedRandomFakeUserEmail(),
-      password: makeRandomString(5)
-    })
+    async () => {
+      try {
+        return await UserModel.create({
+          email: getGeneratedRandomFakeUserEmail(),
+          password: makeRandomString(5)
+        })
+      } catch (err) {
+        logger.error(`Could not create random fake user: ${utils.getErrorMessage(err)}`)
+        return null
+      }
+    }
   ))
 }
 
@@ -339,37 +350,41 @@ async function createMemories () {
       logger.error(`Could not create memory: ${utils.getErrorMessage(err)}`)
     }),
     ...structuredClone(config.get<MemoryConfig[]>('memories')).map(async (memory) => {
-      let tmpImageFileName = memory.image
-      if (utils.isUrl(memory.image)) {
-        const imageUrl = memory.image
-        tmpImageFileName = utils.extractFilename(memory.image)
-        void utils.downloadToFile(imageUrl, 'frontend/dist/frontend/assets/public/images/uploads/' + tmpImageFileName)
-      }
-      if (memory.geoStalkingMetaSecurityQuestion && memory.geoStalkingMetaSecurityAnswer) {
-        await createSecurityAnswer(datacache.users.john.id, memory.geoStalkingMetaSecurityQuestion, memory.geoStalkingMetaSecurityAnswer)
-        memory.user = 'john'
-      }
-      if (memory.geoStalkingVisualSecurityQuestion && memory.geoStalkingVisualSecurityAnswer) {
-        await createSecurityAnswer(datacache.users.emma.id, memory.geoStalkingVisualSecurityQuestion, memory.geoStalkingVisualSecurityAnswer)
-        memory.user = 'emma'
-      }
-      if (!memory.user) {
-        logger.warn(`Could not find user for memory ${memory.caption}!`)
-        return
-      }
-      const userIdOfMemory = datacache.users[memory.user].id.valueOf() ?? null
-      if (!userIdOfMemory) {
-        logger.warn(`Could not find saved user for memory ${memory.caption}!`)
-        return
-      }
+      try {
+        let tmpImageFileName = memory.image
+        if (utils.isUrl(memory.image)) {
+          const imageUrl = memory.image
+          tmpImageFileName = utils.extractFilename(memory.image)
+          void utils.downloadToFile(imageUrl, 'frontend/dist/frontend/assets/public/images/uploads/' + tmpImageFileName)
+        }
+        if (memory.geoStalkingMetaSecurityQuestion && memory.geoStalkingMetaSecurityAnswer) {
+          await createSecurityAnswer(datacache.users.john.id, memory.geoStalkingMetaSecurityQuestion, memory.geoStalkingMetaSecurityAnswer)
+          memory.user = 'john'
+        }
+        if (memory.geoStalkingVisualSecurityQuestion && memory.geoStalkingVisualSecurityAnswer) {
+          await createSecurityAnswer(datacache.users.emma.id, memory.geoStalkingVisualSecurityQuestion, memory.geoStalkingVisualSecurityAnswer)
+          memory.user = 'emma'
+        }
+        if (!memory.user) {
+          logger.warn(`Could not find user for memory ${memory.caption}!`)
+          return
+        }
+        const userIdOfMemory = datacache.users[memory.user].id.valueOf() ?? null
+        if (!userIdOfMemory) {
+          logger.warn(`Could not find saved user for memory ${memory.caption}!`)
+          return
+        }
 
-      return await MemoryModel.create({
-        imagePath: 'assets/public/images/uploads/' + tmpImageFileName,
-        caption: memory.caption,
-        UserId: userIdOfMemory
-      }).catch((err: unknown) => {
+        return await MemoryModel.create({
+          imagePath: 'assets/public/images/uploads/' + tmpImageFileName,
+          caption: memory.caption,
+          UserId: userIdOfMemory
+        }).catch((err: unknown) => {
+          logger.error(`Could not create memory: ${utils.getErrorMessage(err)}`)
+        })
+      } catch (err) {
         logger.error(`Could not create memory: ${utils.getErrorMessage(err)}`)
-      })
+      }
     })
   ]
 
@@ -434,22 +449,27 @@ async function createProducts () {
             logger.error(`Could not insert Product ${product.name}: ${utils.getErrorMessage(err)}`)
           }
         ).then(async (persistedProduct) => {
-          if (persistedProduct != null) {
-            if (useForChristmasSpecialChallenge) { datacache.products.christmasSpecial = persistedProduct }
-            if (urlForProductTamperingChallenge) {
-              datacache.products.osaft = persistedProduct
-              await datacache.challenges.changeProductChallenge.update({
-                description: customizeChangeProductChallenge(
-                  datacache.challenges.changeProductChallenge.description,
-                  config.get('challenges.overwriteUrlForProductTamperingChallenge'),
-                  persistedProduct)
-              })
+          try {
+            if (persistedProduct != null) {
+              if (useForChristmasSpecialChallenge) { datacache.products.christmasSpecial = persistedProduct }
+              if (urlForProductTamperingChallenge) {
+                datacache.products.osaft = persistedProduct
+                await datacache.challenges.changeProductChallenge.update({
+                  description: customizeChangeProductChallenge(
+                    datacache.challenges.changeProductChallenge.description,
+                    config.get('challenges.overwriteUrlForProductTamperingChallenge'),
+                    persistedProduct)
+                })
+              }
+              if (deletedDate) void deleteProduct(persistedProduct.id) // TODO Rename into "isDeleted" or "deletedFlag" in config for v14.x release
+            } else {
+              throw new Error('No persisted product found!')
             }
-            if (deletedDate) void deleteProduct(persistedProduct.id) // TODO Rename into "isDeleted" or "deletedFlag" in config for v14.x release
-          } else {
-            throw new Error('No persisted product found!')
+            return persistedProduct
+          } catch (err) {
+            logger.error(`Could not process Product: ${utils.getErrorMessage(err)}`)
+            return persistedProduct
           }
-          return persistedProduct
         })
           .then(async ({ id }: { id: number }) =>
             await Promise.all(

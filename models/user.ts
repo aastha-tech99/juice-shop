@@ -122,16 +122,14 @@ const UserModelInit = (sequelize: Sequelize) => { // vuln-code-snippet start wea
     }
   )
 
-  User.addHook('afterValidate', async (user: User) => {
+  User.addHook('afterValidate', (user: User) => {
     if (
       user.email &&
     user.email.toLowerCase() ===
       `acc0unt4nt@${config.get<string>('application.domain')}`.toLowerCase()
     ) {
-      await Promise.reject(
-        new Error(
-          'Nice try, but this is not how the "Ephemeral Accountant" challenge works!'
-        )
+      throw new Error(
+        'Nice try, but this is not how the "Ephemeral Accountant" challenge works!'
       )
     }
   })

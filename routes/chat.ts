@@ -120,22 +120,26 @@ export function chat () {
           query: z.string().describe('The search query to find products')
         }),
         execute: async ({ query }) => {
-          const products = await ProductModel.findAll({
-            where: {
-              [Op.or]: [
-                { name: { [Op.like]: `%${query}%` } },
-                { description: { [Op.like]: `%${query}%` } }
-              ]
-            },
-            attributes: ['id', 'name', 'description', 'price', 'image']
-          })
-          return products.map(p => ({
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            price: p.price,
-            image: p.image
-          }))
+          try {
+            const products = await ProductModel.findAll({
+              where: {
+                [Op.or]: [
+                  { name: { [Op.like]: `%${query}%` } },
+                  { description: { [Op.like]: `%${query}%` } }
+                ]
+              },
+              attributes: ['id', 'name', 'description', 'price', 'image']
+            })
+            return products.map(p => ({
+              id: p.id,
+              name: p.name,
+              description: p.description,
+              price: p.price,
+              image: p.image
+            }))
+          } catch (error) {
+            return { error: 'Failed to search products' }
+          }
         }
       }),
 
@@ -145,8 +149,12 @@ export function chat () {
           id: z.string().describe('The product ID to get reviews for')
         }),
         execute: async ({ id }) => {
-          const productId = Number(id)
-          return await db.reviewsCollection.find({ $where: 'this.product == ' + productId }) as Review[]
+          try {
+            const productId = Number(id)
+            return await db.reviewsCollection.find({ $where: 'this.product == ' + productId }) as Review[]
+          } catch (error) {
+            return { error: 'Failed to retrieve reviews' }
+          }
         }
       }),
 
@@ -156,19 +164,23 @@ export function chat () {
           orderId: z.string().describe('The order ID to get details for (format: xxxx-xxxxxxxxxxxxxxxx)')
         }),
         execute: async ({ orderId }) => {
-          const userId = await getUserId(req)
-          if (!userId) return { error: 'Customer not authenticated' }
+          try {
+            const userId = await getUserId(req)
+            if (!userId) return { error: 'Customer not authenticated' }
 
-          const user = await UserModel.findByPk(userId, { attributes: ['email'] })
-          if (!user) return { error: 'Customer not found' }
+            const user = await UserModel.findByPk(userId, { attributes: ['email'] })
+            if (!user) return { error: 'Customer not found' }
 
-          const maskedEmail = user.email ? user.email.replace(/[aeiou]/gi, '*') : undefined
-          const order = await db.ordersCollection.findOne({ orderId })
+            const maskedEmail = user.email ? user.email.replace(/[aeiou]/gi, '*') : undefined
+            const order = await db.ordersCollection.findOne({ orderId })
 
-          if (!order) return { error: 'Order not found' }
-          if (order.email !== maskedEmail) return { error: 'Order does not belong to the current customer' }
+            if (!order) return { error: 'Order not found' }
+            if (order.email !== maskedEmail) return { error: 'Order does not belong to the current customer' }
 
-          return order
+            return order
+          } catch (error) {
+            return { error: 'Failed to retrieve order' }
+          }
         }
       }),
 
@@ -179,10 +191,14 @@ export function chat () {
           discount: z.number().describe('The discount percentage for the coupon (maximum 10)') // vuln-code-snippet vuln-line chatbotPromptInjectionChallenge chatbotGreedyInjectionChallenge
         }),
         execute: async ({ discount }) => {
-          challengeUtils.solveIf(challenges.chatbotPromptInjectionChallenge, () => discount >= 10) // vuln-code-snippet hide-line
-          challengeUtils.solveIf(challenges.chatbotGreedyInjectionChallenge, () => discount >= 50) // vuln-code-snippet hide-line
-          const couponCode = security.generateCoupon(discount) // vuln-code-snippet vuln-line chatbotPromptInjectionChallenge
-          return { couponCode, discount } // vuln-code-snippet neutral-line chatbotPromptInjectionChallenge
+          try {
+            challengeUtils.solveIf(challenges.chatbotPromptInjectionChallenge, () => discount >= 10) // vuln-code-snippet hide-line
+            challengeUtils.solveIf(challenges.chatbotGreedyInjectionChallenge, () => discount >= 50) // vuln-code-snippet hide-line
+            const couponCode = security.generateCoupon(discount) // vuln-code-snippet vuln-line chatbotPromptInjectionChallenge
+            return { couponCode, discount } // vuln-code-snippet neutral-line chatbotPromptInjectionChallenge
+          } catch (error) {
+            return { error: 'Failed to generate coupon' }
+          }
         }
       })
     } // vuln-code-snippet end chatbotGreedyInjectionChallenge chatbotPromptInjectionChallenge

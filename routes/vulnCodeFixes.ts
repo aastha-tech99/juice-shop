@@ -68,32 +68,36 @@ export const serveCodeFixes = () => (req: Request<FixesRequestParams, Record<str
 }
 
 export const checkCorrectFix = () => async (req: Request<Record<string, unknown>, Record<string, unknown>, VerdictRequestBody>, res: Response, next: NextFunction) => {
-  const key = req.body.key
-  const selectedFix = req.body.selectedFix
-  const fixData = readFixes(key)
-  if (fixData.fixes.length === 0) {
-    res.status(404).json({
-      error: 'No fixes found for the snippet!'
-    })
-  } else {
-    let explanation
-    if (fs.existsSync('./data/static/codefixes/' + key + '.info.yml')) {
-      const codingChallengeInfos = yaml.load(fs.readFileSync('./data/static/codefixes/' + key + '.info.yml', 'utf8'))
-      const selectedFixInfo = codingChallengeInfos?.fixes.find(({ id }: { id: number }) => id === selectedFix + 1)
-      if (selectedFixInfo?.explanation) explanation = res.__(selectedFixInfo.explanation)
-    }
-    if (selectedFix === fixData.correct) {
-      await challengeUtils.solveFixIt(key)
-      res.status(200).json({
-        verdict: true,
-        explanation
+  try {
+    const key = req.body.key
+    const selectedFix = req.body.selectedFix
+    const fixData = readFixes(key)
+    if (fixData.fixes.length === 0) {
+      res.status(404).json({
+        error: 'No fixes found for the snippet!'
       })
     } else {
-      accuracy.storeFixItVerdict(key, false)
-      res.status(200).json({
-        verdict: false,
-        explanation
-      })
+      let explanation
+      if (fs.existsSync('./data/static/codefixes/' + key + '.info.yml')) {
+        const codingChallengeInfos = yaml.load(fs.readFileSync('./data/static/codefixes/' + key + '.info.yml', 'utf8'))
+        const selectedFixInfo = codingChallengeInfos?.fixes.find(({ id }: { id: number }) => id === selectedFix + 1)
+        if (selectedFixInfo?.explanation) explanation = res.__(selectedFixInfo.explanation)
+      }
+      if (selectedFix === fixData.correct) {
+        await challengeUtils.solveFixIt(key)
+        res.status(200).json({
+          verdict: true,
+          explanation
+        })
+      } else {
+        accuracy.storeFixItVerdict(key, false)
+        res.status(200).json({
+          verdict: false,
+          explanation
+        })
+      }
     }
+  } catch (error) {
+    next(error)
   }
 }

@@ -45,32 +45,62 @@ import { ChatWelcomePageComponent } from './chatbot/chat-welcome-page/chat-welco
 import { ChatConversationComponent } from './chatbot/chat-conversation/chat-conversation.component'
 
 const loadFaucetModule = async () => {
-  const module = await import('./faucet/faucet.module')
-  return module.FaucetModule
+  try {
+    const module = await import('./faucet/faucet.module')
+    return module.FaucetModule
+  } catch (error) {
+    console.error('Failed to load FaucetModule', error)
+    throw error
+  }
 }
 const loadWeb3WalletModule = async () => {
-  const module = await import('./wallet-web3/wallet-web3.module')
-  return module.WalletWeb3Module
+  try {
+    const module = await import('./wallet-web3/wallet-web3.module')
+    return module.WalletWeb3Module
+  } catch (error) {
+    console.error('Failed to load WalletWeb3Module', error)
+    throw error
+  }
 }
 
 const loadWeb3SandboxModule = async () => {
-  const module = await import('./web3-sandbox/web3-sandbox.module')
-  return module.Web3SandboxModule
+  try {
+    const module = await import('./web3-sandbox/web3-sandbox.module')
+    return module.Web3SandboxModule
+  } catch (error) {
+    console.error('Failed to load Web3SandboxModule', error)
+    throw error
+  }
 }
 
 const loadCodingChallenge = async () => {
-  const module = await import('./coding-challenge-page/coding-challenge-page.component')
-  return module.CodingChallengePageComponent
+  try {
+    const module = await import('./coding-challenge-page/coding-challenge-page.component')
+    return module.CodingChallengePageComponent
+  } catch (error) {
+    console.error('Failed to load CodingChallengePageComponent', error)
+    throw error
+  }
 }
 
 const loadRecycleComponent = async () => {
-  const module = await import('./recycle/recycle.component')
-  return module.RecycleComponent
+  try {
+    const module = await import('./recycle/recycle.component')
+    return module.RecycleComponent
+  } catch (error) {
+    console.error('Failed to load RecycleComponent', error)
+    throw error
+  }
 }
 
 const loadAboutComponent = async () => {
-  const module = await import('./about/about.component')
-  return module.AboutComponent
+  try {
+    const module = await import('./about/about.component')
+    return module.AboutComponent
+  } catch (error) {
+    console.error('Failed to load AboutComponent', error)
+    throw error
+  }
 }
 
 // vuln-code-snippet start adminSectionChallenge scoreBoardChallenge web3SandboxChallenge

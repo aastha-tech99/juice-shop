@@ -15,12 +15,17 @@ let libxml2Promise: Promise<any> | undefined
 async function loadLibxml2 () {
   if (libxml2Promise == null) {
     libxml2Promise = (async () => {
-      const libxml2 = await dynamicImport('libxml2-wasm')
-      // Grants the WASM sandbox host filesystem access so external entities
-      // like file:///etc/passwd resolve - required for the XXE challenges.
-      const { xmlRegisterFsInputProviders } = await dynamicImport('libxml2-wasm/lib/nodejs.mjs')
-      xmlRegisterFsInputProviders()
-      return libxml2
+      try {
+        const libxml2 = await dynamicImport('libxml2-wasm')
+        // Grants the WASM sandbox host filesystem access so external entities
+        // like file:///etc/passwd resolve - required for the XXE challenges.
+        const { xmlRegisterFsInputProviders } = await dynamicImport('libxml2-wasm/lib/nodejs.mjs')
+        xmlRegisterFsInputProviders()
+        return libxml2
+      } catch (error) {
+        libxml2Promise = undefined
+        throw error
+      }
     })()
   }
   return await libxml2Promise

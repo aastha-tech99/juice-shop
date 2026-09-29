@@ -50,65 +50,73 @@ export const preconditionsReady = new Promise<void>((resolve) => {
 })
 
 const validatePreconditions = async ({ exitOnFailure = true } = {}) => {
-  let success = true
-  success = checkIfRunningOnSupportedNodeVersion(process.version) && success
-  success = checkIfRunningOnSupportedOS(process.platform) && success
-  success = checkIfRunningOnSupportedCPU(process.arch) && success
+  try {
+    let success = true
+    success = checkIfRunningOnSupportedNodeVersion(process.version) && success
+    success = checkIfRunningOnSupportedOS(process.platform) && success
+    success = checkIfRunningOnSupportedCPU(process.arch) && success
 
-  const asyncResults = await Promise.all([
-    validateDependencies(),
-    checkIfRequiredFileExists('build/server.js'),
-    checkIfRequiredFileExists('frontend/dist/frontend/index.html'),
-    checkIfRequiredFileExists('frontend/dist/frontend/styles.css'),
-    checkIfRequiredFileExists('frontend/dist/frontend/main.js'),
-    checkIfRequiredFileExists('frontend/dist/frontend/polyfills.js'),
-    checkIfRequiredFilePatternExists('frontend/dist/frontend', /^hacking-instructor-.+\.js$/),
-    checkIfPortIsAvailable(process.env.PORT ?? config.get<number>('server.port'))
-  ])
-  const asyncConditions = asyncResults.every(condition => condition)
+    const asyncResults = await Promise.all([
+      validateDependencies(),
+      checkIfRequiredFileExists('build/server.js'),
+      checkIfRequiredFileExists('frontend/dist/frontend/index.html'),
+      checkIfRequiredFileExists('frontend/dist/frontend/styles.css'),
+      checkIfRequiredFileExists('frontend/dist/frontend/main.js'),
+      checkIfRequiredFileExists('frontend/dist/frontend/polyfills.js'),
+      checkIfRequiredFilePatternExists('frontend/dist/frontend', /^hacking-instructor-.+\.js$/),
+      checkIfPortIsAvailable(process.env.PORT ?? config.get<number>('server.port'))
+    ])
+    const asyncConditions = asyncResults.every(condition => condition)
 
-  const alchemyDomainReachable = await checkIfDomainReachable('https://www.alchemy.com/')
-  const alchemyEnvVarExists = checkIfEnvironmentVariableExists('ALCHEMY_API_KEY')
-  preconditionResults['https://www.alchemy.com/'] = alchemyDomainReachable
-  preconditionResults.ALCHEMY_API_KEY = alchemyEnvVarExists
-  if (!alchemyDomainReachable || !alchemyEnvVarExists) {
-    logger.info(`Check ${colors.bold('https://howto-web3.owasp-juice.shop')} for instructions on how to set up and configure the Alchemy API`)
-  }
-  const llmApiUrl = config.get<string>('application.chatBot.llmApiUrl')
-  const llmApiReachable = await checkIfDomainReachable(llmApiUrl)
-  let llmApiKeyEnvVarExists = true
-  let llmModelAvailable = true
-  preconditionResults[llmApiUrl] = llmApiReachable
-  if (llmApiReachable) {
-    const llmModel = config.get<string>('application.chatBot.model')
-    llmModelAvailable = await checkIfLlmModelAvailable(llmApiUrl)
-    variableDependencies[llmModel] = {
-      dependency: 'LLM Model',
-      documentation: 'https://howto-llm.owasp-juice.shop',
-      dependentChallenges: ['"Chatbot Prompt Injection" challenge', '"Greedy Chatbot Manipulation" challenge', '"AI Debugging" challenge', '"System Prompt Extraction" challenge']
+    const alchemyDomainReachable = await checkIfDomainReachable('https://www.alchemy.com/')
+    const alchemyEnvVarExists = checkIfEnvironmentVariableExists('ALCHEMY_API_KEY')
+    preconditionResults['https://www.alchemy.com/'] = alchemyDomainReachable
+    preconditionResults.ALCHEMY_API_KEY = alchemyEnvVarExists
+    if (!alchemyDomainReachable || !alchemyEnvVarExists) {
+      logger.info(`Check ${colors.bold('https://howto-web3.owasp-juice.shop')} for instructions on how to set up and configure the Alchemy API`)
     }
-    preconditionResults[llmModel] = llmModelAvailable
-    if (!isOllamaUrl(llmApiUrl)) {
-      variableDependencies.LLM_API_KEY = {
-        dependency: 'LLM API Key',
+    const llmApiUrl = config.get<string>('application.chatBot.llmApiUrl')
+    const llmApiReachable = await checkIfDomainReachable(llmApiUrl)
+    let llmApiKeyEnvVarExists = true
+    let llmModelAvailable = true
+    preconditionResults[llmApiUrl] = llmApiReachable
+    if (llmApiReachable) {
+      const llmModel = config.get<string>('application.chatBot.model')
+      llmModelAvailable = await checkIfLlmModelAvailable(llmApiUrl)
+      variableDependencies[llmModel] = {
+        dependency: 'LLM Model',
         documentation: 'https://howto-llm.owasp-juice.shop',
         dependentChallenges: ['"Chatbot Prompt Injection" challenge', '"Greedy Chatbot Manipulation" challenge', '"AI Debugging" challenge', '"System Prompt Extraction" challenge']
       }
-      llmApiKeyEnvVarExists = checkIfEnvironmentVariableExists('LLM_API_KEY')
-      preconditionResults.LLM_API_KEY = llmApiKeyEnvVarExists
+      preconditionResults[llmModel] = llmModelAvailable
+      if (!isOllamaUrl(llmApiUrl)) {
+        variableDependencies.LLM_API_KEY = {
+          dependency: 'LLM API Key',
+          documentation: 'https://howto-llm.owasp-juice.shop',
+          dependentChallenges: ['"Chatbot Prompt Injection" challenge', '"Greedy Chatbot Manipulation" challenge', '"AI Debugging" challenge', '"System Prompt Extraction" challenge']
+        }
+        llmApiKeyEnvVarExists = checkIfEnvironmentVariableExists('LLM_API_KEY')
+        preconditionResults.LLM_API_KEY = llmApiKeyEnvVarExists
+      }
     }
-  }
-  if (!llmApiReachable || !llmApiKeyEnvVarExists || !llmModelAvailable) {
-    logger.info(`Check ${colors.bold('https://howto-llm.owasp-juice.shop')} for instructions on how to set up and configure the LLM API`)
-  }
+    if (!llmApiReachable || !llmApiKeyEnvVarExists || !llmModelAvailable) {
+      logger.info(`Check ${colors.bold('https://howto-llm.owasp-juice.shop')} for instructions on how to set up and configure the LLM API`)
+    }
 
-  resolvePreconditionsReady()
+    resolvePreconditionsReady()
 
-  if ((!success || !asyncConditions) && exitOnFailure) {
-    logger.error(colors.red('Exiting due to unsatisfied precondition!'))
-    process.exit(1)
+    if ((!success || !asyncConditions) && exitOnFailure) {
+      logger.error(colors.red('Exiting due to unsatisfied precondition!'))
+      process.exit(1)
+    }
+    return success
+  } catch (err) {
+    logger.error('Error during precondition validation: ' + (err instanceof Error ? err.message : String(err)))
+    if (exitOnFailure) {
+      process.exit(1)
+    }
+    return false
   }
-  return success
 }
 
 export const checkIfRunningOnSupportedNodeVersion = (runningVersion: string) => {
@@ -175,34 +183,43 @@ export const checkIfDomainReachable = async (domain: string) => {
 }
 
 export const checkIfPortIsAvailable = async (port: number | string) => {
-  const portNumber = parseInt(port.toString())
-  return await new Promise((resolve, reject) => {
-    portscanner.checkPortStatus(portNumber, function (error: unknown, status: string) {
-      if (error) {
-        reject(error)
-      } else {
-        if (status === 'open') {
-          logger.warn(`Port ${colors.bold(port.toString())} is in use (${colors.red('ERROR')})`)
-          resolve(false)
+  try {
+    const portNumber = parseInt(port.toString())
+    return await new Promise((resolve, reject) => {
+      portscanner.checkPortStatus(portNumber, function (error: unknown, status: string) {
+        if (error) {
+          reject(error)
         } else {
-          logger.info(`Port ${colors.bold(port.toString())} is available (${colors.green('SUCCESS')})`)
-          resolve(true)
+          if (status === 'open') {
+            logger.warn(`Port ${colors.bold(port.toString())} is in use (${colors.red('ERROR')})`)
+            resolve(false)
+          } else {
+            logger.info(`Port ${colors.bold(port.toString())} is available (${colors.green('SUCCESS')})`)
+            resolve(true)
+          }
         }
-      }
+      })
     })
-  })
+  } catch (error) {
+    logger.warn(`Could not check port ${port}: ` + (error instanceof Error ? error.message : String(error)))
+    return false
+  }
 }
 
 export const checkIfRequiredFileExists = async (pathRelativeToProjectRoot: string) => {
-  const fileName = path.basename(pathRelativeToProjectRoot)
+  try {
+    const fileName = path.basename(pathRelativeToProjectRoot)
 
-  return await access(path.resolve(pathRelativeToProjectRoot)).then(() => {
-    logger.info(`Required file ${colors.bold(fileName)} is present (${colors.green('SUCCESS')})`)
-    return true
-  }).catch(() => {
-    logger.warn(`Required file ${colors.bold(fileName)} is missing (${colors.red('ERROR')})`)
+    return await access(path.resolve(pathRelativeToProjectRoot)).then(() => {
+      logger.info(`Required file ${colors.bold(fileName)} is present (${colors.green('SUCCESS')})`)
+      return true
+    }).catch(() => {
+      logger.warn(`Required file ${colors.bold(fileName)} is missing (${colors.red('ERROR')})`)
+      return false
+    })
+  } catch (error) {
     return false
-  })
+  }
 }
 
 export const checkIfRequiredFilePatternExists = async (directory: string, pattern: RegExp) => {
