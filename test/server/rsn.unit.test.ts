@@ -148,12 +148,15 @@ void describe('rsnUtil', () => {
     })
 
     void it('should return null when info file does not exist', () => {
-      mock.method(fs, 'existsSync', () => false)
+      mock.method(fs, 'readFileSync', () => {
+        const err = new Error('ENOENT: no such file or directory') as NodeJS.ErrnoException
+        err.code = 'ENOENT'
+        throw err
+      })
       assert.equal(loadChallengeInfo('nonExistentChallenge'), null)
     })
 
     void it('should parse and return challenge info from yml file', () => {
-      mock.method(fs, 'existsSync', () => true)
       mock.method(fs, 'readFileSync', () =>
         'fixes:\n' +
         '  - id: 1\n' +

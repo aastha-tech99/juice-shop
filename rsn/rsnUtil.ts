@@ -130,9 +130,13 @@ function findChangedFiles (current: CacheData, cached: CacheData): string[] {
 
 function loadChallengeInfo (challengeName: string): ChallengeInfo | null {
   const infoPath = `${fixesPath}/${challengeName}.info.yml`
-  if (!fs.existsSync(infoPath)) return null
-  const content = fs.readFileSync(infoPath, 'utf-8')
-  return yaml.load(content) as ChallengeInfo
+  try {
+    const content = fs.readFileSync(infoPath, 'utf-8')
+    return yaml.load(content) as ChallengeInfo
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null
+    throw err
+  }
 }
 
 function getFixExplanation (file: string, info: ChallengeInfo | null): string | null {
