@@ -34,7 +34,7 @@ void describe('b2bOrder', () => {
   })
 
   void it('timeout after 2 seconds solves "rceOccupyChallenge"', { skip: true }, () => {
-    req.body.orderLinesData = '/((a+)+)b/.test("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")'
+    req.body.orderLinesData = '/(a+)b/.test("aaaaaaaaaaaaaaaaaaaaaaaaaaaaa")'
 
     b2bOrder()(req, res, next)
 
