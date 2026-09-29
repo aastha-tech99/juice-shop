@@ -16,6 +16,7 @@ import { RouterTestingModule } from '@angular/router/testing'
 
 import { TranslateModule } from '@ngx-translate/core'
 import { CookieModule, CookieService } from 'ngy-cookie'
+import { TokenStorageService } from '../Services/token-storage.service'
 
 import { MatCardModule } from '@angular/material/card'
 import { MatFormFieldModule } from '@angular/material/form-field'
@@ -39,6 +40,7 @@ describe('TwoFactorAuthEnterComponent', () => {
     let component: TwoFactorAuthEnterComponent
     let fixture: ComponentFixture<TwoFactorAuthEnterComponent>
     let cookieService: any
+    let tokenStorageService: TokenStorageService
     let userService: any
     let twoFactorAuthService: any
 
@@ -82,13 +84,14 @@ describe('TwoFactorAuthEnterComponent', () => {
                 { provide: TwoFactorAuthService, useValue: twoFactorAuthService },
                 CookieService,
                 WindowRefService,
-                CookieService,
+                TokenStorageService,
                 provideHttpClient(withInterceptorsFromDi()),
                 provideHttpClientTesting()
             ]
         })
             .compileComponents()
         cookieService = TestBed.inject(CookieService)
+        tokenStorageService = TestBed.inject(TokenStorageService)
     })
 
     beforeEach(() => {
@@ -101,11 +104,11 @@ describe('TwoFactorAuthEnterComponent', () => {
         expect(component).toBeTruthy()
     })
 
-    it('should store authentication token in cookie', () => {
+    it('should store authentication token in memory', () => {
         twoFactorAuthService.verify.mockReturnValue(of({ token: 'TOKEN' }))
         component.verify()
 
-        expect(cookieService.get('token')).toBe('TOKEN')
+        expect(tokenStorageService.getToken()).toBe('TOKEN')
     })
 
     it('should not store authentication token in localStorage', () => {

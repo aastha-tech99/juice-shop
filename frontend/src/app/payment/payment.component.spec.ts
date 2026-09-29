@@ -27,6 +27,7 @@ import { RouterModule } from '@angular/router'
 import { OrderSummaryComponent } from '../order-summary/order-summary.component'
 import { PurchaseBasketComponent } from '../purchase-basket/purchase-basket.component'
 import { CookieService } from 'ngy-cookie'
+import { TokenStorageService } from '../Services/token-storage.service'
 import { WalletService } from '../Services/wallet.service'
 import { DeliveryService } from '../Services/delivery.service'
 import { UserService } from '../Services/user.service'
@@ -48,6 +49,7 @@ describe('PaymentComponent', () => {
     let basketService
     let dialog
     let cookieService: any
+    let tokenStorageService: TokenStorageService
     let walletService: any
     let deliveryService: any
     let userService: any
@@ -135,6 +137,7 @@ describe('PaymentComponent', () => {
                 { provide: TranslateService, useValue: translateService },
                 { provide: ConfigurationService, useValue: configurationService },
                 { provide: CookieService, useValue: cookieService },
+                TokenStorageService,
                 { provide: WalletService, useValue: walletService },
                 { provide: DeliveryService, useValue: deliveryService },
                 { provide: UserService, useValue: userService },
@@ -146,6 +149,7 @@ describe('PaymentComponent', () => {
         })
             .compileComponents()
         TestBed.inject(Location)
+        tokenStorageService = TestBed.inject(TokenStorageService)
     })
 
     beforeEach(() => {
@@ -358,13 +362,13 @@ describe('PaymentComponent', () => {
         expect(removeItemSpy).toHaveBeenCalledWith('walletTotal')
     })
 
-    it('should add token to cookie but not localStorage on calling choosePayment in deluxe mode', () => {
+    it('should store token in memory but not localStorage on calling choosePayment in deluxe mode', () => {
         component.mode = 'deluxe'
         userService.upgradeToDeluxe.mockReturnValue(of({ token: 'tokenValue' }))
         const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
         component.choosePayment()
         expect(setItemSpy).not.toHaveBeenCalledWith('token', expect.anything())
-        expect(cookieService.put).toHaveBeenCalledWith('token', 'tokenValue', expect.objectContaining({ expires: expect.any(Date) }))
+        expect(tokenStorageService.getToken()).toBe('tokenValue')
     })
 
     describe('template rendering', () => {

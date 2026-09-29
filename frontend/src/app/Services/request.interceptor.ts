@@ -4,13 +4,16 @@
  */
 
 import { type HttpEvent, type HttpHandler, type HttpInterceptor, type HttpRequest } from '@angular/common/http'
-import { Injectable } from '@angular/core'
+import { Injectable, inject } from '@angular/core'
+import { TokenStorageService } from './token-storage.service'
 import { type Observable } from 'rxjs'
 
 @Injectable()
 export class RequestInterceptor implements HttpInterceptor {
+  private readonly tokenStorageService = inject(TokenStorageService)
+
   intercept (req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.getTokenFromCookie() || localStorage.getItem('token')
+    const token = this.tokenStorageService.getToken() || this.getTokenFromCookie() || localStorage.getItem('token')
     if (token) {
       req = req.clone({
         setHeaders: {

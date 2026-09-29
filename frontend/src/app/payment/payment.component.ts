@@ -28,7 +28,7 @@ import { ActivatedRoute, type ParamMap, Router } from '@angular/router'
 import { WalletService } from '../Services/wallet.service'
 import { DeliveryService } from '../Services/delivery.service'
 import { UserService } from '../Services/user.service'
-import { CookieService } from 'ngy-cookie'
+import { TokenStorageService } from '../Services/token-storage.service'
 import { Location } from '@angular/common'
 import { SnackBarHelperService } from '../Services/snack-bar-helper.service'
 import { MatIconModule } from '@angular/material/icon'
@@ -52,7 +52,7 @@ library.add(faCartArrowDown, faGift, faHeart, faLeanpub, faThumbsUp, faTshirt, f
 })
 export class PaymentComponent implements OnInit {
   private readonly location = inject(Location)
-  private readonly cookieService = inject(CookieService)
+  private readonly tokenStorageService = inject(TokenStorageService)
   private readonly userService = inject(UserService)
   private readonly deliveryService = inject(DeliveryService)
   private readonly walletService = inject(WalletService)
@@ -238,8 +238,7 @@ export class PaymentComponent implements OnInit {
         next: (data) => {
           if (this.activePaymentKey !== idempotencyKey) return
           this.activePaymentKey = null
-          const expires = new Date(Date.now() + 8 * 60 * 60 * 1000)
-          this.cookieService.put('token', data.token, { expires, secure: window.location.protocol === 'https:' })
+          this.tokenStorageService.setToken(data.token)
           this.ngZone.run(async () => await this.router.navigate(['/deluxe-membership']))
         },
         error: (err) => {
