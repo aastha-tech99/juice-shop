@@ -25,7 +25,7 @@ export function changePassword () {
     }
 
     const token = headers.authorization ? headers.authorization.substr('Bearer='.length) : null
-    if (token == null) { // eslint-disable-line eqeqeq
+    if (token == null) {
       next(new Error('Blocked illegal activity by ' + connection.remoteAddress))
       return
     }

@@ -17,27 +17,27 @@ const restoreOverwrittenFilesWithOriginals = async () => {
       return await restorationPromise
     }
     restorationPromise = (async () => {
-    if (process.env.NODE_ENV === 'test' && existsSync(path.resolve('i18n/en.json'))) {
-      return
-    }
-    try {
-      copyFileSync(path.resolve('data/static/legal.md'), path.resolve('ftp/legal.md'))
-
-      if (existsSync(path.resolve('frontend/dist'))) {
-        copyFileSync(
-          path.resolve('data/static/owasp_promo.vtt'),
-          path.resolve('frontend/dist/frontend/assets/public/videos/owasp_promo.vtt')
-        )
+      if (process.env.NODE_ENV === 'test' && existsSync(path.resolve('i18n/en.json'))) {
+        return
       }
+      try {
+        copyFileSync(path.resolve('data/static/legal.md'), path.resolve('ftp/legal.md'))
 
-      const files = globSync(path.resolve('data/static/i18n/*.json').replace(/\\/g, '/'))
-      for (const filename of files) {
-        copyFileSync(filename, path.resolve('i18n/', path.basename(filename)))
+        if (existsSync(path.resolve('frontend/dist'))) {
+          copyFileSync(
+            path.resolve('data/static/owasp_promo.vtt'),
+            path.resolve('frontend/dist/frontend/assets/public/videos/owasp_promo.vtt')
+          )
+        }
+
+        const files = globSync(path.resolve('data/static/i18n/*.json').replace(/\\/g, '/'))
+        for (const filename of files) {
+          copyFileSync(filename, path.resolve('i18n/', path.basename(filename)))
+        }
+      } catch (err) {
+        logger.warn('Error restoring i18n files: ' + utils.getErrorMessage(err))
       }
-    } catch (err) {
-      logger.warn('Error restoring i18n files: ' + utils.getErrorMessage(err))
-    }
-  })()
+    })()
     return await restorationPromise
   } catch (err) {
     logger.warn('Error restoring overwritten files: ' + utils.getErrorMessage(err))
