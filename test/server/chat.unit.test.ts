@@ -83,7 +83,7 @@ void describe('chat', () => {
     })
 
     void it('should sanitize objects inside arrays', () => {
-      const input = [{ role: 'user', constructor: 'bad' }, { role: 'assistant' }]
+      const input: unknown[] = [{ role: 'user', constructor: 'bad' }, { role: 'assistant' }]
       const result = chat.sanitizeInput(input) as Array<Record<string, unknown>>
       assert.equal(result.length, 2)
       assert.equal(result[0].role, 'user')
