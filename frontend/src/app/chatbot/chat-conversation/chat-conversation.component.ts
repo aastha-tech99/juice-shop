@@ -130,6 +130,9 @@ export class ChatConversationComponent implements OnInit, OnDestroy {
   async sendMessage (content: string) {
     if (!content || this.isLoading()) return
 
+    const payload = this.loginGuard.tokenDecode()
+    if (!payload?.data?.email || !payload?.data?.isActive) return
+
     this.messages.update(prev => [...prev, { role: 'user', content }])
     this.messageInput.set('')
     this.isLoading.set(true)

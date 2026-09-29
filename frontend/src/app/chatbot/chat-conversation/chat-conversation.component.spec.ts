@@ -51,6 +51,7 @@ describe('ChatConversationComponent', () => {
         loginGuard = {
             tokenDecode: vi.fn().mockName("LoginGuard.tokenDecode")
         }
+        loginGuard.tokenDecode.mockReturnValue({ data: { email: 'test@juice-sh.op', isActive: true, role: 'customer' } })
         cookieService = {
             get: vi.fn().mockName("CookieService.get"),
             put: vi.fn().mockName("CookieService.put"),
@@ -102,6 +103,20 @@ describe('ChatConversationComponent', () => {
 
     it('should not send when already loading', async () => {
         component.isLoading.set(true)
+        await component.sendMessage('Hello')
+        expect(component.messages().length).toBe(0)
+    })
+
+    it('should not send when email is not verified or account is inactive', async () => {
+        loginGuard.tokenDecode.mockReturnValue({ data: { email: null, isActive: false } })
+        await component.sendMessage('Hello')
+        expect(component.messages().length).toBe(0)
+
+        loginGuard.tokenDecode.mockReturnValue({ data: { email: 'test@juice-sh.op', isActive: false } })
+        await component.sendMessage('Hello')
+        expect(component.messages().length).toBe(0)
+
+        loginGuard.tokenDecode.mockReturnValue(null)
         await component.sendMessage('Hello')
         expect(component.messages().length).toBe(0)
     })
