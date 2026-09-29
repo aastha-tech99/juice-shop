@@ -110,43 +110,53 @@ export const calculateCheatScore = (challenge: Challenge, isCheating = false) =>
 }
 
 export const calculateFindItCheatScore = async (challenge: Challenge) => {
-  const timestamp = new Date()
-  let timeFactor = 0.001
-  timeFactor *= (challenge.key === 'scoreBoardChallenge' && config.get('hackingInstructor.isEnabled') ? 0.5 : 1)
-  let cheatScore = 0
+  try {
+    const timestamp = new Date()
+    let timeFactor = 0.001
+    timeFactor *= (challenge.key === 'scoreBoardChallenge' && config.get('hackingInstructor.isEnabled') ? 0.5 : 1)
+    let cheatScore = 0
 
-  const codeSnippet = await retrieveCodeSnippet(challenge.key)
-  if (codeSnippet == null) {
+    const codeSnippet = await retrieveCodeSnippet(challenge.key)
+    if (codeSnippet == null) {
+      return 0
+    }
+    const { snippet, vulnLines } = codeSnippet
+    timeFactor *= vulnLines.length
+    const identicalSolved = await checkForIdenticalSolvedChallenge(challenge)
+    if (identicalSolved) {
+      timeFactor = 0.8 * timeFactor
+    }
+    const minutesExpectedToSolve = Math.ceil(snippet.length * timeFactor)
+    const minutesSincePreviousSolve = (timestamp.getTime() - previous().timestamp.getTime()) / 60000
+    cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
+
+    logger.info(`Cheat score for "Find it" phase of ${challenge.key === 'scoreBoardChallenge' && config.get('hackingInstructor.isEnabled') ? 'tutorial ' : ''}${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
+    solves.push({ challenge, phase: 'find it', timestamp, cheatScore })
+
+    return cheatScore
+  } catch (err) {
+    logger.warn('Failed to calculate "Find it" cheat score for ' + challenge.key + ': ' + utils.getErrorMessage(err))
     return 0
   }
-  const { snippet, vulnLines } = codeSnippet
-  timeFactor *= vulnLines.length
-  const identicalSolved = await checkForIdenticalSolvedChallenge(challenge)
-  if (identicalSolved) {
-    timeFactor = 0.8 * timeFactor
-  }
-  const minutesExpectedToSolve = Math.ceil(snippet.length * timeFactor)
-  const minutesSincePreviousSolve = (timestamp.getTime() - previous().timestamp.getTime()) / 60000
-  cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
-
-  logger.info(`Cheat score for "Find it" phase of ${challenge.key === 'scoreBoardChallenge' && config.get('hackingInstructor.isEnabled') ? 'tutorial ' : ''}${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
-  solves.push({ challenge, phase: 'find it', timestamp, cheatScore })
-
-  return cheatScore
 }
 
 export const calculateFixItCheatScore = async (challenge: Challenge) => {
-  const timestamp = new Date()
-  let cheatScore = 0
+  try {
+    const timestamp = new Date()
+    let cheatScore = 0
 
-  const { fixes } = readFixes(challenge.key)
-  const minutesExpectedToSolve = Math.floor(fixes.length / 2)
-  const minutesSincePreviousSolve = (timestamp.getTime() - previous().timestamp.getTime()) / 60000
-  cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
+    const { fixes } = readFixes(challenge.key)
+    const minutesExpectedToSolve = Math.floor(fixes.length / 2)
+    const minutesSincePreviousSolve = (timestamp.getTime() - previous().timestamp.getTime()) / 60000
+    cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
 
-  logger.info(`Cheat score for "Fix it" phase of ${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
-  solves.push({ challenge, phase: 'fix it', timestamp, cheatScore })
-  return cheatScore
+    logger.info(`Cheat score for "Fix it" phase of ${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
+    solves.push({ challenge, phase: 'fix it', timestamp, cheatScore })
+    return cheatScore
+  } catch (err) {
+    logger.warn('Failed to calculate "Fix it" cheat score for ' + challenge.key + ': ' + utils.getErrorMessage(err))
+    return 0
+  }
 }
 
 export const totalCheatScore = () => {
@@ -231,30 +241,35 @@ function timingSafeStringEqual (a: string, b: string): boolean {
 }
 
 export const checkForIdenticalSolvedChallenge = async (challenge: Challenge): Promise<boolean> => {
-  const codingChallenges = await getCodeChallenges()
-  if (!codingChallenges.has(challenge.key)) {
-    return false
-  }
-
-  const codingChallengesToCompareTo = codingChallenges.get(challenge.key)
-  if (!codingChallengesToCompareTo?.snippet) {
-    return false
-  }
-  const snippetToCompareTo = codingChallengesToCompareTo.snippet
-
-  for (const [challengeKey, { snippet }] of codingChallenges.entries()) {
-    if (timingSafeStringEqual(challengeKey, challenge.key)) {
-      // don't compare to itself
-      continue
+  try {
+    const codingChallenges = await getCodeChallenges()
+    if (!codingChallenges.has(challenge.key)) {
+      return false
     }
 
-    if (snippet === snippetToCompareTo) {
-      for (const solvedChallenges of solves) {
-        if (solvedChallenges.phase === 'find it') {
-          return true
+    const codingChallengesToCompareTo = codingChallenges.get(challenge.key)
+    if (!codingChallengesToCompareTo?.snippet) {
+      return false
+    }
+    const snippetToCompareTo = codingChallengesToCompareTo.snippet
+
+    for (const [challengeKey, { snippet }] of codingChallenges.entries()) {
+      if (timingSafeStringEqual(challengeKey, challenge.key)) {
+        // don't compare to itself
+        continue
+      }
+
+      if (snippet === snippetToCompareTo) {
+        for (const solvedChallenges of solves) {
+          if (solvedChallenges.phase === 'find it') {
+            return true
+          }
         }
       }
     }
+    return false
+  } catch (err) {
+    logger.warn('Failed to check for identical solved challenge for ' + challenge.key + ': ' + utils.getErrorMessage(err))
+    return false
   }
-  return false
 }

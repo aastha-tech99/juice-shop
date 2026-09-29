@@ -2,7 +2,7 @@ import { readFiles, computeDiffs, writeToFile } from './rsnUtil'
 import colors from 'colors/safe'
 
 // Perform read-compute-write atomically within a single async block
-void (async () => {
+(async () => {
   try {
     const keys = readFiles()
     const data = await computeDiffs(keys)
@@ -12,4 +12,7 @@ void (async () => {
     console.log(err)
     process.exitCode = 1
   }
-})()
+})().catch((err) => {
+  console.error(err)
+  process.exitCode = 1
+})
