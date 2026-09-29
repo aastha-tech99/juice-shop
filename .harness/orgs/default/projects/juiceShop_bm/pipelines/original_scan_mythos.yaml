@@ -41,7 +41,9 @@ pipeline:
                     config: scan
                     target:
                       type: repository
-                      detection: auto
+                      detection: manual
+                      name: js_1
+                      variant: develop-mythos
                     advanced:
                       log:
                         level: info
