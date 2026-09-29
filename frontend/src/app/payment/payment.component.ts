@@ -130,7 +130,8 @@ export class PaymentComponent implements OnInit {
       next: (paramMap: ParamMap) => {
         this.mode = paramMap.get('entity')
         if (this.mode === 'wallet') {
-          this.totalPrice = parseFloat(sessionStorage.getItem('walletTotal'))
+          const walletTotal = parseFloat(sessionStorage.getItem('walletTotal'))
+          this.totalPrice = (!isNaN(walletTotal) && walletTotal > 0) ? walletTotal : 0
         } else if (this.mode === 'deluxe') {
           this.userService.deluxeStatus().subscribe({
             next: (res) => {
@@ -214,6 +215,10 @@ export class PaymentComponent implements OnInit {
   }
 
   choosePayment () {
+    if (!this.totalPrice || this.totalPrice <= 0) {
+      this.snackBarHelperService.open('INVALID_AMOUNT', 'errorBar')
+      return
+    }
     const idempotencyKey = crypto.randomUUID()
     this.activePaymentKey = idempotencyKey
     sessionStorage.removeItem('itemTotal')

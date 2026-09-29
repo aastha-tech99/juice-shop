@@ -320,6 +320,7 @@ describe('PaymentComponent', () => {
         component.mode = 'shop'
         component.paymentMode = 'card'
         component.paymentId = 1
+        component.totalPrice = 10
         component.activePaymentKey = null
         const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
         component.choosePayment()
@@ -331,6 +332,7 @@ describe('PaymentComponent', () => {
         component.mode = 'shop'
         component.paymentMode = 'card'
         component.paymentId = 1
+        component.totalPrice = 10
         component.choosePayment()
         expect(uuidSpy).toHaveBeenCalledTimes(1)
         component.choosePayment()
@@ -340,6 +342,8 @@ describe('PaymentComponent', () => {
     it('should store wallet as paymentId in session storage on calling choosePayment while paymentMode is equal to wallet', () => {
         component.mode = 'shop'
         component.paymentMode = 'wallet'
+        component.totalPrice = 10
+        component.walletBalance = 100
         const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
         component.choosePayment()
         expect(setItemSpy).toHaveBeenCalledWith('paymentId', 'wallet')
@@ -347,6 +351,7 @@ describe('PaymentComponent', () => {
 
     it('should log error from upgrade to deluxe API call directly to browser console', () => {
         component.mode = 'deluxe'
+        component.totalPrice = 10
         userService.upgradeToDeluxe.mockReturnValue(throwError('Error'))
         console.log = vi.fn()
         component.choosePayment()
@@ -356,6 +361,7 @@ describe('PaymentComponent', () => {
 
     it('should remove walletTotal from session storage on calling choosePayment in wallet mode', () => {
         component.mode = 'wallet'
+        component.totalPrice = 10
         walletService.put.mockReturnValue(of({}))
         const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')
         component.choosePayment()
@@ -364,6 +370,7 @@ describe('PaymentComponent', () => {
 
     it('should store token in memory but not localStorage on calling choosePayment in deluxe mode', () => {
         component.mode = 'deluxe'
+        component.totalPrice = 10
         userService.upgradeToDeluxe.mockReturnValue(of({ token: 'tokenValue' }))
         const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
         component.choosePayment()
@@ -430,6 +437,24 @@ describe('PaymentComponent', () => {
             ;(component as any).activatedRoute = { paramMap: of(paramMap) }
             component.initTotal()
             expect(component.totalPrice).toBeCloseTo(12.34)
+            sessionStorage.removeItem('walletTotal')
+        })
+
+        it('should set totalPrice to zero when walletTotal is negative in wallet mode', () => {
+            sessionStorage.setItem('walletTotal', '-10')
+            const paramMap = { get: () => 'wallet' }
+            ;(component as any).activatedRoute = { paramMap: of(paramMap) }
+            component.initTotal()
+            expect(component.totalPrice).toBe(0)
+            sessionStorage.removeItem('walletTotal')
+        })
+
+        it('should set totalPrice to zero when walletTotal is not a number in wallet mode', () => {
+            sessionStorage.setItem('walletTotal', 'abc')
+            const paramMap = { get: () => 'wallet' }
+            ;(component as any).activatedRoute = { paramMap: of(paramMap) }
+            component.initTotal()
+            expect(component.totalPrice).toBe(0)
             sessionStorage.removeItem('walletTotal')
         })
 
@@ -509,6 +534,23 @@ describe('PaymentComponent', () => {
     })
 
     describe('choosePayment edge cases', () => {
+        it('should reject payment when totalPrice is zero or negative', () => {
+            const helper = TestBed.inject(SnackBarHelperService)
+            const openSpy = vi.spyOn(helper, 'open').mockImplementation(() => {})
+            component.mode = 'shop'
+            component.paymentMode = 'card'
+            component.paymentId = 1
+
+            component.totalPrice = 0
+            component.choosePayment()
+            expect(openSpy).toHaveBeenCalledWith('INVALID_AMOUNT', 'errorBar')
+
+            openSpy.mockClear()
+            component.totalPrice = -5
+            component.choosePayment()
+            expect(openSpy).toHaveBeenCalledWith('INVALID_AMOUNT', 'errorBar')
+        })
+
         it('should block wallet payment when balance is insufficient and notify via snack bar', () => {
             const helper = TestBed.inject(SnackBarHelperService)
             const openSpy = vi.spyOn(helper, 'open').mockImplementation(() => {})
@@ -528,6 +570,7 @@ describe('PaymentComponent', () => {
             walletService.put.mockReturnValue(throwError({ error: { message: 'Wallet down' } }))
             console.log = vi.fn()
             component.mode = 'wallet'
+            component.totalPrice = 10
             component.choosePayment()
             expect(console.log).toHaveBeenCalled()
             expect(openSpy).toHaveBeenCalledWith('Wallet down', 'errorBar')
