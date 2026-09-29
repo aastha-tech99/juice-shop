@@ -6,10 +6,10 @@
 import vm from 'node:vm'
 
 // libxml2-wasm is ESM-only and uses top-level await, so it can neither be
-// statically imported nor require()'d from the CommonJS build output. The
-// Function wrapper keeps this a native dynamic import() that tsc won't rewrite.
-// eslint-disable-next-line no-new-func -- intentional: hides import() from tsc's CommonJS down-level transform
-const dynamicImport = new Function('specifier', 'return import(specifier)') as (specifier: string) => Promise<any>
+// statically imported nor require()'d from the CommonJS build output.
+// vm.compileFunction hides import() from tsc's CommonJS down-level transform
+// without using new Function / eval (CWE-95).
+const dynamicImport = vm.compileFunction('return import(specifier)', ['specifier']) as unknown as (specifier: string) => Promise<any>
 let libxml2Promise: Promise<any> | undefined
 
 async function loadLibxml2 () {

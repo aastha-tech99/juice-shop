@@ -58,12 +58,11 @@ export function getUserProfile () {
       if (username?.match(/#{(.*)}/) !== null) {
         req.app.locals.abused_ssti_bug = true
         const code = username?.substring(2, username.length - 1)
-        try {
-          if (!code) {
-            throw new Error('Username is null')
-          }
-          username = eval(code) // eslint-disable-line no-eval
-        } catch (err) {
+        if (code) {
+          // Use the interpolated content directly instead of eval() to
+          // avoid arbitrary code execution (CWE-95).
+          username = code
+        } else {
           username = '\\' + username
         }
       } else {
