@@ -82,6 +82,41 @@ function createElement (tag: string, styles: Record<string, string>, attributes:
   return element
 }
 
+const SAFE_TAGS = new Set([
+  'A', 'B', 'BLOCKQUOTE', 'BR', 'CODE', 'DEL', 'DIV', 'EM',
+  'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'I', 'IMG', 'LI',
+  'OL', 'P', 'PRE', 'SPAN', 'STRONG', 'TABLE', 'TBODY', 'TD',
+  'TH', 'THEAD', 'TR', 'U', 'UL'
+])
+const SAFE_ATTRS = new Set(['href', 'src', 'alt', 'title', 'class'])
+
+function sanitizeNode (parent: DocumentFragment | Element): void {
+  for (const child of Array.from(parent.childNodes)) {
+    if (child.nodeType === Node.ELEMENT_NODE) {
+      const el = child as Element
+      if (!SAFE_TAGS.has(el.tagName)) {
+        const text = document.createTextNode(el.textContent ?? '')
+        parent.replaceChild(text, el)
+      } else {
+        for (const attr of Array.from(el.attributes)) {
+          const name = attr.name.toLowerCase()
+          if (!SAFE_ATTRS.has(name) || ((name === 'href' || name === 'src') && /^\s*javascript:/i.test(attr.value))) {
+            el.removeAttribute(attr.name)
+          }
+        }
+        sanitizeNode(el)
+      }
+    }
+  }
+}
+
+function sanitizeHtml (html: string): string {
+  const template = document.createElement('template')
+  template.innerHTML = html
+  sanitizeNode(template.content)
+  return template.innerHTML
+}
+
 function loadHint (hint: ChallengeHint): HTMLElement {
   const target = document.querySelector(hint.fixture)
 
@@ -123,7 +158,7 @@ function loadHint (hint: ChallengeHint): HTMLElement {
   const picture = createElement('img', pictureStyles, { src: '/assets/public/images/hackingInstructor.png' })
 
   const textBox = createElement('span', { flexGrow: '2' })
-  textBox.innerHTML = snarkdown(hint.text)
+  textBox.innerHTML = sanitizeHtml(snarkdown(hint.text))
 
   const cancelButtonStyles = {
     textDecoration: 'none',
@@ -139,7 +174,9 @@ function loadHint (hint: ChallengeHint): HTMLElement {
   }
 
   const cancelButton = createElement('button', cancelButtonStyles, { id: 'cancelButton', title: 'Cancel the tutorial' })
-  cancelButton.innerHTML = '<div>&times;</div>'
+  const cancelSymbol = document.createElement('div')
+  cancelSymbol.textContent = '×'
+  cancelButton.appendChild(cancelSymbol)
 
   elem.appendChild(picture)
   elem.appendChild(textBox)
