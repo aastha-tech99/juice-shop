@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Component, ChangeDetectionStrategy, signal, viewChild, ElementRef, afterNextRender, inject, Injector, runInInjectionContext, OnInit } from '@angular/core'
+import { Component, ChangeDetectionStrategy, signal, viewChild, ElementRef, afterNextRender, inject, Injector, runInInjectionContext, OnInit, OnDestroy } from '@angular/core'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { MatIconModule } from '@angular/material/icon'
 import { TranslateModule } from '@ngx-translate/core'
@@ -11,6 +11,7 @@ import { ChatService } from '../../Services/chat.service'
 import { ConversationStorageService } from '../../Services/conversation-storage.service'
 import { ConfigurationService } from '../../Services/configuration.service'
 import { CookieService } from 'ngy-cookie'
+import { type Subscription } from 'rxjs'
 import { UserService } from '../../Services/user.service'
 import { LoginGuard } from '../../app.guard'
 import { ChatInputBoxComponent } from '../chat-input-box/chat-input-box.component'
@@ -29,7 +30,7 @@ import { type ChatMessage, type StoredConversation } from '../chat.model'
     RouterLink
   ]
 })
-export class ChatConversationComponent implements OnInit {
+export class ChatConversationComponent implements OnInit, OnDestroy {
   private readonly chatService = inject(ChatService)
   private readonly conversationStorage = inject(ConversationStorageService)
   private readonly configurationService = inject(ConfigurationService)
@@ -51,6 +52,7 @@ export class ChatConversationComponent implements OnInit {
   chatBotAvatar = signal('assets/public/images/JuicyBot.png')
 
   private conversationId = ''
+  private authSubscription?: Subscription
 
   ngOnInit () {
     this.configurationService.getApplicationConfiguration().subscribe({
@@ -79,6 +81,10 @@ export class ChatConversationComponent implements OnInit {
       void this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true })
       void this.sendMessage(initialMessage)
     }
+
+    this.authSubscription = this.userService.getLoggedInState().subscribe(() => {
+      this.rotateSession()
+    })
   }
 
   private scrollToBottom () {
@@ -90,6 +96,16 @@ export class ChatConversationComponent implements OnInit {
         }
       })
     })
+  }
+
+  ngOnDestroy () {
+    this.authSubscription?.unsubscribe()
+  }
+
+  private rotateSession () {
+    this.conversationId = this.conversationStorage.generateId()
+    this.messages.set([])
+    void this.router.navigate(['/chatbot', this.conversationId], { replaceUrl: true })
   }
 
   private persistConversation () {

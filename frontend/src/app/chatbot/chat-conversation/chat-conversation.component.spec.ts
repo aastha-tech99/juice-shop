@@ -5,7 +5,7 @@
 
 import { type ComponentFixture, TestBed } from '@angular/core/testing'
 import { TranslateModule } from '@ngx-translate/core'
-import { ActivatedRoute } from '@angular/router'
+import { ActivatedRoute, Router } from '@angular/router'
 import { ChatConversationComponent } from './chat-conversation.component'
 import { ChatService } from '../../Services/chat.service'
 import { ConversationStorageService } from '../../Services/conversation-storage.service'
@@ -13,7 +13,7 @@ import { ConfigurationService } from '../../Services/configuration.service'
 import { UserService } from '../../Services/user.service'
 import { LoginGuard } from '../../app.guard'
 import { CookieService } from 'ngy-cookie'
-import { of } from 'rxjs'
+import { of, Subject } from 'rxjs'
 import { ChatInputBoxComponent } from '../chat-input-box/chat-input-box.component'
 
 describe('ChatConversationComponent', () => {
@@ -25,15 +25,18 @@ describe('ChatConversationComponent', () => {
     let userService: any
     let loginGuard: any
     let cookieService: any
+    let authSubject: Subject<any>
 
     beforeEach(() => {
+        authSubject = new Subject<any>()
         chatService = {
             streamMessages: vi.fn().mockName("ChatService.streamMessages")
         }
         conversationStorage = {
             getById: vi.fn().mockName("ConversationStorageService.getById"),
             save: vi.fn().mockName("ConversationStorageService.save"),
-            generateTitle: vi.fn().mockName("ConversationStorageService.generateTitle")
+            generateTitle: vi.fn().mockName("ConversationStorageService.generateTitle"),
+            generateId: vi.fn().mockReturnValue('mock_generated_id').mockName("ConversationStorageService.generateId")
         }
         conversationStorage.getById.mockReturnValue(undefined)
         conversationStorage.generateTitle.mockImplementation((msg: string) => msg.substring(0, 50))
@@ -42,14 +45,16 @@ describe('ChatConversationComponent', () => {
         }
         configurationService.getApplicationConfiguration.mockReturnValue(of({ application: { chatBot: { name: 'Juicy', avatar: 'JuicyBot.png' } } } as any))
         userService = {
-            whoAmI: vi.fn().mockName("UserService.whoAmI")
+            whoAmI: vi.fn().mockName("UserService.whoAmI"),
+            getLoggedInState: vi.fn().mockReturnValue(authSubject.asObservable())
         }
         loginGuard = {
             tokenDecode: vi.fn().mockName("LoginGuard.tokenDecode")
         }
         cookieService = {
             get: vi.fn().mockName("CookieService.get"),
-            put: vi.fn().mockName("CookieService.put")
+            put: vi.fn().mockName("CookieService.put"),
+            remove: vi.fn().mockName("CookieService.remove")
         }
 
         TestBed.configureTestingModule({
@@ -172,6 +177,19 @@ describe('ChatConversationComponent', () => {
         await component.sendMessage('Hello')
 
         expect(conversationStorage.save).toHaveBeenCalled()
+    })
+
+    it('should rotate conversation session on privilege change', () => {
+        const router = TestBed.inject(Router)
+        vi.spyOn(router, 'navigate').mockResolvedValue(true)
+        conversationStorage.generateId.mockReturnValue('rotated_session_id')
+        component.messages.set([{ role: 'user', content: 'old message' }] as any)
+
+        authSubject.next(true)
+
+        expect(conversationStorage.generateId).toHaveBeenCalled()
+        expect(component.messages().length).toBe(0)
+        expect(router.navigate).toHaveBeenCalledWith(['/chatbot', 'rotated_session_id'], { replaceUrl: true })
     })
 
     it('should load existing conversation on init', () => {
