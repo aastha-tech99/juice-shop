@@ -39,9 +39,12 @@ export function resetPassword () {
         }]
       })
       if ((data != null) && security.hmac(answer) === data.answer) {
-        const user = await UserModel.findByPk(data.UserId)
-        if (user) {
-          const updatedUser = await user.update({ password: newPassword })
+        await UserModel.update(
+          { password: security.hash(newPassword) },
+          { where: { id: data.UserId } }
+        )
+        const updatedUser = await UserModel.findByPk(data.UserId)
+        if (updatedUser) {
           verifySecurityAnswerChallenges(updatedUser, answer)
           res.json({ user: updatedUser })
         }

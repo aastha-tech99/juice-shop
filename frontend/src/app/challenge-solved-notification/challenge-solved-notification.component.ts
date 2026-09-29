@@ -60,6 +60,7 @@ export class ChallengeSolvedNotificationComponent implements OnInit {
   public showCtfCountryDetailsInNotifications = 'none'
   public countryMap?: any
   public codingChallengesEnabled = "solved"
+  private isSavingProgress = false
 
   ngOnInit (): void {
     this.ngZone.runOutsideAngular(() => {
@@ -139,16 +140,23 @@ export class ChallengeSolvedNotificationComponent implements OnInit {
   }
 
   saveProgress () {
+    if (this.isSavingProgress) return
+    this.isSavingProgress = true
     this.challengeService.continueCode().subscribe({
       next: (continueCode) => {
         if (!continueCode) {
+          this.isSavingProgress = false
           throw (new Error('Received invalid continue code from the server!'))
         }
         const expires = new Date()
         expires.setFullYear(expires.getFullYear() + 1)
         this.cookieService.put('continueCode', continueCode, { expires })
+        this.isSavingProgress = false
       },
-      error: (err) => { console.log(err) }
+      error: (err) => {
+        this.isSavingProgress = false
+        console.log(err)
+      }
     })
   }
 

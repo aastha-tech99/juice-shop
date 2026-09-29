@@ -50,6 +50,7 @@ export class ComplaintComponent implements OnInit {
   public userEmail: any = undefined
   public complaint: any = undefined
   public confirmation: any
+  private isSaving = false
 
   ngOnInit (): void {
     this.initComplaint()
@@ -64,6 +65,9 @@ export class ComplaintComponent implements OnInit {
     this.uploader.onSuccessItem = () => {
       this.saveComplaint()
       this.uploader.clearQueue()
+    }
+    this.uploader.onErrorItem = () => {
+      this.isSaving = false
     }
   }
 
@@ -83,6 +87,8 @@ export class ComplaintComponent implements OnInit {
   }
 
   save () {
+    if (this.isSaving) return
+    this.isSaving = true
     if (this.uploader.queue[0]) {
       this.uploader.queue[0].upload()
       this.fileControl.nativeElement.value = null
@@ -95,6 +101,7 @@ export class ComplaintComponent implements OnInit {
     this.complaint.message = this.messageControl.value
     this.complaintService.save(this.complaint).subscribe({
       next: (savedComplaint: any) => {
+        this.isSaving = false
         this.translate.get('CUSTOMER_SUPPORT_COMPLAINT_REPLY', { ref: savedComplaint.id }).subscribe({
           next: (customerSupportReply) => {
             this.confirmation = customerSupportReply
@@ -107,7 +114,10 @@ export class ComplaintComponent implements OnInit {
         this.resetForm()
         this.fileUploadError = undefined
       },
-      error: (error) => error
+      error: (error) => {
+        this.isSaving = false
+        return error
+      }
     })
   }
 

@@ -28,8 +28,11 @@ export function saveLoginIp () {
         lastLoginIp = utils.toSimpleIpAddress(req.socket.remoteAddress ?? '')
       }
       try {
-        const user = await UserModel.findByPk(loggedInUser.data.id)
-        const updatedUser = await user?.update({ lastLoginIp: lastLoginIp?.toString() })
+        await UserModel.update(
+          { lastLoginIp: lastLoginIp?.toString() },
+          { where: { id: loggedInUser.data.id } }
+        )
+        const updatedUser = await UserModel.findByPk(loggedInUser.data.id)
         res.json(updatedUser)
       } catch (error) {
         next(error)

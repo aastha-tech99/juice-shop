@@ -51,8 +51,12 @@ export class ChatConversationComponent implements OnInit {
   chatBotAvatar = signal('assets/public/images/JuicyBot.png')
 
   private conversationId = ''
+  private initialized = false
 
   ngOnInit () {
+    if (this.initialized) return
+    this.initialized = true
+
     this.configurationService.getApplicationConfiguration().subscribe({
       next: (config) => {
         if (config?.application?.chatBot?.name) {
@@ -70,7 +74,7 @@ export class ChatConversationComponent implements OnInit {
     this.conversationId = this.route.snapshot.params['id']
     const existing = this.conversationStorage.getById(this.conversationId)
     if (existing) {
-      this.messages.set(existing.messages)
+      this.messages.set([...existing.messages])
       this.scrollToBottom()
     }
 

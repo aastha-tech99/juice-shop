@@ -40,6 +40,7 @@ export class AdministrationComponent implements OnInit {
   private readonly cookieService = inject(CookieService)
 
   public showToolCalls = signal(false)
+  private isLoadingData = false
 
   public userDataSource: any
   public userDataSourceHidden: any
@@ -53,6 +54,8 @@ export class AdministrationComponent implements OnInit {
   @ViewChild('paginatorFeedb') paginatorFeedb: MatPaginator
 
   ngOnInit (): void {
+    if (this.isLoadingData) return
+    this.isLoadingData = true
     this.findAllUsers()
     this.findAllFeedbacks()
     this.showToolCalls.set(this.cookieService.get('show_tool_calls') === 'true')

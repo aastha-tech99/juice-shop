@@ -45,6 +45,7 @@ export class PurchaseBasketComponent implements OnInit {
   public bonus = 0
   public itemTotal = 0
   public userEmail: string
+  private isOperationInProgress = false
 
   ngOnInit (): void {
     if (this.allowEdit && !this.tableColumns.includes('remove')) {
@@ -135,9 +136,12 @@ export class PurchaseBasketComponent implements OnInit {
   }
 
   delete (id) {
+    if (this.isOperationInProgress) return
+    this.isOperationInProgress = true
     if (localStorage.getItem('token') == null) {
       this.basketService.removeGuestBasketItem(id)
       this.load()
+      this.isOperationInProgress = false
       return
     }
 
@@ -145,8 +149,12 @@ export class PurchaseBasketComponent implements OnInit {
       next: () => {
         this.load()
         this.basketService.updateNumberOfCartItems()
+        this.isOperationInProgress = false
       },
-      error: (err) => { console.log(err) }
+      error: (err) => {
+        this.isOperationInProgress = false
+        console.log(err)
+      }
     })
   }
 
@@ -159,14 +167,18 @@ export class PurchaseBasketComponent implements OnInit {
   }
 
   addToQuantity (id, value) {
+    if (this.isOperationInProgress) return
+    this.isOperationInProgress = true
     if (localStorage.getItem('token') == null) {
       const existingGuestItem = this.basketService.getGuestBasketItems().find(item => item.ProductId === id)
       if (existingGuestItem == null) {
+        this.isOperationInProgress = false
         return
       }
 
       this.basketService.updateGuestBasketItemQuantity(id, existingGuestItem.quantity + value)
       this.load()
+      this.isOperationInProgress = false
       return
     }
 
@@ -178,14 +190,19 @@ export class PurchaseBasketComponent implements OnInit {
           next: () => {
             this.load()
             this.basketService.updateNumberOfCartItems()
+            this.isOperationInProgress = false
           },
           error: (err) => {
+            this.isOperationInProgress = false
             this.snackBarHelperService.open(err.error?.error, 'errorBar')
             console.log(err)
           }
         })
       },
-      error: (err) => { console.log(err) }
+      error: (err) => {
+        this.isOperationInProgress = false
+        console.log(err)
+      }
     })
   }
 

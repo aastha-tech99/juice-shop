@@ -8,6 +8,8 @@ import { type ChallengeService } from '../../Services/challenge.service'
 import { type CookieService } from 'ngy-cookie'
 import { ResultState } from '../coding-challenge.types'
 
+let isHandlingVerdict = false
+
 export function handleVerdict (config: {
   verdict: boolean
   variant: 'FindIt' | 'FixIt'
@@ -18,6 +20,8 @@ export function handleVerdict (config: {
   setResult: (result: ResultState) => void
   setShaking: (shaking: boolean) => void
 }): void {
+  if (isHandlingVerdict) return
+  isHandlingVerdict = true
   let destroyed = false
   config.destroyRef.onDestroy(() => { destroyed = true })
   if (config.verdict) {
@@ -28,13 +32,18 @@ export function handleVerdict (config: {
     continueMethod.subscribe({
       next: (continueCode) => {
         if (!continueCode) {
+          isHandlingVerdict = false
           throw (new Error('Received invalid continue code from the server!'))
         }
         const expires = new Date()
         expires.setFullYear(expires.getFullYear() + 1)
         config.cookieService.put(`continueCode${config.variant}`, continueCode, { expires })
+        isHandlingVerdict = false
       },
-      error: (err) => { console.log(err) }
+      error: (err) => {
+        isHandlingVerdict = false
+        console.log(err)
+      }
     })
     import('../../../confetti').then(module => {
       module.shootConfetti()
@@ -46,5 +55,6 @@ export function handleVerdict (config: {
   } else {
     config.setResult(ResultState.Wrong)
     config.setShaking(true)
+    isHandlingVerdict = false
   }
 }

@@ -32,24 +32,20 @@ void describe('saveLoginIp', () => {
   void it('should use the first element if true-client-ip header is an array', async () => {
     mock.method(security.authenticatedUsers, 'from', () => ({ data: { id: 1 } }))
     req.headers['true-client-ip'] = ['1.1.1.1', '2.2.2.2']
-    const findByPkMock = mock.method(UserModel, 'findByPk', async () => ({
-      update: mock.fn(async (data: any) => data)
-    }))
+    const updateMock = mock.method(UserModel, 'update', async () => [1])
+    mock.method(UserModel, 'findByPk', async () => ({ lastLoginIp: '1.1.1.1' }))
 
     await saveLoginIp()(req, res, next)
 
-    assert.equal(findByPkMock.mock.calls.length, 1)
-    const updateCall = findByPkMock.mock.calls[0].result as any
-    const updateMock = (await updateCall).update
-    assert.equal(updateMock.mock.calls[0].arguments[0].lastLoginIp, '1.1.1.1')
+    assert.equal(updateMock.mock.calls.length, 1)
+    assert.deepEqual(updateMock.mock.calls[0].arguments[0], { lastLoginIp: '1.1.1.1' })
+    assert.deepEqual(updateMock.mock.calls[0].arguments[1], { where: { id: 1 } })
   })
 
   void it('should call next with error if update fails', async () => {
     mock.method(security.authenticatedUsers, 'from', () => ({ data: { id: 1 } }))
     const error = new Error('Update failed')
-    mock.method(UserModel, 'findByPk', async () => ({
-      update: mock.fn(async () => { throw error })
-    }))
+    mock.method(UserModel, 'update', async () => { throw error })
 
     await saveLoginIp()(req, res, next)
 

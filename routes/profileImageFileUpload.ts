@@ -45,10 +45,10 @@ export function profileImageFileUpload () {
     }
 
     try {
-      const user = await UserModel.findByPk(loggedInUser.data.id)
-      if (user != null) {
-        await user.update({ profileImage: `assets/public/images/uploads/${loggedInUser.data.id}.${uploadedFileType.ext}` })
-      }
+      await UserModel.update(
+        { profileImage: `assets/public/images/uploads/${loggedInUser.data.id}.${uploadedFileType.ext}` },
+        { where: { id: loggedInUser.data.id } }
+      )
     } catch (error) {
       next(error)
     }

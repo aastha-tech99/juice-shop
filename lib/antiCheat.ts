@@ -189,8 +189,9 @@ export const reset = () => {
 const sourceFileCache = new Map<string, string>()
 
 function loadSourceFile (relativePath: string): string {
-  if (sourceFileCache.has(relativePath)) {
-    return sourceFileCache.get(relativePath)!
+  const cached = sourceFileCache.get(relativePath)
+  if (cached !== undefined) {
+    return cached
   }
   try {
     const content = fs.readFileSync(path.resolve(relativePath), 'utf8')
