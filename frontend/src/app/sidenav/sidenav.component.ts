@@ -22,6 +22,7 @@ import { TranslateModule } from '@ngx-translate/core'
 import { MatButtonModule } from '@angular/material/button'
 import { MatNavList, MatListSubheaderCssMatStyler, MatListItem } from '@angular/material/list'
 import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar'
+import { safeEqual } from '../utils/safe-equal'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -80,7 +81,7 @@ export class SidenavComponent implements OnInit {
     })
     this.ngZone.runOutsideAngular(() => {
       this.io.socket().on('challenge solved', (challenge) => {
-        if (challenge.key === 'scoreBoardChallenge') {
+        if (safeEqual(challenge.key, 'scoreBoardChallenge')) {
           this.scoreBoardVisible = true
         }
       })

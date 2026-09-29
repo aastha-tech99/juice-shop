@@ -57,6 +57,7 @@ import { MatTooltip } from '@angular/material/tooltip'
 import { MatButtonModule } from '@angular/material/button'
 
 import { MatToolbar, MatToolbarRow } from '@angular/material/toolbar'
+import { safeEqual } from '../utils/safe-equal'
 
 library.add(faLanguage, faSearch, faSignInAlt, faSignOutAlt, faComment, faBomb, faTrophy, faInfoCircle, faShoppingCart, faUserSecret, faRecycle, faMapMarker, faUserCircle, faGithub, faComments, faThermometerEmpty, faThermometerQuarter, faThermometerHalf, faThermometerThreeQuarters, faThermometerFull)
 
@@ -169,7 +170,7 @@ export class NavbarComponent implements OnInit {
 
     this.ngZone.runOutsideAngular(() => {
       this.io.socket().on('challenge solved', (challenge) => {
-        if (challenge.key === 'scoreBoardChallenge') {
+        if (safeEqual(challenge.key, 'scoreBoardChallenge')) {
           this.scoreBoardVisible = true
         }
       })
@@ -207,12 +208,12 @@ export class NavbarComponent implements OnInit {
     if (this.cookieService.get('language')) {
       const langKey = this.cookieService.get('language')
       this.translate.use(langKey)
-      this.selectedLanguage = this.languages.find((y: { key: string }) => y.key === langKey)
-      this.shortKeyLang = this.languages.find((y: { key: string }) => y.key === langKey).shortKey
+      this.selectedLanguage = this.languages.find((y: { key: string }) => safeEqual(y.key, langKey))
+      this.shortKeyLang = this.languages.find((y: { key: string }) => safeEqual(y.key, langKey)).shortKey
     } else {
       this.changeLanguage('en')
-      this.selectedLanguage = this.languages.find((y: { key: string }) => y.key === 'en')
-      this.shortKeyLang = this.languages.find((y: { key: string }) => y.key === 'en').shortKey
+      this.selectedLanguage = this.languages.find((y: { key: string }) => safeEqual(y.key, 'en'))
+      this.shortKeyLang = this.languages.find((y: { key: string }) => safeEqual(y.key, 'en')).shortKey
     }
   }
 
@@ -254,8 +255,8 @@ export class NavbarComponent implements OnInit {
     const expires = new Date()
     expires.setFullYear(expires.getFullYear() + 1)
     this.cookieService.put('language', langKey, { expires })
-    if (this.languages.find((y: { key: string }) => y.key === langKey)) {
-      const language = this.languages.find((y: { key: string }) => y.key === langKey)
+    if (this.languages.find((y: { key: string }) => safeEqual(y.key, langKey))) {
+      const language = this.languages.find((y: { key: string }) => safeEqual(y.key, langKey))
       this.shortKeyLang = language.shortKey
 
       const snackBarRef = this.snackBar.open(`Language has been changed to ${language.lang}`, 'Force page reload', {

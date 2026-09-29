@@ -8,6 +8,7 @@ import { RouterLink } from '@angular/router'
 import { NgClass } from '@angular/common'
 import { DifficultyStarsComponent } from '../difficulty-stars/difficulty-stars.component'
 import { SnackBarHelperService } from '../../../../app/Services/snack-bar-helper.service'
+import { safeEqual } from '../../../../app/utils/safe-equal'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -46,7 +47,7 @@ export class ChallengeCardComponent {
       const currentHintsUnlocked = challenge?.hintsUnlocked
 
       if (
-        lastUnlockedKey === challenge?.key &&
+        safeEqual(lastUnlockedKey, challenge?.key) &&
         this.previousHintsUnlocked !== undefined &&
         currentHintsUnlocked !== this.previousHintsUnlocked
       ) {

@@ -16,7 +16,7 @@ export function changePassword () {
     const newPasswordInString = newPassword?.toString()
     const repeatPassword = query.repeat
 
-    if (!newPassword || newPassword === 'undefined') {
+    if (!newPassword || security.safeEqual(newPassword, 'undefined')) {
       res.status(401).send(res.__('Password cannot be empty.'))
       return
     } else if (newPassword !== repeatPassword) {
@@ -25,7 +25,7 @@ export function changePassword () {
     }
 
     const token = headers.authorization ? headers.authorization.substr('Bearer='.length) : null
-    if (token === null) {
+    if (token == null) { // eslint-disable-line eqeqeq
       next(new Error('Blocked illegal activity by ' + connection.remoteAddress))
       return
     }
@@ -51,7 +51,7 @@ export function changePassword () {
       await user.update({ password: newPasswordInString })
       challengeUtils.solveIf(
         challenges.changePasswordBenderChallenge,
-        () => user.id === 3 && !currentPassword && user.password === security.hash('slurmCl4ssic')
+        () => user.id === 3 && !currentPassword && security.safeEqual(user.password, security.hash('slurmCl4ssic'))
       )
       res.json({ user })
     } catch (error) {

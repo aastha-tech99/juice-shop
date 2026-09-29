@@ -7,6 +7,7 @@ import locales from '../data/static/locales.json'
 import { readFile, readdir } from 'node:fs/promises'
 import { type Request, type Response, type NextFunction } from 'express'
 import logger from '../lib/logger'
+import * as security from '../lib/insecurity'
 import * as utils from '../lib/utils'
 
 export function getLanguageList () {
@@ -32,7 +33,7 @@ export function getLanguageList () {
         const fileContent = JSON.parse(content)
         const frontendPercentage = calcPercentage(fileContent, enContent)
         const key = fileName.substring(0, fileName.indexOf('.'))
-        const locale = locales.find((l) => l.key === key)
+        const locale = locales.find((l) => security.safeEqual(l.key, key))
 
         let backendPercentage = 0
         if (backendEnContent !== null) {

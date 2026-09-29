@@ -24,6 +24,7 @@ import { ResultState } from '../../coding-challenge.types'
 import { handleVerdict } from '../../helpers/handle-verdict'
 import { CodingChallengeSectionComponent } from '../coding-challenge-section/coding-challenge-section.component'
 import { formatSelectedLines } from './format-selected-lines'
+import { safeEqual } from '../../../utils/safe-equal'
 
 const toggleLineEffect = StateEffect.define<{ lineNumber: number, pos: number, on: boolean }>()
 const focusLineEffect = StateEffect.define<number>()
@@ -260,20 +261,20 @@ export class CodingChallengeFindItComponent implements OnInit, AfterViewInit, On
   private readonly onKeydown = (event: KeyboardEvent): void => {
     const view = this.editorView
     if (!view) return
-    if (event.key === 'ArrowDown') {
+    if (safeEqual(event.key, 'ArrowDown')) {
       this.dismissKeyboardHint()
       const current = view.state.field(focusedLineField)
       const totalLines = view.state.doc.lines
       const next = current === 0 ? 1 : Math.min(current + 1, totalLines)
       this.setFocusedLine(view, next)
       event.preventDefault()
-    } else if (event.key === 'ArrowUp') {
+    } else if (safeEqual(event.key, 'ArrowUp')) {
       this.dismissKeyboardHint()
       const current = view.state.field(focusedLineField)
       const next = current <= 1 ? 1 : current - 1
       this.setFocusedLine(view, next)
       event.preventDefault()
-    } else if (event.key === ' ') {
+    } else if (safeEqual(event.key, ' ')) {
       const current = view.state.field(focusedLineField)
       if (current === 0) return
       const line = view.state.doc.line(current)

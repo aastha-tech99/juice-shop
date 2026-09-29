@@ -11,6 +11,7 @@ import { HintModel } from '../models/hint'
 import * as accuracy from './accuracy'
 import * as webhook from './webhook'
 import * as antiCheat from './antiCheat'
+import { safeEqual } from './insecurity'
 import * as utils from './utils'
 import logger from './logger'
 
@@ -68,7 +69,7 @@ export const sendNotification = function (challenge: ChallengeModel, isRestore: 
     isRestore,
     codingChallenge: config.get('challenges.codingChallengesEnabled') !== 'never' && hasCodingChallenge
   }
-  const wasPreviouslyShown = notifications.some(({ key }) => key === challenge.key)
+  const wasPreviouslyShown = notifications.some(({ key }) => safeEqual(key, challenge.key))
   notifications.push(notification)
 
   if (globalWithSocketIO.io && (isRestore || !wasPreviouslyShown)) {

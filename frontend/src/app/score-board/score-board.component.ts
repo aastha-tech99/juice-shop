@@ -20,6 +20,7 @@ import { FilterSettingsComponent } from './components/filter-settings/filter-set
 import { TutorialModeWarningComponent } from './components/tutorial-mode-warning/tutorial-mode-warning.component'
 import { DifficultyOverviewScoreCardComponent } from './components/difficulty-overview-score-card/difficulty-overview-score-card.component'
 import { ChallengesUnavailableWarningComponent } from './components/challenges-unavailable-warning/challenges-unavailable-warning.component'
+import { safeEqual } from '../utils/safe-equal'
 import { CodingChallengeProgressScoreCardComponent } from './components/coding-challenge-progress-score-card/coding-challenge-progress-score-card.component'
 import { HackingChallengeProgressScoreCardComponent } from './components/hacking-challenge-progress-score-card/hacking-challenge-progress-score-card.component'
 
@@ -120,7 +121,7 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
     }
 
     this.allChallenges = this.allChallenges.map((challenge) => {
-      if (challenge.key === data.key) {
+      if (safeEqual(challenge.key, data.key)) {
         return {
           ...challenge,
           solved: true
@@ -140,7 +141,7 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
     }
 
     this.allChallenges = this.allChallenges.map((challenge) => {
-      if (challenge.key === data.key) {
+      if (safeEqual(challenge.key, data.key)) {
         return {
           ...challenge,
           codingChallengeStatus: data.codingChallengeStatus
@@ -175,7 +176,7 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
   }
 
   async repeatChallengeNotification (challengeKey: string) {
-    const challenge = this.allChallenges.find((challenge) => challenge.key === challengeKey)
+    const challenge = this.allChallenges.find((challenge) => safeEqual(challenge.key, challengeKey))
     await firstValueFrom(this.challengeService.repeatNotification(encodeURIComponent(challenge.name)))
   }
 

@@ -63,7 +63,7 @@ export async function status (req: Request, res: Response) {
     }
     const { data: user } = data
 
-    if (user.totpSecret === '') {
+    if (security.safeEqual(user.totpSecret, '')) {
       const secret = generateSecret()
 
       res.json({

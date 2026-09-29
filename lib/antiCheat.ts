@@ -13,6 +13,7 @@ import { type Challenge } from '../data/types'
 import { getCodeChallenges } from './codingChallenges'
 import logger from './logger'
 import { type NextFunction, type Request, type Response } from 'express'
+import { safeEqual } from './insecurity'
 import * as utils from './utils'
 // @ts-expect-error FIXME due to non-existing type definitions for median
 import median from 'median'
@@ -92,7 +93,7 @@ export const calculateCheatScore = (challenge: Challenge, isCheating = false) =>
       cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
     }
 
-    const preSolveInteraction = preSolveInteractions.find((preSolveInteraction) => preSolveInteraction.challengeKey === challenge.key)
+    const preSolveInteraction = preSolveInteractions.find((preSolveInteraction) => safeEqual(preSolveInteraction.challengeKey, challenge.key))
     let percentPrecedingInteraction = -1
     if (preSolveInteraction) {
       percentPrecedingInteraction = preSolveInteraction.interactions.filter(Boolean).length / (preSolveInteraction.interactions.length)
@@ -111,7 +112,7 @@ export const calculateCheatScore = (challenge: Challenge, isCheating = false) =>
 export const calculateFindItCheatScore = async (challenge: Challenge) => {
   const timestamp = new Date()
   let timeFactor = 0.001
-  timeFactor *= (challenge.key === 'scoreBoardChallenge' && config.get('hackingInstructor.isEnabled') ? 0.5 : 1)
+  timeFactor *= (safeEqual(challenge.key, 'scoreBoardChallenge') && config.get('hackingInstructor.isEnabled') ? 0.5 : 1)
   let cheatScore = 0
 
   const codeSnippet = await retrieveCodeSnippet(challenge.key)
@@ -128,7 +129,7 @@ export const calculateFindItCheatScore = async (challenge: Challenge) => {
   const minutesSincePreviousSolve = (timestamp.getTime() - previous().timestamp.getTime()) / 60000
   cheatScore += Math.max(0, 1 - (minutesSincePreviousSolve / minutesExpectedToSolve))
 
-  logger.info(`Cheat score for "Find it" phase of ${challenge.key === 'scoreBoardChallenge' && config.get('hackingInstructor.isEnabled') ? 'tutorial ' : ''}${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
+  logger.info(`Cheat score for "Find it" phase of ${safeEqual(challenge.key, 'scoreBoardChallenge') && config.get('hackingInstructor.isEnabled') ? 'tutorial ' : ''}${colors.cyan(challenge.key)} solved in ${Math.round(minutesSincePreviousSolve)}min (expected ~${minutesExpectedToSolve}min): ${cheatScore < 0.33 ? colors.green(cheatScore.toString()) : (cheatScore < 0.66 ? colors.yellow(cheatScore.toString()) : colors.red(cheatScore.toString()))}`)
   solves.push({ challenge, phase: 'find it', timestamp, cheatScore })
 
   return cheatScore
@@ -234,7 +235,7 @@ export const checkForIdenticalSolvedChallenge = async (challenge: Challenge): Pr
   const snippetToCompareTo = codingChallengesToCompareTo.snippet
 
   for (const [challengeKey, { snippet }] of codingChallenges.entries()) {
-    if (challengeKey === challenge.key) {
+    if (safeEqual(challengeKey, challenge.key)) {
       // don't compare to itself
       continue
     }

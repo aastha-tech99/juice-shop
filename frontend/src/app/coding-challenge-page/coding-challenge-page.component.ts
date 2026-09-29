@@ -18,6 +18,7 @@ import { CodeFixesService } from '../Services/code-fixes.service'
 import { ChallengeService } from '../Services/challenge.service'
 import { CodingChallengeFindItComponent } from './components/coding-challenge-find-it/coding-challenge-find-it.component'
 import { CodingChallengeFixItComponent } from './components/coding-challenge-fix-it/coding-challenge-fix-it.component'
+import { safeEqual } from '../utils/safe-equal'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -60,7 +61,7 @@ export class CodingChallengePageComponent implements OnInit {
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(({ challenges, snippet, fixes }) => {
-      const challenge = challenges.find(c => c.key === this.challengeKey)
+      const challenge = challenges.find(c => safeEqual(c.key, this.challengeKey))
       if (challenge) {
         this.challengeName = challenge.name
         this.findItSolved = challenge.codingChallengeStatus >= 1

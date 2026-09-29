@@ -4,6 +4,7 @@
  */
 
 import { jwtDecode } from 'jwt-decode'
+import { safeEqual } from '../../app/utils/safe-equal'
 
 let config
 const playbackDelays = {
@@ -263,7 +264,7 @@ export function waitForRightUriQueryParamPair (key: string, value: string) {
       const encodedKey: string = encodeURIComponent(key).replace(/%3A/g, ':')
       const expectedHash = `#/track-result/new?${encodedKey}=${encodedValue}`
 
-      if (window.location.hash === expectedHash) {
+      if (safeEqual(window.location.hash, expectedHash)) {
         break
       }
       await sleep(100)
