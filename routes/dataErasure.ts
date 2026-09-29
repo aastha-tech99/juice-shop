@@ -19,6 +19,15 @@ import { UserModel } from '../models/user'
 
 const entities = new Entities()
 
+function stripProtoPollutionKeys<T extends Record<string, unknown>> (obj: T): Record<string, unknown> {
+  const clean: Record<string, unknown> = Object.create(null)
+  for (const key of Object.keys(obj)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
+    clean[key] = obj[key]
+  }
+  return clean
+}
+
 const router = express.Router()
 
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
@@ -105,7 +114,7 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
         const isForbiddenFile: boolean = (filePath.includes('ftp') || filePath.includes('ctf.key') || filePath.includes('encryptionkeys'))
         if (!isForbiddenFile) {
           res.render('dataErasureResult', {
-            ...req.body,
+            ...stripProtoPollutionKeys(req.body),
             ...themeVars
           }, (error, html) => {
             if (!html || error) {
@@ -121,7 +130,7 @@ router.post('/', (req: Request<Record<string, unknown>, Record<string, unknown>,
         }
       } else {
         res.render('dataErasureResult', {
-          ...req.body,
+          ...stripProtoPollutionKeys(req.body),
           ...themeVars
         })
       }
