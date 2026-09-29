@@ -471,8 +471,10 @@ async function createProducts () {
             return persistedProduct
           }
         })
-          .then(async ({ id }: { id: number }) =>
-            await Promise.all(
+          .then(async (result) => {
+            if (result == null) return
+            const { id } = result as { id: number }
+            return Promise.all(
               reviews.map(({ text, author }) =>
                 reviewsCollection.insert({
                   message: text,
@@ -485,7 +487,7 @@ async function createProducts () {
                 })
               )
             )
-          )
+          })
     )
   )
 

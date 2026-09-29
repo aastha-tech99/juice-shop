@@ -75,6 +75,7 @@ router.get('/', (req: Request, res: Response, next: NextFunction) => {
 })
 
 interface DataErasureRequestParams {
+  [key: string]: unknown
   layout?: string
   email: string
   securityAnswer: string
