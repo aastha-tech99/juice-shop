@@ -86,6 +86,7 @@ describe('AdministrationComponent', () => {
 
     it('should find all users via the UserService', () => {
         component.findAllUsers()
+        expect(userService.find).toHaveBeenCalledWith({ size: 100 })
         expect(component.userDataSource.data.length).toBe(2)
         expect(component.userDataSource.data[0].email.toString()).toContain('User1')
         expect(component.userDataSource.data[1].email.toString()).toContain('User2')
@@ -101,6 +102,7 @@ describe('AdministrationComponent', () => {
 
     it('should find all feedbacks via FeedbackService', () => {
         component.findAllFeedbacks()
+        expect(feedbackService.find).toHaveBeenCalledWith({ size: 100 })
         expect(component.feedbackDataSource.data.length).toBe(2)
         expect(component.feedbackDataSource.data[0].comment.toString()).toContain('Feedback1')
         expect(component.feedbackDataSource.data[1].comment.toString()).toContain('Feedback2')

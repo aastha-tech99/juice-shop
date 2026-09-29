@@ -9,7 +9,8 @@ import * as security from '../lib/insecurity'
 
 async function retrieveUserList (req: Request, res: Response, next: NextFunction) {
   try {
-    const users = await UserModel.findAll()
+    const size = Math.min(Math.max(parseInt(req.query.size as string) || 100, 1), 100)
+    const users = await UserModel.findAll({ limit: size })
 
     res.json({
       status: 'success',

@@ -49,6 +49,7 @@ export class AdministrationComponent implements OnInit {
   public error: any
   public resultsLengthUser = 0
   public resultsLengthFeedback = 0
+  private readonly DEFAULT_PAGE_SIZE = 100
   @ViewChild('paginatorUsers') paginatorUsers: MatPaginator
   @ViewChild('paginatorFeedb') paginatorFeedb: MatPaginator
 
@@ -66,7 +67,7 @@ export class AdministrationComponent implements OnInit {
   }
 
   findAllUsers () {
-    this.userService.find().subscribe({
+    this.userService.find({ size: this.DEFAULT_PAGE_SIZE }).subscribe({
       next: (users) => {
         this.userDataSource = users
         this.userDataSourceHidden = users
@@ -85,7 +86,7 @@ export class AdministrationComponent implements OnInit {
   }
 
   findAllFeedbacks () {
-    this.feedbackService.find().subscribe({
+    this.feedbackService.find({ size: this.DEFAULT_PAGE_SIZE }).subscribe({
       next: (feedbacks) => {
         this.feedbackDataSource = feedbacks
         for (const feedback of this.feedbackDataSource) {

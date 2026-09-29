@@ -536,6 +536,16 @@ function configureApp (app: ReturnType<typeof express>, seq: typeof sequelize) {
     } // vuln-code-snippet neutral-line registerAdminChallenge
     // vuln-code-snippet end registerAdminChallenge
 
+    // limit list results for Feedbacks to prevent unbounded queries
+    if (name === 'Feedback') {
+      resource.list.fetch.before((req: Request, res: Response, context: { options: any, continue: any }) => {
+        const size = Math.min(Math.max(parseInt(req.query.size as string) || 100, 1), 100)
+        context.options = context.options || {}
+        context.options.limit = size
+        return context.continue
+      })
+    }
+
     // translate challenge descriptions on-the-fly
     if (name === 'Challenge') {
       resource.list.fetch.after((req: Request, res: Response, context: { instance: string | any[], continue: any }) => {
