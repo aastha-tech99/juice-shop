@@ -6,6 +6,7 @@
 import config from 'config'
 import colors from 'colors/safe'
 import path from 'path'
+import crypto from 'crypto'
 import fs from 'fs'
 import { retrieveCodeSnippet } from '../routes/vulnCodeSnippet'
 import { readFixes } from '../routes/vulnCodeFixes'
@@ -220,6 +221,15 @@ export function checkForSourceFileOverlap (challengeKey: string, submission: str
   return false
 }
 
+function timingSafeStringEqual (a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) {
+    return false
+  }
+  return crypto.timingSafeEqual(bufA, bufB)
+}
+
 export const checkForIdenticalSolvedChallenge = async (challenge: Challenge): Promise<boolean> => {
   const codingChallenges = await getCodeChallenges()
   if (!codingChallenges.has(challenge.key)) {
@@ -233,7 +243,7 @@ export const checkForIdenticalSolvedChallenge = async (challenge: Challenge): Pr
   const snippetToCompareTo = codingChallengesToCompareTo.snippet
 
   for (const [challengeKey, { snippet }] of codingChallenges.entries()) {
-    if (challengeKey === challenge.key) {
+    if (timingSafeStringEqual(challengeKey, challenge.key)) {
       // don't compare to itself
       continue
     }
