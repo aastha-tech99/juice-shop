@@ -358,13 +358,13 @@ describe('PaymentComponent', () => {
         expect(removeItemSpy).toHaveBeenCalledWith('walletTotal')
     })
 
-    it('should add token to local storage and cookie on calling choosePayment in deluxe mode', () => {
+    it('should add token to cookie but not localStorage on calling choosePayment in deluxe mode', () => {
         component.mode = 'deluxe'
         userService.upgradeToDeluxe.mockReturnValue(of({ token: 'tokenValue' }))
         const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
         component.choosePayment()
-        expect(setItemSpy).toHaveBeenCalledWith('token', 'tokenValue')
-        expect(cookieService.put).toHaveBeenCalledWith('token', 'tokenValue')
+        expect(setItemSpy).not.toHaveBeenCalledWith('token', expect.anything())
+        expect(cookieService.put).toHaveBeenCalledWith('token', 'tokenValue', expect.objectContaining({ expires: expect.any(Date) }))
     })
 
     describe('template rendering', () => {

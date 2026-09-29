@@ -10,10 +10,11 @@ import { type Observable } from 'rxjs'
 @Injectable()
 export class RequestInterceptor implements HttpInterceptor {
   intercept (req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (localStorage.getItem('token')) {
+    const token = this.getTokenFromCookie() || localStorage.getItem('token')
+    if (token) {
       req = req.clone({
         setHeaders: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         }
       })
     }
@@ -25,5 +26,10 @@ export class RequestInterceptor implements HttpInterceptor {
       })
     }
     return next.handle(req)
+  }
+
+  private getTokenFromCookie (): string | null {
+    const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/)
+    return match ? decodeURIComponent(match[1]) : null
   }
 }

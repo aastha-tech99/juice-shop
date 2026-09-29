@@ -108,11 +108,12 @@ describe('TwoFactorAuthEnterComponent', () => {
         expect(cookieService.get('token')).toBe('TOKEN')
     })
 
-    it('should store authentication token in local storage', () => {
+    it('should not store authentication token in localStorage', () => {
         twoFactorAuthService.verify.mockReturnValue(of({ token: 'TOKEN' }))
+        const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
         component.verify()
 
-        expect(localStorage.getItem('token')).toBe('TOKEN')
+        expect(setItemSpy).not.toHaveBeenCalledWith('token', expect.anything())
     })
 
     it('should store basket ID in session storage', () => {

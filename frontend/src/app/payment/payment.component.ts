@@ -238,8 +238,8 @@ export class PaymentComponent implements OnInit {
         next: (data) => {
           if (this.activePaymentKey !== idempotencyKey) return
           this.activePaymentKey = null
-          localStorage.setItem('token', data.token)
-          this.cookieService.put('token', data.token)
+          const expires = new Date(Date.now() + 8 * 60 * 60 * 1000)
+          this.cookieService.put('token', data.token, { expires, secure: window.location.protocol === 'https:' })
           this.ngZone.run(async () => await this.router.navigate(['/deluxe-membership']))
         },
         error: (err) => {
