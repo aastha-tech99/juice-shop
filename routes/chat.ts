@@ -111,6 +111,19 @@ const provider = createOpenAICompatible({
   baseURL: config.get<string>('application.chatBot.llmApiUrl')
 })
 
+const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
+export function sanitizeInput (obj: unknown): unknown {
+  if (obj === null || typeof obj !== 'object') return obj
+  if (Array.isArray(obj)) return obj.map(sanitizeInput)
+  const clean: Record<string, unknown> = Object.create(null)
+  for (const key of Object.keys(obj as Record<string, unknown>)) {
+    if (DANGEROUS_KEYS.has(key)) continue
+    clean[key] = sanitizeInput((obj as Record<string, unknown>)[key])
+  }
+  return clean
+}
+
 export function chat () {
   return async (req: Request, res: Response) => {
     const chatTools = {
@@ -189,7 +202,11 @@ export function chat () {
 
     const model = config.get<string>('application.chatBot.model')
     // Capture request data as immutable snapshot to prevent concurrent modification
-    const messages = Object.freeze([...(req.body?.messages ?? [])])
+    // Sanitize user-controlled message objects to prevent prototype pollution
+    const rawMessages = req.body?.messages ?? []
+    const messages = Object.freeze(
+      (Array.isArray(rawMessages) ? rawMessages : []).map((m: unknown) => sanitizeInput(m))
+    )
     const systemPrompt = buildSystemPrompt(await getUserNameFromToken(req))
 
     res.setHeader('Content-Type', 'text/event-stream')

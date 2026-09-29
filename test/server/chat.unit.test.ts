@@ -59,6 +59,46 @@ void describe('chat', () => {
     })
   })
 
+  void describe('sanitizeInput', () => {
+    void it('should strip __proto__ keys from objects', () => {
+      const input = { role: 'user', __proto__: { polluted: true }, content: 'hello' }
+      const result = chat.sanitizeInput(input) as Record<string, unknown>
+      assert.equal(result.role, 'user')
+      assert.equal(result.content, 'hello')
+      assert.equal(('polluted' in Object.prototype), false)
+    })
+
+    void it('should strip constructor and prototype keys', () => {
+      const input = { a: 1, constructor: { prototype: { bad: true } }, prototype: {} }
+      const result = chat.sanitizeInput(input) as Record<string, unknown>
+      assert.equal(result.a, 1)
+      assert.equal(result.constructor, undefined)
+      assert.equal(result.prototype, undefined)
+    })
+
+    void it('should recursively sanitize nested objects', () => {
+      const input = { outer: { __proto__: { x: 1 }, safe: 'ok' } }
+      const result = chat.sanitizeInput(input) as Record<string, any>
+      assert.equal(result.outer.safe, 'ok')
+    })
+
+    void it('should sanitize objects inside arrays', () => {
+      const input = [{ role: 'user', constructor: 'bad' }, { role: 'assistant' }]
+      const result = chat.sanitizeInput(input) as Array<Record<string, unknown>>
+      assert.equal(result.length, 2)
+      assert.equal(result[0].role, 'user')
+      assert.equal(result[0].constructor, undefined)
+      assert.equal(result[1].role, 'assistant')
+    })
+
+    void it('should pass through primitives unchanged', () => {
+      assert.equal(chat.sanitizeInput('hello'), 'hello')
+      assert.equal(chat.sanitizeInput(42), 42)
+      assert.equal(chat.sanitizeInput(null), null)
+      assert.equal(chat.sanitizeInput(undefined), undefined)
+    })
+  })
+
   void describe('getUserNameFromToken', () => {
     void it('should return undefined if no user ID is found', async () => {
       const userName = await chat.getUserNameFromToken({ headers: {} } as any)
