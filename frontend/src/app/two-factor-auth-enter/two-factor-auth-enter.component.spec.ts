@@ -15,7 +15,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing'
 import { RouterTestingModule } from '@angular/router/testing'
 
 import { TranslateModule } from '@ngx-translate/core'
-import { CookieModule, CookieService } from 'ngy-cookie'
+import { CookieModule } from 'ngy-cookie'
 import { TokenStorageService } from '../Services/token-storage.service'
 
 import { MatCardModule } from '@angular/material/card'
@@ -39,7 +39,6 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 describe('TwoFactorAuthEnterComponent', () => {
     let component: TwoFactorAuthEnterComponent
     let fixture: ComponentFixture<TwoFactorAuthEnterComponent>
-    let cookieService: any
     let tokenStorageService: TokenStorageService
     let userService: any
     let twoFactorAuthService: any
@@ -82,7 +81,6 @@ describe('TwoFactorAuthEnterComponent', () => {
             providers: [
                 { provide: UserService, useValue: userService },
                 { provide: TwoFactorAuthService, useValue: twoFactorAuthService },
-                CookieService,
                 WindowRefService,
                 TokenStorageService,
                 provideHttpClient(withInterceptorsFromDi()),
@@ -90,7 +88,6 @@ describe('TwoFactorAuthEnterComponent', () => {
             ]
         })
             .compileComponents()
-        cookieService = TestBed.inject(CookieService)
         tokenStorageService = TestBed.inject(TokenStorageService)
     })
 
