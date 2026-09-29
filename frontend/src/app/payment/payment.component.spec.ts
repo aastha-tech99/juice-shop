@@ -316,20 +316,21 @@ describe('PaymentComponent', () => {
         component.mode = 'shop'
         component.paymentMode = 'card'
         component.paymentId = 1
-        component.isProcessing = false
+        component.activePaymentKey = null
         const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
         component.choosePayment()
         expect(setItemSpy).toHaveBeenCalledWith('paymentId', 1 as any)
     })
 
-    it('should not process choosePayment when isProcessing is true', () => {
+    it('should generate a unique idempotency key on each choosePayment call', () => {
+        const uuidSpy = vi.spyOn(crypto, 'randomUUID')
         component.mode = 'shop'
         component.paymentMode = 'card'
         component.paymentId = 1
-        component.isProcessing = true
-        const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')
         component.choosePayment()
-        expect(removeItemSpy).not.toHaveBeenCalledWith('itemTotal')
+        expect(uuidSpy).toHaveBeenCalledTimes(1)
+        component.choosePayment()
+        expect(uuidSpy).toHaveBeenCalledTimes(2)
     })
 
     it('should store wallet as paymentId in session storage on calling choosePayment while paymentMode is equal to wallet', () => {

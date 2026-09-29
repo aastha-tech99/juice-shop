@@ -60,7 +60,7 @@ export class FaucetComponent implements OnInit {
   nftMintText = 'Mint the Pot - 1000 BEE'
   errorMessage = ''
   metamaskAddress = ''
-  isProcessing = false
+  private activeOperationKey: string | null = null
 
   ngOnInit (): void {
     this.translateService.get('NFT_MINT_TEXT_INTRO').subscribe((translatedString: string) => {
@@ -211,14 +211,12 @@ export class FaucetComponent implements OnInit {
   }
 
   async extractBEETokens (amount = this.withdrawAmount) {
-    if (this.isProcessing) {
-      return
-    }
     if (!this.session) {
       this.snackBarHelperService.open('PLEASE_CONNECT_WEB3_WALLET', 'errorBar')
       return
     }
-    this.isProcessing = true
+    const operationKey = crypto.randomUUID()
+    this.activeOperationKey = operationKey
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
@@ -241,6 +239,7 @@ export class FaucetComponent implements OnInit {
       const tx = await contract.withdraw(amount)
       await tx.wait()
 
+      if (this.activeOperationKey !== operationKey) return
       console.log('BEE tokens extracted successfully')
       this.fetchBeeBalance()
       this.fetchMyBeeBalance()
@@ -248,7 +247,9 @@ export class FaucetComponent implements OnInit {
       console.error('Error extracting BEEs:', error.message)
       this.errorMessage = error.message
     } finally {
-      this.isProcessing = false
+      if (this.activeOperationKey === operationKey) {
+        this.activeOperationKey = null
+      }
     }
   }
 

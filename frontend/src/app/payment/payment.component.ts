@@ -82,7 +82,7 @@ export class PaymentComponent implements OnInit {
   public walletBalanceStr: string
   public totalPrice: any = 0
   public paymentMode = 'card'
-  public isProcessing = false
+  public activePaymentKey: string | null = null
   private readonly campaigns = {
     WMNSDY2019: { validOn: 1551999600000, discount: 75 },
     WMNSDY2020: { validOn: 1583622000000, discount: 60 },
@@ -214,21 +214,21 @@ export class PaymentComponent implements OnInit {
   }
 
   choosePayment () {
-    if (this.isProcessing) {
-      return
-    }
-    this.isProcessing = true
+    const idempotencyKey = crypto.randomUUID()
+    this.activePaymentKey = idempotencyKey
     sessionStorage.removeItem('itemTotal')
     if (this.mode === 'wallet') {
-      this.walletService.put({ balance: this.totalPrice, paymentId: this.paymentId }).subscribe({
+      this.walletService.put({ balance: this.totalPrice, paymentId: this.paymentId, idempotencyKey }).subscribe({
         next: () => {
-          this.isProcessing = false
+          if (this.activePaymentKey !== idempotencyKey) return
+          this.activePaymentKey = null
           sessionStorage.removeItem('walletTotal')
           this.ngZone.run(async () => await this.router.navigate(['/wallet']))
           this.snackBarHelperService.open('CHARGED_WALLET', 'confirmBar')
         },
         error: (err) => {
-          this.isProcessing = false
+          if (this.activePaymentKey !== idempotencyKey) return
+          this.activePaymentKey = null
           console.log(err)
           this.snackBarHelperService.open(err.error?.message, 'errorBar')
         }
@@ -236,20 +236,22 @@ export class PaymentComponent implements OnInit {
     } else if (this.mode === 'deluxe') {
       this.userService.upgradeToDeluxe(this.paymentMode, this.paymentId).subscribe({
         next: (data) => {
-          this.isProcessing = false
+          if (this.activePaymentKey !== idempotencyKey) return
+          this.activePaymentKey = null
           localStorage.setItem('token', data.token)
           this.cookieService.put('token', data.token)
           this.ngZone.run(async () => await this.router.navigate(['/deluxe-membership']))
         },
         error: (err) => {
-          this.isProcessing = false
+          if (this.activePaymentKey !== idempotencyKey) return
+          this.activePaymentKey = null
           console.log(err)
         }
       })
     } else {
       if (this.paymentMode === 'wallet') {
         if (this.walletBalance < this.totalPrice) {
-          this.isProcessing = false
+          this.activePaymentKey = null
           this.snackBarHelperService.open('INSUFFICIENT_WALLET_BALANCE', 'errorBar')
           return
         }
@@ -257,7 +259,7 @@ export class PaymentComponent implements OnInit {
       } else {
         sessionStorage.setItem('paymentId', this.paymentId)
       }
-      this.isProcessing = false
+      this.activePaymentKey = null
       this.ngZone.run(async () => await this.router.navigate(['/order-summary']))
     }
   }
