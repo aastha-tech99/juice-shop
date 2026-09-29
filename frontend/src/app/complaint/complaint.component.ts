@@ -6,7 +6,7 @@
 import { environment } from '../../environments/environment'
 import { ComplaintService } from '../Services/complaint.service'
 import { UserService } from '../Services/user.service'
-import { Component, ElementRef, type OnInit, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Component, ElementRef, type OnInit, ViewChild, inject, ChangeDetectionStrategy, signal } from '@angular/core'
 import { UntypedFormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { FileUploader, FileUploadModule } from 'ng2-file-upload'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -50,7 +50,7 @@ export class ComplaintComponent implements OnInit {
   public userEmail: any = undefined
   public complaint: any = undefined
   public confirmation: any
-  private isSaving = false
+  private readonly saving = signal(false)
 
   ngOnInit (): void {
     this.initComplaint()
@@ -67,7 +67,7 @@ export class ComplaintComponent implements OnInit {
       this.uploader.clearQueue()
     }
     this.uploader.onErrorItem = () => {
-      this.isSaving = false
+      this.saving.set(false)
     }
   }
 
@@ -87,8 +87,8 @@ export class ComplaintComponent implements OnInit {
   }
 
   save () {
-    if (this.isSaving) return
-    this.isSaving = true
+    if (this.saving()) return
+    this.saving.set(true)
     if (this.uploader.queue[0]) {
       this.uploader.queue[0].upload()
       this.fileControl.nativeElement.value = null
@@ -101,7 +101,7 @@ export class ComplaintComponent implements OnInit {
     this.complaint.message = this.messageControl.value
     this.complaintService.save(this.complaint).subscribe({
       next: (savedComplaint: any) => {
-        this.isSaving = false
+        this.saving.set(false)
         this.translate.get('CUSTOMER_SUPPORT_COMPLAINT_REPLY', { ref: savedComplaint.id }).subscribe({
           next: (customerSupportReply) => {
             this.confirmation = customerSupportReply
@@ -115,7 +115,7 @@ export class ComplaintComponent implements OnInit {
         this.fileUploadError = undefined
       },
       error: (error) => {
-        this.isSaving = false
+        this.saving.set(false)
         return error
       }
     })

@@ -153,11 +153,10 @@ export class PaymentComponent implements OnInit {
 
   applyCoupon () {
     this.campaignCoupon = this.couponControl.value
-    this.clientDate = new Date()
-
-    const offsetTimeZone = (this.clientDate.getTimezoneOffset() + 60) * 60 * 1000
-    this.clientDate.setHours(0, 0, 0, 0)
-    this.clientDate = this.clientDate.getTime() - offsetTimeZone
+    const now = new Date()
+    const offsetTimeZone = (now.getTimezoneOffset() + 60) * 60 * 1000
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    this.clientDate = startOfDay.getTime() - offsetTimeZone
 
     sessionStorage.setItem('couponDetails', `${this.campaignCoupon}-${this.clientDate}`)
     const campaign = this.campaigns[this.couponControl.value]

@@ -144,8 +144,7 @@ function getFixExplanation (file: string, info: ChallengeInfo | null): string | 
   const match = file.match(/_(\d+)/)
   if (!match) return null
   const fixId = parseInt(match[1])
-  const fix = info.fixes.find(f => f.id === fixId)
-  return fix?.explanation ?? null
+  return info.fixes.find(f => f.id === fixId)?.explanation ?? null
 }
 
 async function computeChallengeDiff (file: string): Promise<ChallengeDiff | null> {

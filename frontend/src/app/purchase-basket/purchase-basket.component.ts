@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-import { Component, EventEmitter, Input, type OnInit, Output, inject, ChangeDetectionStrategy } from '@angular/core'
+import { Component, EventEmitter, Input, type OnInit, Output, inject, ChangeDetectionStrategy, signal } from '@angular/core'
 import { BasketService } from '../Services/basket.service'
 import { UserService } from '../Services/user.service'
 import { ProductService } from '../Services/product.service'
@@ -45,7 +45,7 @@ export class PurchaseBasketComponent implements OnInit {
   public bonus = 0
   public itemTotal = 0
   public userEmail: string
-  private isOperationInProgress = false
+  private readonly operationInProgress = signal(false)
 
   ngOnInit (): void {
     if (this.allowEdit && !this.tableColumns.includes('remove')) {
@@ -136,12 +136,12 @@ export class PurchaseBasketComponent implements OnInit {
   }
 
   delete (id) {
-    if (this.isOperationInProgress) return
-    this.isOperationInProgress = true
+    if (this.operationInProgress()) return
+    this.operationInProgress.set(true)
     if (localStorage.getItem('token') == null) {
       this.basketService.removeGuestBasketItem(id)
       this.load()
-      this.isOperationInProgress = false
+      this.operationInProgress.set(false)
       return
     }
 
@@ -149,10 +149,10 @@ export class PurchaseBasketComponent implements OnInit {
       next: () => {
         this.load()
         this.basketService.updateNumberOfCartItems()
-        this.isOperationInProgress = false
+        this.operationInProgress.set(false)
       },
       error: (err) => {
-        this.isOperationInProgress = false
+        this.operationInProgress.set(false)
         console.log(err)
       }
     })
@@ -167,18 +167,18 @@ export class PurchaseBasketComponent implements OnInit {
   }
 
   addToQuantity (id, value) {
-    if (this.isOperationInProgress) return
-    this.isOperationInProgress = true
+    if (this.operationInProgress()) return
+    this.operationInProgress.set(true)
     if (localStorage.getItem('token') == null) {
       const existingGuestItem = this.basketService.getGuestBasketItems().find(item => item.ProductId === id)
       if (existingGuestItem == null) {
-        this.isOperationInProgress = false
+        this.operationInProgress.set(false)
         return
       }
 
       this.basketService.updateGuestBasketItemQuantity(id, existingGuestItem.quantity + value)
       this.load()
-      this.isOperationInProgress = false
+      this.operationInProgress.set(false)
       return
     }
 
@@ -190,17 +190,17 @@ export class PurchaseBasketComponent implements OnInit {
           next: () => {
             this.load()
             this.basketService.updateNumberOfCartItems()
-            this.isOperationInProgress = false
+            this.operationInProgress.set(false)
           },
           error: (err) => {
-            this.isOperationInProgress = false
+            this.operationInProgress.set(false)
             this.snackBarHelperService.open(err.error?.error, 'errorBar')
             console.log(err)
           }
         })
       },
       error: (err) => {
-        this.isOperationInProgress = false
+        this.operationInProgress.set(false)
         console.log(err)
       }
     })

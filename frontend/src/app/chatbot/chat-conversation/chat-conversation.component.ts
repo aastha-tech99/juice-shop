@@ -51,12 +51,8 @@ export class ChatConversationComponent implements OnInit {
   chatBotAvatar = signal('assets/public/images/JuicyBot.png')
 
   private conversationId = ''
-  private initialized = false
 
   ngOnInit () {
-    if (this.initialized) return
-    this.initialized = true
-
     this.configurationService.getApplicationConfiguration().subscribe({
       next: (config) => {
         if (config?.application?.chatBot?.name) {

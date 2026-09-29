@@ -189,17 +189,15 @@ export const reset = () => {
 const sourceFileCache = new Map<string, string>()
 
 function loadSourceFile (relativePath: string): string {
-  const cached = sourceFileCache.get(relativePath)
-  if (cached !== undefined) {
-    return cached
+  if (sourceFileCache.has(relativePath)) {
+    return sourceFileCache.get(relativePath)!
   }
   try {
-    const content = fs.readFileSync(path.resolve(relativePath), 'utf8')
-    sourceFileCache.set(relativePath, content)
-    return content
+    sourceFileCache.set(relativePath, fs.readFileSync(path.resolve(relativePath), 'utf8'))
   } catch {
-    return ''
+    sourceFileCache.set(relativePath, '')
   }
+  return sourceFileCache.get(relativePath)!
 }
 
 export function checkForSourceFileOverlap (challengeKey: string, submission: string): boolean {

@@ -463,8 +463,8 @@ describe('PaymentComponent', () => {
             // so the test is timezone-independent.
             const today = new Date()
             const offsetTimeZone = (today.getTimezoneOffset() + 60) * 60 * 1000
-            today.setHours(0, 0, 0, 0)
-            const expectedClientDate = today.getTime() - offsetTimeZone
+            const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+            const expectedClientDate = startOfDay.getTime() - offsetTimeZone
             ;(component as any).campaigns = { TESTCAMPAIGN: { validOn: expectedClientDate, discount: 50 } }
             translateService.get.mockReturnValue(of('DISCOUNT_APPLIED'))
             component.couponControl.setValue('TESTCAMPAIGN')
